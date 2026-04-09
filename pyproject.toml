@@ -9,7 +9,9 @@ dependencies = [
     "crawl4ai>=0.8.6",
     "ddgs>=9.13.0",
     "openai>=2.30.0",
+    "pillow>=12.2.0",
     "requests>=2.33.1",
+    "streamlit>=1.56.0",
 ]
 
 [dependency-groups]
