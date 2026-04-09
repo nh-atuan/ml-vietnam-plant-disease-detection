@@ -14,12 +14,14 @@ from .utils import convert_jsonl_to_json, scrape_url
 MAX_CONCURRENT_SCRAPES = 5
 MAX_CONCURRENT_AI = 2
 
+VALID_LABELS = ["healthy", "rust", "spider mites"]
+
 
 async def classify_image(base64_image: str, context: str, client: AsyncOpenAI) -> str:
     """Asks the local VLM to classify the image and context."""
-    prompt_text = f"""You are an agricultural expert. Look at this image and the surrounding text from a Vietnamese blog: "{context}".
-    Determine if this is a valid close-up of a rice plant. If it is, classify it strictly as ONE of these four categories: Healthy, BrownSpot, Hispa, or LeafBlast.
-    Respond ONLY with a JSON object in this format: {{"prediction": "LabelName"}}. If it is not a valid image of a rice plant, respond with {{"prediction": "Invalid"}}."""
+    prompt_text = f"""You are an agricultural expert specialising in coffee plants. Look at this image and the surrounding text from a Vietnamese blog: "{context}".
+    Determine if this is a valid close-up of a coffee leaf. If it is, classify it strictly as ONE of these three categories: healthy, rust, or spider mites.
+    Respond ONLY with a JSON object in this format: {{"prediction": "LabelName"}}. If it is not a valid image of a coffee leaf, respond with {{"prediction": "Invalid"}}."""
     try:
         response = await client.chat.completions.create(
             model="Gemma 4",
@@ -57,7 +59,7 @@ async def classify_task(task_data, ai_client, args, semaphore, final_file, file_
                 }
             }
 
-            if predicted_label in ["Healthy", "BrownSpot", "Hispa", "LeafBlast"]:
+            if predicted_label in VALID_LABELS:
                 ls_task["predictions"] = [
                     {
                         "model_version": "Gemma 4",
@@ -96,14 +98,20 @@ async def main_pipeline(args):
         processed_urls = set(processed_log.read_text(encoding="utf-8").splitlines())
 
     search_strategy = {
-        "BrownSpot": [
-            "Bệnh đốm nâu hại lúa site",
-            "triệu chứng đốm nâu lúa site",
-            "hình ảnh bệnh đốm nâu lúa site",
+        "healthy": [
+            "Lá cà phê khỏe mạnh site",
+            "cây cà phê phát triển tốt site",
         ],
-        "LeafBlast": ["Bệnh đạo ôn hại lúa site", "bệnh đạo ôn lúa site", "hình ảnh bệnh đạo ôn lúa site"],
-        "Hispa": ["Bọ gai hại lúa site", "hình ảnh bọ gai lúa site"],
-        "Healthy": ["Lúa khỏe mạnh site", "cây lúa phát triển tốt site"],
+        "rust": [
+            "Bệnh gỉ sắt cà phê site",
+            "bệnh rỉ sắt hại cà phê site",
+            "hình ảnh bệnh gỉ sắt cà phê site",
+        ],
+        "spider mites": [
+            "Nhện đỏ hại cà phê site",
+            "nhện nhỏ hại cà phê site",
+            "hình ảnh nhện đỏ cà phê site",
+        ],
     }
     all_urls = generate_target_urls(args, search_strategy)
     urls_to_process = {u: label for u, label in all_urls.items() if u not in processed_urls}
