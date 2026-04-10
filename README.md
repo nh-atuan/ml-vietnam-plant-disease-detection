@@ -40,7 +40,7 @@ graph TD
     A[Search Queries] --> B[Search APIs]
     B --> C[Web Crawler]
     C --> D[Local Disk Storage]
-    D --> E[AI Labeling\n(Gemma 4)]
+    D --> E[AI Labeling<br/>(Gemma 4)]
     E --> F[Streamlit Labeling & UI]
     F --> G[Manual Review & Verification]
     G --> H[(Final Dataset Export)]
