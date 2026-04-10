@@ -8,14 +8,38 @@ import streamlit as st
 import streamlit.components.v1 as components
 from PIL import Image
 
-LABELS = ["Healthy", "BrownSpot", "Hispa", "LeafBlast", "Invalid"]
+RICE_LABELS = ["Healthy", "BrownSpot", "Hispa", "LeafBlast", "Invalid"]
 
-LABEL_VN = {
+RICE_LABEL_VN = {
     "Healthy": "Khỏe mạnh",
     "BrownSpot": "Đốm nâu",
     "Hispa": "Sâu gai",
     "LeafBlast": "Bệnh đạo ôn",
     "Invalid": "Không hợp lệ",
+}
+
+COFFEE_LABELS = ["healthy", "rust", "spider mites", "Invalid"]
+
+COFFEE_LABEL_VN = {
+    "healthy": "Khỏe mạnh",
+    "rust": "Bệnh gỉ sắt",
+    "spider mites": "Nhện đỏ",
+    "Invalid": "Không hợp lệ",
+}
+
+RICE_BADGE_COLOR = {
+    "Healthy": ("#16a34a", "#ffffff"),
+    "BrownSpot": ("#92400e", "#ffffff"),
+    "Hispa": ("#7c3aed", "#ffffff"),
+    "LeafBlast": ("#b91c1c", "#ffffff"),
+    "Invalid": ("#6b7280", "#ffffff"),
+}
+
+COFFEE_BADGE_COLOR = {
+    "healthy": ("#16a34a", "#ffffff"),
+    "rust": ("#b91c1c", "#ffffff"),
+    "spider mites": ("#7c3aed", "#ffffff"),
+    "Invalid": ("#6b7280", "#ffffff"),
 }
 
 
@@ -93,8 +117,19 @@ def _apply_edits(img: Image.Image, rotate: float, crop_pct: tuple[float, float, 
 class DatasetLabeler:
     """Manages the labeling session: loading data, tracking labels, and persistence."""
 
-    def __init__(self, input_path: str):
+    def __init__(self, input_path: str, dataset_type: str = "rice"):
         self._input_path = Path(input_path)
+        self.dataset_type = dataset_type
+        if dataset_type == "coffee":
+            self.labels_list = COFFEE_LABELS
+            self.label_vn = COFFEE_LABEL_VN
+            self.badge_color = COFFEE_BADGE_COLOR
+            self.title = "☕ Coffee Disease Labeler"
+        else:
+            self.labels_list = RICE_LABELS
+            self.label_vn = RICE_LABEL_VN
+            self.badge_color = RICE_BADGE_COLOR
+            self.title = "🌾 Rice Disease Labeler"
         self._init_state()
 
     def _init_state(self):
@@ -191,49 +226,54 @@ class DatasetLabeler:
         image_path = rec.get("data", {}).get("image", "")
         if image_path:
             folder_name = Path(image_path).parent.name
-            if folder_name in LABELS:
+            if folder_name in self.labels_list:
                 return folder_name
 
         return None
 
-    def export_results(self) -> list[dict]:
+    def export_results(self, include_unlabeled: bool = False) -> list[dict]:
         """Build Label-Studio-compatible JSON records with human annotations."""
         output = []
         for i, rec in enumerate(self.records):
             label = self.labels.get(i)
-            # Filter out "Invalid" labels and unlabeled images
-            if not label or label == "Invalid":
+            # Always skip "Invalid" images
+            if label == "Invalid":
+                continue
+
+            # If not including unlabeled, skip images without a human label
+            if not include_unlabeled and not label:
                 continue
 
             entry = {"data": rec["data"]}
-            entry["annotations"] = [
-                {
-                    "result": [
-                        {
-                            "from_name": "choice",
-                            "to_name": "image",
-                            "type": "choices",
-                            "value": {"choices": [label]},
-                        }
-                    ]
-                }
-            ]
+            if label:
+                entry["annotations"] = [
+                    {
+                        "result": [
+                            {
+                                "from_name": "choice",
+                                "to_name": "image",
+                                "type": "choices",
+                                "value": {"choices": [label]},
+                            }
+                        ]
+                    }
+                ]
+
             # Keep original predictions for reference
             if "predictions" in rec:
                 entry["predictions"] = rec["predictions"]
             output.append(entry)
         return output
 
-    def export_zip(self) -> bytes:
+    def export_zip(self, include_unlabeled: bool = False) -> bytes:
         """Build a ZIP file containing labeled_output.json + all valid images under images/.
 
-        Only includes records that are labeled and not Invalid.
         Image paths in the JSON are rewritten to relative 'images/<filename>'.
 
         Returns:
             ZIP file contents as bytes.
         """
-        valid_records = self.export_results()
+        valid_records = self.export_results(include_unlabeled=include_unlabeled)
 
         buf = io.BytesIO()
         with zipfile.ZipFile(buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
@@ -391,8 +431,8 @@ class DatasetLabeler:
     # UI rendering
 
     def render(self):
-        st.set_page_config(page_title="Rice Disease Labeler", layout="wide")
-        st.title("🌾 Rice Disease Labeler")
+        st.set_page_config(page_title=self.title, layout="wide")
+        st.title(self.title)
 
         self._render_sidebar()
         self._inject_keyboard_nav()
@@ -416,9 +456,9 @@ class DatasetLabeler:
                 counts[lbl] = counts.get(lbl, 0) + 1
             if counts:
                 st.markdown("**Label distribution:**")
-                for lbl in LABELS:
+                for lbl in self.labels_list:
                     if lbl in counts:
-                        vn = LABEL_VN.get(lbl, "")
+                        vn = self.label_vn.get(lbl, "")
                         st.write(f"- {lbl} ({vn}): **{counts[lbl]}**")
 
             st.divider()
@@ -426,8 +466,17 @@ class DatasetLabeler:
             # Import / Export
             st.subheader("Import / Export")
 
+            # Export Mode selection
+            export_mode = st.radio(
+                "Export Mode",
+                ["Only labeled", "Labeled + Unlabeled"],
+                help="Choose whether to include unlabeled images in the export. 'Invalid' images are always excluded.",
+                key="export_mode",
+            )
+            include_unlabeled = export_mode == "Labeled + Unlabeled"
+
             # JSON-only export (kept)
-            export_data = self.export_results()
+            export_data = self.export_results(include_unlabeled=include_unlabeled)
             export_str = json.dumps(export_data, indent=2, ensure_ascii=False)
             st.download_button(
                 "📥 Export labels (.json)",
@@ -441,7 +490,7 @@ class DatasetLabeler:
             zip_label = f"📦 Export dataset (.zip)  [{valid_count} images]"
             st.download_button(
                 zip_label,
-                data=self.export_zip(),
+                data=self.export_zip(include_unlabeled=include_unlabeled),
                 file_name="labeled_output.zip",
                 mime="application/zip",
             )
@@ -497,21 +546,25 @@ class DatasetLabeler:
             current_label = self.labels.get(idx)
 
             if ai_pred:
-                vn_pred = LABEL_VN.get(ai_pred, "")
+                vn_pred = self.label_vn.get(ai_pred, "")
                 st.info(f"🤖 AI prediction: **{ai_pred}** ({vn_pred})")
 
             # Highlight human label (green) and AI prediction (blue)
-            human_col = (LABELS.index(current_label) + 1) if (current_label and current_label in LABELS) else None
-            ai_col = (LABELS.index(ai_pred) + 1) if (ai_pred and ai_pred in LABELS) else None
+            human_col = (
+                (self.labels_list.index(current_label) + 1)
+                if (current_label and current_label in self.labels_list)
+                else None
+            )
+            ai_col = (self.labels_list.index(ai_pred) + 1) if (ai_pred and ai_pred in self.labels_list) else None
             if human_col or ai_col:
                 st.markdown(_build_highlight_css(human_col, ai_col), unsafe_allow_html=True)
 
             # Label buttons
             st.markdown("**Choose label:**")
-            btn_cols = st.columns(len(LABELS))
-            for j, lbl in enumerate(LABELS):
+            btn_cols = st.columns(len(self.labels_list))
+            for j, lbl in enumerate(self.labels_list):
                 with btn_cols[j]:
-                    vn_name = LABEL_VN.get(lbl, "")
+                    vn_name = self.label_vn.get(lbl, "")
                     st.button(
                         f"{lbl}\n{vn_name}",
                         key=f"lbl_{lbl}_{idx}",
@@ -647,7 +700,7 @@ class DatasetLabeler:
         st.markdown("### 🖼️ Image Gallery")
 
         # Filters
-        filter_options = ["All"] + LABELS + ["Unlabeled"]
+        filter_options = ["All"] + self.labels_list + ["Unlabeled"]
         col_filter, col_cols = st.columns([3, 1])
         with col_filter:
             selected_filter = st.selectbox(
@@ -682,15 +735,6 @@ class DatasetLabeler:
 
         st.caption(f"Showing {len(indices)} of {len(self.records)} images")
 
-        # Label badge colours
-        BADGE_COLOR = {
-            "Healthy": ("#16a34a", "#ffffff"),
-            "BrownSpot": ("#92400e", "#ffffff"),
-            "Hispa": ("#7c3aed", "#ffffff"),
-            "LeafBlast": ("#b91c1c", "#ffffff"),
-            "Invalid": ("#6b7280", "#ffffff"),
-        }
-
         # Render grid
         n_cols = int(n_cols)
         rows = [indices[i : i + n_cols] for i in range(0, len(indices), n_cols)]
@@ -713,8 +757,8 @@ class DatasetLabeler:
 
                     # Label badge
                     if lbl:
-                        bg, fg = BADGE_COLOR.get(lbl, ("#3b82f6", "#fff"))
-                        vn = LABEL_VN.get(lbl, "")
+                        bg, fg = self.badge_color.get(lbl, ("#3b82f6", "#fff"))
+                        vn = self.label_vn.get(lbl, "")
                         st.markdown(
                             f"<div style='background:{bg};color:{fg};border-radius:6px;"
                             f"padding:2px 8px;font-size:0.75rem;font-weight:600;"
@@ -740,19 +784,26 @@ class DatasetLabeler:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Streamlit Rice Disease Labeler")
+    parser = argparse.ArgumentParser(description="Streamlit Plant Disease Labeler")
     parser.add_argument(
         "--input",
         type=str,
         default="datasets/raw/label_studio_import.json",
         help="Path to the JSON (or JSONL) file with image records",
     )
+    parser.add_argument(
+        "--type",
+        type=str,
+        choices=["rice", "coffee"],
+        default="rice",
+        help="Type of dataset to label (rice or coffee)",
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    labeler = DatasetLabeler(args.input)
+    labeler = DatasetLabeler(args.input, args.type)
     labeler.render()
 
 
