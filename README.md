@@ -29,7 +29,7 @@ uv run streamlit run crawl/labeler.py -- --type coffee --input /path/to/the/JSON
 The data collection and processing pipeline follows a structured approach to build a high-quality dataset for plant disease detection:
 
 1.  **Search & Discovery**: Use search APIs (DuckDuckGo, Serper, or Google) Search to find relevant URLs based on Vietnamese disease queries.
-2.  **Crawling**: Automatically extract images and contextual text from blog posts and articles using the `Crawl4AI library`.
+2.  **Crawling**: Automatically extract images and contextual text from blog posts and articles using the [`Crawl4AI library`](https://github.com/unclecode/crawl4ai).
 3.  **Storage**: Organize raw data onto local storage for further processing.
 4.  **AI Pre-labeling**: Leverage **Gemma 4** to predict disease labels by analyzing both the image and surrounding text.
 5.  **Human-in-the-loop**: Use the **Streamlit Label Studio** to manually verify AI predictions, ensure accuracy, and refine the labels.
@@ -37,17 +37,16 @@ The data collection and processing pipeline follows a structured approach to bui
 
 ```mermaid
 graph TD
-    A[Search Queries] --> B[Search APIs]
-    B --> C[Web Crawler]
-    C --> D[Local Disk Storage]
-    D --> E[AI Labeling<br/>(Gemma 4)]
-    E --> F[Streamlit Labeling & UI]
-    F --> G[Manual Review & Verification]
-    G --> H[(Final Dataset Export)]
+  A[Predefined Search Queries] --> B[Search APIs]
+  B --> C["Web Crawler (Crawl4AI)"]
+  C --> D[Local Disk Storage]
+  D --> E["AI Labeling<br/>(Gemma 4)"]
+  E --> F[Streamlit Labeling & UI]
+  F --> G[Manual Review & Verification]
+  G --> H[(Final Dataset Export)]
 ```
 
 
 # References:
 - [Unsloth: Gemma 4](https://unsloth.ai/docs/models/gemma-4)
-- [Ultralytics: SAM 3](https://docs.ultralytics.com/models/sam-3/)
-- [HuggingFace: SAM 3](https://huggingface.co/facebook/sam3)
+- [Crawl4AI](https://github.com/unclecode/crawl4ai)
