@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import io
 import json
 import zipfile
@@ -7,6 +8,9 @@ from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
 from PIL import Image
+
+# Increase the limit to avoid DecompressionBombError for very large crawled images
+Image.MAX_IMAGE_PIXELS = None
 
 RICE_LABELS = ["Healthy", "BrownSpot", "Hispa", "LeafBlast", "Invalid"]
 
@@ -355,8 +359,6 @@ class DatasetLabeler:
     def _select_label(self, label: str):
         self.labels[self.index] = label
 
-    # Image editor helpers
-
     def _get_edit_params(self, idx: int) -> dict:
         """Return the edit params dict for this index, initialising if needed."""
         if idx not in st.session_state.edits:
@@ -368,6 +370,43 @@ class DatasetLabeler:
                 "crop_bottom": 0.0,
             }
         return st.session_state.edits[idx]
+
+    def _detect_duplicates(self):
+        """Identify exact duplicates by MD5 hash and mark them as Invalid."""
+        seen_hashes = {}  # hash -> first_index
+        duplicates_found = 0
+
+        progress_text = "🔍 Scanning for duplicates..."
+        progress_bar = st.progress(0, text=progress_text)
+
+        for i, rec in enumerate(self.records):
+            img_path = Path(rec["data"]["image"])
+            if not img_path.exists():
+                continue
+
+            try:
+                # Calculate MD5 hash of the file
+                with open(img_path, "rb") as f:
+                    file_hash = hashlib.md5(f.read()).hexdigest()
+
+                if file_hash in seen_hashes:
+                    # Duplicate found - mark as Invalid unless it already has a human label
+                    # (Though usually we want to mask all duplicates)
+                    self.labels[i] = "Invalid"
+                    duplicates_found += 1
+                else:
+                    seen_hashes[file_hash] = i
+            except Exception:
+                continue
+
+            # Update progress bar occasionally
+            if i % 10 == 0 or i == len(self.records) - 1:
+                progress_bar.progress(
+                    (i + 1) / len(self.records), text=f"{progress_text} ({i + 1}/{len(self.records)})"
+                )
+
+        progress_bar.empty()
+        return duplicates_found
 
     def _save_edited_image(self, idx: int) -> Path | None:
         """Apply current edits for `idx` and save next to the original.
@@ -501,6 +540,18 @@ class DatasetLabeler:
                 st.success(f"Imported {count} labels.")
                 st.rerun()
 
+            st.divider()
+            st.subheader("Tools")
+            if st.button(
+                "🔍 Detect Duplicates", width="stretch", help="Mark bit-for-bit identical images as 'Invalid'"
+            ):
+                dups = self._detect_duplicates()
+                if dups > 0:
+                    st.success(f"Found and masked {dups} duplicate images.")
+                    st.rerun()
+                else:
+                    st.info("No duplicates found.")
+
     def _render_main(self):
         idx = self.index
         rec = self.records[idx]
@@ -568,7 +619,7 @@ class DatasetLabeler:
                     st.button(
                         f"{lbl}\n{vn_name}",
                         key=f"lbl_{lbl}_{idx}",
-                        use_container_width=True,
+                        width="stretch",
                         on_click=self._select_label,
                         args=(lbl,),
                     )
@@ -624,14 +675,14 @@ class DatasetLabeler:
                         rotate=rotate,
                         crop_pct=(crop_left, crop_top, crop_right, crop_bottom),
                     )
-                    st.image(preview, caption="Preview", use_container_width=True)
+                    st.image(preview, caption="Preview", width="stretch")
                 except Exception as e:
                     st.warning(f"Preview failed: {e}")
 
             # Action buttons
             btn_save, btn_revert = st.columns(2)
             with btn_save:
-                if st.button("💾 Save edits", key=f"edit_save_{idx}", use_container_width=True):
+                if st.button("💾 Save edits", key=f"edit_save_{idx}", width="stretch"):
                     saved = self._save_edited_image(idx)
                     if saved:
                         st.success(f"Saved → `{saved.name}`")
@@ -644,7 +695,7 @@ class DatasetLabeler:
                 if st.button(
                     "↩ Revert to original",
                     key=f"edit_revert_{idx}",
-                    use_container_width=True,
+                    width="stretch",
                     disabled=revert_disabled,
                 ):
                     self._revert_image(idx)
@@ -656,11 +707,11 @@ class DatasetLabeler:
                 st.caption(f"✅ Active edit: `{edited_name}`")
 
     def _inject_keyboard_nav(self):
-        """Inject JavaScript to listen for Left/Right arrow keys and update a query-param
-        that Streamlit reads to navigate between images."""
-        # Read the requested key from query params (set by JS below)
+        """Inject JavaScript to listen for keyboard shortcuts and update query-params."""
         params = st.query_params
         nav = params.get("nav", None)
+        label_idx = params.get("label", None)
+
         if nav == "prev":
             self._go_prev()
             st.query_params.clear()
@@ -669,13 +720,26 @@ class DatasetLabeler:
             self._go_next()
             st.query_params.clear()
             st.rerun()
+        elif label_idx is not None:
+            try:
+                l_idx = int(label_idx)
+                if 0 <= l_idx < len(self.labels_list):
+                    self._select_label(self.labels_list[l_idx])
+                    # Auto-advance after labeling
+                    self._go_next()
+            except (ValueError, IndexError):
+                pass
+            st.query_params.clear()
+            st.rerun()
 
-        # Inject JS listener — runs every render but only fires on key press
+        # Inject JS listener
+        # - ArrowLeft / h / H: Previous
+        # - ArrowRight / l / L: Next
+        # - 1-9: Select label N (1-indexed) and advance
         components.html(
             """
             <script>
             (function() {
-                // Attach listener to the parent window (the Streamlit app)
                 const win = window.parent;
                 if (win.__keyNavAttached) return;
                 win.__keyNavAttached = true;
@@ -683,10 +747,15 @@ class DatasetLabeler:
                     if (e.target.tagName === 'INPUT' ||
                         e.target.tagName === 'TEXTAREA' ||
                         e.target.isContentEditable) return;
-                    if (e.key === 'ArrowLeft') {
+
+                    const key = e.key.toLowerCase();
+                    if (key === 'arrowleft' || key === 'h') {
                         win.location.href = win.location.pathname + '?nav=prev';
-                    } else if (e.key === 'ArrowRight') {
+                    } else if (key === 'arrowright' || key === 'l') {
                         win.location.href = win.location.pathname + '?nav=next';
+                    } else if (e.key >= '1' && e.key <= '9') {
+                        const idx = parseInt(e.key) - 1;
+                        win.location.href = win.location.pathname + '?label=' + idx;
                     }
                 });
             })();
@@ -746,7 +815,7 @@ class DatasetLabeler:
                 lbl = self.labels.get(idx)
                 with col:
                     if img_path.exists():
-                        st.image(str(img_path), use_container_width=True)
+                        st.image(str(img_path), width="stretch")
                     else:
                         st.markdown(
                             "<div style='background:#1e293b;height:120px;display:flex;"
@@ -777,7 +846,7 @@ class DatasetLabeler:
                     if st.button(
                         f"✏️ Label #{idx + 1}",
                         key=f"gallery_jump_{idx}",
-                        use_container_width=True,
+                        width="stretch",
                     ):
                         self.index = idx
                         st.rerun()
