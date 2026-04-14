@@ -47,6 +47,28 @@ graph TD
 ```
 
 
+# Dataset Structure
+
+The final dataset is located in `datasets/final/`, organized by crop type and disease category. All images are accompanied by COCO format annotations for segmentation and classification tasks.
+
+```text
+datasets/final/
+├── coffee_leaf_disease/
+│   ├── 0/                      # Healthy
+│   ├── 1/                      # Spider Mites
+│   ├── 2/                      # Rust
+│   ├── 3/                      # Red Spider Mite / Invalid
+│   └── annotations.coco.json   # COCO format annotations
+└── rice_leaf_disease/
+    ├── BrownSpot/              # Brown Spot disease
+    ├── Healthy/                # Healthy leaves
+    ├── Hispa/                  # Rice Hispa
+    ├── LeafBlast/              # Leaf Blast disease
+    └── annotations.coco.json   # COCO format annotations
+```
+
 # References:
 - [Unsloth: Gemma 4](https://unsloth.ai/docs/models/gemma-4)
 - [Crawl4AI](https://github.com/unclecode/crawl4ai)
+- [X-AnyLabeling](https://github.com/CVHub520/X-AnyLabeling)
+- [SAM 3](https://huggingface.co/facebook/sam3)
