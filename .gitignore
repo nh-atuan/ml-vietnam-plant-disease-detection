@@ -11,3 +11,4 @@ models/best_model/*
 models/checkpoints/*
 project.log
 .ipynb_checkpoints
+data/
