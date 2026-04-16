@@ -1,0 +1,36 @@
+[project]
+name = "ml-vietnam-plant-disease-detection"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "asyncio>=4.0.0",
+    "crawl4ai>=0.8.6",
+    "ddgs>=9.13.0",
+    "matplotlib>=3.10.8",
+    "openai>=2.30.0",
+    "opencv-python>=4.13.0.92",
+    "pillow>=12.2.0",
+    "requests>=2.33.1",
+    "streamlit>=1.56.0",
+    "x-anylabeling-cvhub[cpu]>=4.0.0b3",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.9",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+# E: pycodestyle, F: pyflakes, I: isort, UP: pyupgrade
+select = ["E", "F", "I", "UP"] 
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
