@@ -22,12 +22,13 @@ RICE_LABEL_VN = {
     "Invalid": "Không hợp lệ",
 }
 
-COFFEE_LABELS = ["healthy", "rust", "spider mites", "Invalid"]
+COFFEE_LABELS = ["LeafMiner", "PowderyMildew", "Rust", "AlgalLeafSpot", "Invalid"]
 
 COFFEE_LABEL_VN = {
-    "healthy": "Khỏe mạnh",
-    "rust": "Bệnh gỉ sắt",
-    "spider mites": "Nhện đỏ",
+    "LeafMiner": "Bệnh sâu vẽ bùa",
+    "PowderyMildew": "Bệnh phấn trắng",
+    "Rust": "Bệnh nấm rỉ sắt",
+    "AlgalLeafSpot": "Bệnh đốm rong",
     "Invalid": "Không hợp lệ",
 }
 
@@ -40,9 +41,10 @@ RICE_BADGE_COLOR = {
 }
 
 COFFEE_BADGE_COLOR = {
-    "healthy": ("#16a34a", "#ffffff"),
-    "rust": ("#b91c1c", "#ffffff"),
-    "spider mites": ("#7c3aed", "#ffffff"),
+    "LeafMiner": ("#ea580c", "#ffffff"),
+    "PowderyMildew": ("#14b8a6", "#ffffff"),
+    "Rust": ("#b91c1c", "#ffffff"),
+    "AlgalLeafSpot": ("#16a34a", "#ffffff"),
     "Invalid": ("#6b7280", "#ffffff"),
 }
 

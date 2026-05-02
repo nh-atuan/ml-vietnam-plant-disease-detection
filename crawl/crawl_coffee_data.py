@@ -14,13 +14,13 @@ from .utils import convert_jsonl_to_json, scrape_url
 MAX_CONCURRENT_SCRAPES = 5
 MAX_CONCURRENT_AI = 2
 
-VALID_LABELS = ["healthy", "rust", "spider mites"]
+VALID_LABELS = ["LeafMiner", "PowderyMildew", "Rust", "AlgalLeafSpot"]
 
 
 async def classify_image(base64_image: str, context: str, client: AsyncOpenAI) -> str:
     """Asks the local VLM to classify the image and context."""
     prompt_text = f"""You are an agricultural expert specialising in coffee plants. Look at this image and the surrounding text from a Vietnamese blog: "{context}".
-    Determine if this is a valid close-up of a coffee leaf. If it is, classify it strictly as ONE of these three categories: healthy, rust, or spider mites.
+    Determine if this is a valid close-up of a coffee leaf. If it is, classify it strictly as ONE of these four categories: LeafMiner, PowderyMildew, Rust, or AlgalLeafSpot.
     Respond ONLY with a JSON object in this format: {{"prediction": "LabelName"}}. If it is not a valid image of a coffee leaf, respond with {{"prediction": "Invalid"}}."""
     try:
         response = await client.chat.completions.create(
@@ -98,19 +98,22 @@ async def main_pipeline(args):
         processed_urls = set(processed_log.read_text(encoding="utf-8").splitlines())
 
     search_strategy = {
-        "healthy": [
-            "Lá cà phê khỏe mạnh site",
-            "cây cà phê phát triển tốt site",
+        "LeafMiner": [
+            "Bệnh sâu vẽ bùa cà phê site",
+            "hình ảnh bệnh sâu vẽ bùa trên lá cà phê site",
         ],
-        "rust": [
-            "Bệnh gỉ sắt cà phê site",
+        "PowderyMildew": [
+            "Bệnh phấn trắng cà phê site",
+            "hình ảnh bệnh phấn trắng hại cà phê site",
+        ],
+        "Rust": [
+            "Bệnh nấm rỉ sắt cà phê site",
             "bệnh rỉ sắt hại cà phê site",
             "hình ảnh bệnh gỉ sắt cà phê site",
         ],
-        "spider mites": [
-            "Nhện đỏ hại cà phê site",
-            "nhện nhỏ hại cà phê site",
-            "hình ảnh nhện đỏ cà phê site",
+        "AlgalLeafSpot": [
+            "Bệnh đốm rong cà phê site",
+            "hình ảnh bệnh đốm rong trên lá cà phê site",
         ],
     }
     all_urls = generate_target_urls(args, search_strategy)
