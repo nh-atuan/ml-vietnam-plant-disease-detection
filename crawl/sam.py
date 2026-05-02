@@ -59,52 +59,7 @@ def batch_inference(
 
         if masks.dim() == 4 and masks.shape[1] == 1:
             masks = masks.squeeze(1)
-
-        print(f"[DEBUG] There are {len(masks)} masks before applying threshold")
-
         masks = masks > mask_threshold
-
-        print(f"[DEBUG] There are {len(masks)} masks after applying threshold")
-
-        # ========================================================
-        # NEW CODE: Save raw mask overlays for debugging
-        # ========================================================
-        import time
-
-        try:
-            # Since click_seg enforces batch_size=1, we grab the first image
-            img = images[0]
-
-            # Ensure it is converted to a BGR numpy array for OpenCV
-            if hasattr(img, "convert"):  # Check if it's a PIL Image
-                img_cv2 = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-            else:
-                img_cv2 = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-
-            overlay_cv2 = img_cv2.copy()
-            np_masks = masks.cpu().numpy() if torch.is_tensor(masks) else masks
-
-            for mask_2d in np_masks:
-                # Squeeze out extra dimensions if any exist to ensure a strict 2D shape (H, W)
-                if mask_2d.ndim > 2:
-                    mask_2d = mask_2d.squeeze()
-
-                color = np.random.randint(0, 255, (3,)).tolist()
-                colored_mask = np.zeros_like(img_cv2)
-                colored_mask[mask_2d > 0] = color
-
-                # Apply 50% opacity to the mask overlay
-                cv2.addWeighted(overlay_cv2, 1.0, colored_mask, 0.5, 0, dst=overlay_cv2)
-
-            # Create a dedicated directory and save with a timestamp
-            os.makedirs("debug_raw_masks", exist_ok=True)
-            save_path = f"debug_raw_masks/raw_mask_{int(time.time() * 1000)}.jpg"
-            cv2.imwrite(save_path, overlay_cv2)
-            print(f"[DEBUG] Saved raw inference mask overlay to {save_path}")
-
-        except Exception as e:
-            print(f"[DEBUG] Failed to save raw mask overlay: {e}")
-        # ========================================================
 
         return [{"masks": masks}]
 
@@ -257,11 +212,7 @@ def process_dataset(dataset_dir: str, batch_size: int, device: str, click_seg: b
                 print(f"Batch inference failed: {e}")
                 continue
 
-            print(f"[DEBUG] len(results)={len(results)}")
             for img_idx, img_res in enumerate(results):
-                print(f"[DEBUG] img_idx={img_idx}")
-                print(f"[DEBUG] img_res={img_res}")
-
                 current_img_id = valid_batch_img_ids[img_idx]
                 masks = img_res["masks"]
 
@@ -287,48 +238,9 @@ def process_dataset(dataset_dir: str, batch_size: int, device: str, click_seg: b
                         f"Not found category ID for the image at {os.path.join(base_dir, img_info['file_name'])}"
                     )
 
-                print(f"[DEBUG] img_category_id={img_category_id}")
-                print(f"[DEBUG] len(np_masks)={len(np_masks)}")
-                print(f"[DEBUG] np_masks.shape={np_masks.shape}")
-
-                img_cv2 = cv2.cvtColor(np.array(batch_images[img_idx]), cv2.COLOR_RGB2BGR)
-                overlay_cv2 = img_cv2.copy()
-
                 for j in range(len(np_masks)):
                     mask = np_masks[j]
                     polygons = mask_to_polygons(mask)
-
-                    # print(f"[DEBUG] mask={mask}")
-                    print(f"[DEBUG] mask.shape={mask.shape}")
-                    # print(f"[DEBUG] polygons={polygons}")
-                    print(f"[DEBUG] len(polygons)={len(polygons)}")
-
-                    # ========================================================
-                    # NDraw and save the overlaid masks
-                    # ========================================================
-                    if polygons:  # Only draw if polygons were successfully created
-                        # 1. Generate a random color for this mask (BGR format)
-                        color = np.random.randint(0, 255, (3,)).tolist()
-
-                        # 2. Add a semi-transparent mask fill (50% opacity)
-                        colored_mask = np.zeros_like(img_cv2)
-                        colored_mask[mask > 0] = color
-                        cv2.addWeighted(overlay_cv2, 1.0, colored_mask, 0.5, 0, dst=overlay_cv2)
-
-                        # 3. Draw the solid polygon outlines
-                        pts = [np.array(p, dtype=np.int32).reshape(-1, 1, 2) for p in polygons]
-                        cv2.polylines(overlay_cv2, pts, isClosed=True, color=color, thickness=2)
-
-                        # 4. Save the accumulated overlay image to a debug folder
-                        debug_dir = os.path.join(base_dir, "debug_overlays")
-                        os.makedirs(debug_dir, exist_ok=True)
-
-                        # Flatten the subfolder structure in the filename so it saves safely
-                        safe_filename = img_info["file_name"].replace("/", "_").replace("\\", "_")
-                        save_path = os.path.join(debug_dir, f"overlay_{safe_filename}")
-
-                        cv2.imwrite(save_path, overlay_cv2)
-                    # ========================================================
 
                     if not polygons:
                         continue
