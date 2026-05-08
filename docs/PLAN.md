@@ -31,7 +31,7 @@
 
 ---
 
-## PHASE 1 — Thu thập & Chuẩn bị Dữ liệu ✅
+## PHASE 1 — Thu thập & Chuẩn bị Dữ liệu
 > **Tuần 3 → Tuần 6** | *(Đã hoàn thành)*
 
 ### Mục tiêu Phase 1
@@ -59,8 +59,8 @@
 
 ---
 
-## PHASE 2 — Tiền xử lý & EDA ✅
-> **Tuần 4 → Tuần 6** *(song song với Phase 1)* | *(Đã hoàn thành)*
+## PHASE 2 — Tiền xử lý & EDA
+> **Tuần 4 → Tuần 6**  | *(Đã hoàn thành)*
 
 ### Mục tiêu Phase 2
 - Tiền xử lý ảnh: resize, normalize, chuẩn hóa màu (canvas 256×256, padding giữ tỉ lệ)
@@ -87,7 +87,7 @@
 ---
 
 ## PHASE 3 — Lựa chọn & Huấn luyện Mô hình
-> **Tuần 7 → Tuần 9** | **Mốc: Hoàn thành training baseline**
+> **Tuần 7 → Tuần 9** | **Deadline dự kiến: 12/5**
 
 ### Mục tiêu Phase 3
 - Xây dựng BaseTrainer và hạ tầng huấn luyện chung (training loop, MLflow tracking)
@@ -138,7 +138,7 @@
 ---
 
 ## PHASE 4 — Đánh giá & Tinh chỉnh Mô hình
-> **Tuần 9 → Tuần 10** | **Deadline: Tuần 10 (Báo cáo tiến độ lần 2)**
+> **Tuần 9 → Tuần 10** | **Deadline dự kiến: 15/5**
 
 ### Mục tiêu Phase 4
 - Xây dựng evaluation suite chuẩn hóa (confusion matrix, F1, ROC, inference benchmark)
@@ -195,7 +195,7 @@
 ---
 
 ## PHASE 5 — Xây dựng Ứng dụng
-> **Tuần 10 → Tuần 12**
+> **Tuần 10 → Tuần 12** | **Deadline: Sau Báo cáo tiến độ lần 2**
 
 ### Mục tiêu Phase 5
 - Export mô hình tốt nhất sang ONNX, đăng ký MLflow Model Registry
@@ -240,7 +240,7 @@ User
 ---
 
 ## PHASE 6 — Triển khai & DevOps
-> **Tuần 12 → Tuần 13**
+> **Tuần 12 → Tuần 13** | **Deadline: Sau Báo cáo tiến độ lần 2**
 
 ### Mục tiêu Phase 6
 - Containerize toàn bộ hệ thống bằng Docker Compose
@@ -285,7 +285,7 @@ User
 ---
 
 ## PHASE 7 — Hoàn thiện Báo cáo, Slide & Demo
-> **Tuần 13 → Tuần cuối** | **Deadline: Nộp cuối kỳ**
+> **Tuần 13 → Tuần cuối** | **Deadline: Sau Báo cáo tiến độ lần 2**
 
 ### Mục tiêu Phase 7
 - Hoàn thiện báo cáo khoa học đầy đủ 7 bước quy trình theo yêu cầu môn học
@@ -329,7 +329,7 @@ User
 
 ---
 
-## Ma trận tổng hợp phân công
+## Tổng hợp công việc
 
 | Thành viên | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Sáng tạo |
 |-----------|---------|---------|---------|---------|---------|---------|---------|----------|
