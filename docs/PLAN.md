@@ -24,7 +24,7 @@
 | Tuần 3 | *(đã qua)* | — | Nộp đề cương (1–2 trang) |
 | Tuần 6 | *(đã qua)* | 1–2 | **Data + EDA + Preprocessing** – Dữ liệu sạch, phân tích khám phá, tiền xử lý ảnh |
 | Tuần 7–9 | Training | 3 | **Lựa chọn & Huấn luyện** – BaseTrainer, train ≥ 3 models, MLflow tracking |
-| Tuần 9–10 | **Báo cáo tiến độ lần 2** | 4 | **Đánh giá & Tinh chỉnh** – Evaluation suite, tuning, error analysis, chọn model tốt nhất |
+| Tuần 9–10 | **Báo cáo tiến độ lần 2 (dự kiến ngày 24/5)** | 4 | **Đánh giá & Tinh chỉnh** – Evaluation suite, tuning, error analysis, chọn model tốt nhất |
 | Tuần 10–12 | Ứng dụng | 5 | **Xây dựng Ứng dụng** – ONNX export, Backend FastAPI, Frontend Next.js |
 | Tuần 12–13 | DevOps | 6 | **Triển khai & DevOps** – Docker Compose, CI/CD, DuckDNS, URL công khai |
 | Tuần 13–cuối | Nộp cuối kỳ | 7 | **Báo cáo + Slide + Demo** – Hoàn thiện báo cáo 7 bước, slide bảo vệ, đóng gói |
