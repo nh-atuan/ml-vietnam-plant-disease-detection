@@ -97,10 +97,10 @@ Sau khi hoàn thành, sinh viên có thể:
 
 | Tuần | Nội dung |
 |------|---------|
-| Tuần 3 | Nộp đề cương (1-2 trang) |
-| Tuần 6 | Tiến độ 1: Data + EDA |
-| Tuần 10 | Tiến độ 2: Model + Evaluation |
-| Tuần cuối | Hoàn thiện + Deploy + Báo cáo |
+| Tuần 3 | Nộp đề cương sơ bộ (1-2 trang) |
+| Tuần 6 | Báo cáo tiến độ lần 1: Hoàn thành thu thập và tiền xử lý dữ liệu. Trình bày kết quả EDA.|
+| Tuần 10 | Báo cáo tiến độ lần 2: Trình bày kết quả huấn luyện và đánh giá các mô hình. Đã chọn được mô hình tốt nhất. |
+| Tuần cuối |  Hoàn thiện ứng dụng web, triển khai, viết báo cáo cuối kỳ và chuẩn bị slide. Nộp toàn bộ sản phẩm.|
 
 ---
 
@@ -108,21 +108,14 @@ Sau khi hoàn thành, sinh viên có thể:
 
 | Hạng mục | Trọng số | Nội dung |
 |----------|---------|----------|
-| Báo cáo | 30% | Phân tích sâu, logic, lý thuyết rõ |
-| Code & Model | 30% | Code sạch, hiệu quả, model tốt |
-| Web App | 30% | Hoạt động ổn định, UI tốt |
-| Sáng tạo | 10% | Ý tưởng mới, giá trị thực tiễn |
+| Báo cáo khoa học & Chiều sâu lý thuyết | 30% | Phân tích vấn đề sắc bén. Trình bày cơ sở lý thuyết rõ ràng. Quy trình các bước đầy đủ, logic. Phân tích kết quả sâu sắc.|
+| Sản phẩm Kỹ thuật(Code & Model) | 30% | Chất lượng code (sạch, hiệu quả, có chú thích). Mức độ đầu tư vào dữ liệu. Hiệu năng của mô hình cuối cùng so với các baseline.|
+| Ứng dụng Web | 30% | Ứng dụng mô hình + tích hợp với API hoạt động ổn định, giao diện thân thiện, giải quyết đúng bài toán. |
+| Điểm Sáng tạo | 10% | Tạo ra sản phẩm đột phá và có giá trị thực tiễn cao.|
 
 ---
 
-## 8. Quy định
-
-- Nghiêm cấm đạo văn
-- Vi phạm → xử lý mức cao nhất
-
----
-
-## 9. Khuyến khích
+## 8. Khuyến khích
 
 - Tham gia cuộc thi học thuật
 - Viết bài báo khoa học
