@@ -1,0 +1,18 @@
+# MobileNetV2 — Baseline nhẹ
+# Phụ trách: Lê Xuân Trí (Phase 3, Task 3.4)
+# Kế thừa từ configs/training_defaults.yaml, override các giá trị riêng.
+
+model:
+  name: "mobilenetv2"
+  pretrained: true
+  num_classes: 8  # TODO: xác nhận số lớp cuối cùng
+  freeze_backbone: true  # Pha 1: freeze → Pha 2: unfreeze dần
+  unfreeze_after_epoch: 5  # Epoch bắt đầu unfreeze backbone
+
+training:
+  learning_rate: 3.0e-4
+  batch_size: 32
+  epochs: 50
+  weight_decay: 1.0e-4
+
+# TODO: Thêm augmentation level, dropout config

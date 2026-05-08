@@ -1,0 +1,51 @@
+# CI/CD Pipeline — GitHub Actions
+# Phụ trách: Tống Thanh Phúc (Phase 6, Task 6.2)
+#
+# TODO:
+# - [ ] Thêm test step (pytest, lint)
+# - [ ] Build Docker images
+# - [ ] Push to registry
+# - [ ] Deploy step (SSH / Docker Compose trên server)
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: |
+          uv sync --frozen --all-groups
+
+      - name: Lint
+        run: |
+          uv run ruff check scripts/export_onnx.py src/segmentation tests backend/app/db backend/app/models/schemas.py
+
+      - name: Test
+        run: |
+          uv run pytest tests
+
+  # TODO: Thêm job build-and-deploy
+  # build-docker:
+  #   needs: lint-and-test
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Build images
+  #       run: docker compose -f deployment/docker-compose.yml build

@@ -110,6 +110,9 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
+!**/.env.example
 .venv
 env/
 venv/
@@ -151,3 +154,42 @@ cython_debug/
 datasets/
 data/
 .venv-label-studio/
+
+# Node / frontend
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+!frontend/src/lib/
+!frontend/src/lib/**
+
+# ML artifacts and experiment outputs
+models/*.pt
+models/*.pth
+models/*.onnx
+models/*.ckpt
+models/*.safetensors
+models/**/*.pt
+models/**/*.pth
+models/**/*.onnx
+models/**/*.ckpt
+models/**/*.safetensors
+!models/README.md
+!models/class_names.json
+mlruns/
+ray_results/
+wandb/
+experiments/**/checkpoints/
+experiments/**/artifacts/
+experiments/**/runs/
+experiments/**/tuning/ray_results/
+
+# Runtime storage and deployment secrets
+backend/uploads/
+backend/.cache/
+deployment/traefik/acme.json

@@ -1,0 +1,94 @@
+{
+  "_comment": "Database bệnh cây trồng — Phụ trách: Lê Xuân Trí (Sáng tạo S3, Phase 5)",
+  "_todo": "Điền thông tin chi tiết cho từng loại bệnh, tham khảo tài liệu nông nghiệp Việt Nam",
+  "diseases": {
+    "Healthy": {
+      "name_vi": "Khỏe mạnh",
+      "name_en": "Healthy",
+      "crop": "rice/coffee",
+      "description": "Lá cây không có dấu hiệu bệnh.",
+      "symptoms": [],
+      "causes": [],
+      "treatments": [],
+      "prevention": [],
+      "severity": "none"
+    },
+    "BrownSpot": {
+      "name_vi": "TODO: Đốm nâu",
+      "name_en": "Brown Spot",
+      "crop": "rice",
+      "description": "TODO: Mô tả bệnh đốm nâu trên lúa",
+      "symptoms": ["TODO"],
+      "causes": ["TODO"],
+      "treatments": ["TODO"],
+      "prevention": ["TODO"],
+      "severity": "TODO: low/medium/high"
+    },
+    "LeafBlast": {
+      "name_vi": "TODO: Đạo ôn lá",
+      "name_en": "Leaf Blast",
+      "crop": "rice",
+      "description": "TODO",
+      "symptoms": ["TODO"],
+      "causes": ["TODO"],
+      "treatments": ["TODO"],
+      "prevention": ["TODO"],
+      "severity": "TODO"
+    },
+    "Hispa": {
+      "name_vi": "TODO: Sâu gai hại lúa",
+      "name_en": "Rice Hispa",
+      "crop": "rice",
+      "description": "TODO",
+      "symptoms": ["TODO"],
+      "causes": ["TODO"],
+      "treatments": ["TODO"],
+      "prevention": ["TODO"],
+      "severity": "TODO"
+    },
+    "LeafMiner": {
+      "name_vi": "TODO: Sâu vẽ bùa cà phê",
+      "name_en": "Leaf Miner",
+      "crop": "coffee",
+      "description": "TODO",
+      "symptoms": ["TODO"],
+      "causes": ["TODO"],
+      "treatments": ["TODO"],
+      "prevention": ["TODO"],
+      "severity": "TODO"
+    },
+    "PowderyMildew": {
+      "name_vi": "TODO: Phấn trắng",
+      "name_en": "Powdery Mildew",
+      "crop": "coffee",
+      "description": "TODO",
+      "symptoms": ["TODO"],
+      "causes": ["TODO"],
+      "treatments": ["TODO"],
+      "prevention": ["TODO"],
+      "severity": "TODO"
+    },
+    "Rust": {
+      "name_vi": "TODO: Rỉ sắt",
+      "name_en": "Rust",
+      "crop": "coffee",
+      "description": "TODO",
+      "symptoms": ["TODO"],
+      "causes": ["TODO"],
+      "treatments": ["TODO"],
+      "prevention": ["TODO"],
+      "severity": "TODO"
+    },
+    "AlgalLeafSpot": {
+      "name_vi": "TODO: Đốm tảo",
+      "name_en": "Algal Leaf Spot",
+      "crop": "coffee",
+      "description": "TODO",
+      "symptoms": ["TODO"],
+      "causes": ["TODO"],
+      "treatments": ["TODO"],
+      "prevention": ["TODO"],
+      "severity": "TODO"
+    }
+  }
+}

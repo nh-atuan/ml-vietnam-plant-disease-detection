@@ -1,0 +1,18 @@
+# Swin Transformer
+# Phụ trách: Tống Thanh Phúc (Phase 3, Task 3.6)
+
+model:
+  name: "swin_transformer"
+  variant: "swin_t"  # swin_t / swin_s / swin_b
+  pretrained: true
+  num_classes: 8
+  freeze_backbone: true
+  unfreeze_after_epoch: 3
+
+training:
+  learning_rate: 5.0e-5
+  batch_size: 16  # Swin cần nhiều VRAM hơn
+  epochs: 50
+  weight_decay: 5.0e-2
+
+# TODO: Thử nghiệm patch size, window size

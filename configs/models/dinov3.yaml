@@ -1,0 +1,17 @@
+# DINOv3 Fine-tune — Self-supervised learning (Sáng tạo S2)
+# Phụ trách: Dương Tuấn Anh (Phase 3, Task 3.7)
+
+model:
+  name: "dinov3"
+  variant: "dinov2_vits14"  # TODO: xác nhận variant phù hợp
+  pretrained: true
+  num_classes: 8
+  strategy: "linear_probing"  # linear_probing / full_finetune
+
+training:
+  learning_rate: 1.0e-4
+  batch_size: 16
+  epochs: 50
+  weight_decay: 1.0e-4
+
+# TODO: So sánh linear probing vs full fine-tune

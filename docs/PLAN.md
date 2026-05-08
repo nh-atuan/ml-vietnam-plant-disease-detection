@@ -52,7 +52,7 @@
 
 | Hạng mục | Mô tả |
 |----------|-------|
-| Dataset | 7.300 ảnh (lúa: 3.421, cà phê: 3.879), 8 lớp bệnh, chia 70/15/15 |
+| Dataset | 7.300 ảnh (lúa: 3.421, cà phê: 3.879), 8 lớp bệnh (`Healthy`, `BrownSpot`, `Hispa`, `LeafBlast`, `LeafMiner`, `PowderyMildew`, `Rust`, `AlgalLeafSpot`), chia 70/15/15 |
 | Metadata | `preprocessing_config.json`, `normalization_stats.json` |
 | Repo | Cấu trúc thư mục rõ ràng, README có hướng dẫn |
 | Tài liệu | Báo cáo tiến độ lần 1 hoàn chỉnh |
@@ -265,6 +265,7 @@ User
 | Thành phần | Vai trò |
 |---|---|
 | Docker | Containerize toàn bộ services |
+| Kubernetes | Tuỳ chọn mở rộng theo proposal nếu nhóm có đủ thời gian/hạ tầng; Docker Compose vẫn là baseline demo |
 | Traefik | Reverse proxy, routing, HTTPS |
 | DuckDNS | Tên miền động cho URL demo công khai |
 | GitHub Actions | CI/CD tự động build & deploy |
@@ -337,6 +338,20 @@ User
 | **Tống Thanh Phúc** | — | Báo cáo EDA (2.3) | Swin Transformer (3.6) | Tuning SwinT (4.4), Báo cáo M2 (4.8) | DB Schema (5.5) | Docker/CI-CD (6.1, 6.2), MLOps (6.4) | Phần 6–7 báo cáo (7.3) | S6 |
 | **Dương Tuấn Anh** | Báo cáo P1 (1.2) | — | DINOv3 (3.7) | Tuning DINOv3 (4.5) | Frontend (5.3) | — | Slide (7.4) | S2 |
 | **Nguyễn Hồ Anh Tuấn** | Kiểm duyệt (1.3) | Preprocessing (2.2) | Trainer + Config (3.1–3.3) | Evaluator + Robustness (4.1, 4.7) | Model Export (5.1) | Integration Test (6.5) | Review & Package (7.5) | S5 |
+
+---
+
+## Checklist skeleton theo output
+
+| Phase | Output chính | Skeleton trong repo |
+|---|---|---|
+| 3 | Trainer, callbacks, model factory, config từng model | `src/training/`, `src/models/model_factory.py`, `configs/training_defaults.yaml`, `configs/models/*.yaml` |
+| 3 | Thư mục experiment cho 4 mô hình | `experiments/mobilenetv2/`, `experiments/resnet50/`, `experiments/swin_transformer/`, `experiments/dinov3/` |
+| 4 | Evaluation suite, robustness, error analysis, tuning | `src/evaluation/`, `notebooks/phase4_error_analysis_tri.ipynb`, `notebooks/phase4_robustness_evaluation_anh_tuan.ipynb`, `experiments/*/tuning/` |
+| 5 | ONNX export, model metadata | `scripts/export_onnx.py`, `models/README.md`, `models/class_names.json` |
+| 5 | Backend, knowledge base, DB schema, API contract | `backend/app/`, `backend/app/knowledge/`, `backend/app/db/schema.sql`, `docs/api-spec.md` |
+| 5 | Frontend Next.js skeleton | `frontend/package.json`, `frontend/src/app/`, `frontend/Dockerfile` |
+| 6 | Docker Compose, CI/CD, Traefik, MLflow, tests, SAM 3 | `deployment/docker-compose.yml`, `.github/workflows/ci.yml`, `deployment/traefik/`, `tests/`, `src/segmentation/` |
 
 ---
 

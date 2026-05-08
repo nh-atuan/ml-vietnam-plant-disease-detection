@@ -1,0 +1,17 @@
+# Backend dependencies
+# Phụ trách: Đàm Tiến Đạt (Phase 5)
+
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+pydantic>=2.8.0
+pydantic-settings>=2.4.0
+onnxruntime>=1.19.0
+minio>=7.2.0
+redis>=5.0.0
+psycopg2-binary>=2.9.9
+sqlalchemy>=2.0.0
+alembic>=1.13.0
+Pillow>=12.2.0
+numpy>=2.0.0
+python-dotenv>=1.0.1
