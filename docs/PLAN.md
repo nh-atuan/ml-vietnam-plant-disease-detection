@@ -7,11 +7,11 @@
 
 | STT | Họ và tên | MSSV |
 |-----|-----------|------|
-| 1 | Nguyễn Hồ Anh Tuấn | 23120185 |
-| 2 | Lê Xuân Trí | 23120099 |
-| 3 | Đàm Tiến Đạt | 23120118 |
-| 4 | Tổng Thanh Phúc | 23120158 |
-| 5 |Dương Tuấn Anh | 23120208 |
+| 1 | Lê Xuân Trí | 23120099 |
+| 2 | Đàm Tiến Đạt | 23120118 |
+| 3 | Tổng Thanh Phúc | 23120158 |
+| 4 |Dương Tuấn Anh | 23120208 |
+| 5 | Nguyễn Hồ Anh Tuấn | 23120185 |
 
 > **Giảng viên hướng dẫn:** Thầy Bùi Tiến Lên
 
@@ -22,8 +22,8 @@
 | Mốc | Thời điểm | Nội dung yêu cầu nộp |
 |-----|-----------|----------------------|
 | Tuần 3 | *(đã qua)* | Nộp đề cương (1–2 trang) |
-| Tuần 6 | Báo cáo tiến độ lần 1 | **Data + EDA** – Dữ liệu sạch, phân tích khám phá |
-| Tuần 10 | Báo cáo tiến độ lần 2 | **Model + Evaluation** – Mô hình đã huấn luyện, đánh giá |
+| Tuần 6 | *(đã qua)* | **Data + EDA + Preprocessing** – Dữ liệu sạch, phân tích khám phá, tiền xử lý ảnh |
+| Tuần 10 | **Báo cáo tiến độ lần 2** | **Model + Evaluation & Tuning** – Mô hình đã huấn luyện, đánh giá và tinh chỉnh |
 | Tuần cuối | Nộp cuối kỳ | **Deploy + Báo cáo + Slide + Demo** |
 
 ---
