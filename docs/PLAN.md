@@ -92,7 +92,7 @@
 ### Mục tiêu Phase 3
 - Xây dựng BaseTrainer và hạ tầng huấn luyện chung (training loop, MLflow tracking)
 - Huấn luyện ≥ 3 mô hình theo yêu cầu môn học (MobileNetV2, ResNet50, Swin Transformer)
-- Thử nghiệm thêm DINOv3 fine-tune (sáng tạo)
+- Thử nghiệm thêm DINOv3 fine-tune 
 - Thiết kế config system chuẩn hóa cho toàn bộ thực nghiệm
 
 ### Phân công công việc
@@ -105,7 +105,7 @@
 | 3.4 | Huấn luyện **MobileNetV2** (baseline nhẹ): transfer learning từ ImageNet, freeze backbone → unfreeze dần, log toàn bộ lên MLflow | **Xuân Trí** | `experiments/mobilenetv2/`, checkpoint `.pt` |
 | 3.5 | Huấn luyện **ResNet50** (baseline mạnh): transfer learning, thử nghiệm layer-wise LR, so sánh với MobileNetV2 | **Đàm Đạt** | `experiments/resnet50/`, checkpoint `.pt` |
 | 3.6 | Huấn luyện **Swin Transformer**: khai thác attention mechanism, thử nghiệm patch size, log MLflow | **Tống Phúc** | `experiments/swin_transformer/`, checkpoint `.pt` |
-| 3.7 | Huấn luyện **DINOv3 fine-tune** *(sáng tạo)*: self-supervised pre-training → linear probing vs full fine-tune, so sánh tổng quát hóa | **Tuấn Anh** | `experiments/dinov3/`, checkpoint `.pt` |
+| 3.7 | Huấn luyện **DINOv3 fine-tune**: self-supervised pre-training → linear probing vs full fine-tune, so sánh tổng quát hóa | **Tuấn Anh** | `experiments/dinov3/`, checkpoint `.pt` |
 
 ### Chi tiết kỹ thuật Phase 3
 
@@ -144,7 +144,7 @@
 - Xây dựng evaluation suite chuẩn hóa (confusion matrix, F1, ROC, inference benchmark)
 - Hyperparameter tuning 2 pha (random search → Ray Tune)
 - Error analysis theo 4 nhóm lỗi
-- Robustness evaluation với nhiễu tổng hợp (sáng tạo)
+- Robustness evaluation với nhiễu tổng hợp 
 - Chọn mô hình tốt nhất theo tiêu chí đa mục tiêu
 - Viết Báo cáo tiến độ lần 2
 
@@ -158,7 +158,7 @@
 | 4.4 | Hyperparameter tuning **Swin Transformer**: tương tự 2 pha | **Tống Phúc** | `experiments/swin_transformer/tuning/`, best config YAML |
 | 4.5 | Hyperparameter tuning **DINOv3**: tương tự 2 pha | **Tuấn Anh** | `experiments/dinov3/tuning/`, best config YAML |
 | 4.6 | **Error analysis**: top-K dự đoán sai confidence cao, phân nhóm (1-visual similarity, 2-ảnh mờ/thiếu sáng, 3-bố cục phức tạp, 4-healthy vs early disease) | **Xuân Trí** | `notebooks/phase4_error_analysis_tri.ipynb`, báo cáo lỗi |
-| 4.7 | **Robustness evaluation** *(sáng tạo)*: tạo test set nhiễu tổng hợp (blur, brightness shift, contrast change), đo drop F1 theo mức nhiễu | **Anh Tuấn** | `src/evaluation/robustness.py`, notebook kết quả |
+| 4.7 | **Robustness evaluation**: tạo test set nhiễu tổng hợp (blur, brightness shift, contrast change), đo drop F1 theo mức nhiễu | **Anh Tuấn** | `src/evaluation/robustness.py`, notebook kết quả |
 | 4.8 | Tổng hợp bảng so sánh mô hình, chọn mô hình tốt nhất (tiêu chí đa mục tiêu), viết phần **Model + Evaluation** cho Báo cáo tiến độ lần 2 | **Tống Phúc** | Báo cáo tiến độ lần 2 |
 
 ### Chiến lược tuning (2 pha)
@@ -211,7 +211,7 @@
 | 5.1 | **Model Export & Registry**: export sang ONNX, benchmark inference ONNX vs PyTorch, đăng ký MLflow Model Registry, viết script tự động export | **Anh Tuấn** | `models/best_model.onnx`, `scripts/export_onnx.py`, MLflow Registry entry |
 | 5.2 | **Backend FastAPI**: REST API `/predict` (nhận ảnh → trả nhãn + top-k + confidence), kết nối PostgreSQL (log dự đoán), MinIO (lưu ảnh gốc), Redis (cache kết quả TTL 1h), Swagger docs | **Đàm Đạt** | `backend/app/`, Docker service backend |
 | 5.3 | **Frontend Next.js**: trang upload ảnh, hiển thị kết quả chẩn đoán (nhãn, confidence, top-k, gợi ý xử lý), giao diện mobile-first responsive | **Tuấn Anh** | `frontend/`, UI demo hoạt động |
-| 5.4 | **Expert Knowledge Base** *(sáng tạo)*: module gợi ý xử lý bệnh theo luật chuyên gia — tra bảng nhãn → hiển thị mô tả bệnh + biện pháp tiếng Việt, hành động cụ thể cho nông dân | **Xuân Trí** | `backend/app/knowledge/`, tích hợp vào API response |
+| 5.4 | **Expert Knowledge Base**: module gợi ý xử lý bệnh theo luật chuyên gia — tra bảng nhãn → hiển thị mô tả bệnh + biện pháp tiếng Việt, hành động cụ thể cho nông dân | **Xuân Trí** | `backend/app/knowledge/`, tích hợp vào API response |
 | 5.5 | **Database schema & API docs**: thiết kế PostgreSQL schema (predictions, images, users), viết OpenAPI spec, review API contracts giữa frontend–backend | **Tống Phúc** | Schema SQL, API specification |
 
 ### Kiến trúc hệ thống
@@ -246,7 +246,7 @@ User
 - Containerize toàn bộ hệ thống bằng Docker Compose
 - Thiết lập CI/CD với GitHub Actions
 - Deploy lên cloud có URL công khai (DuckDNS + Traefik)
-- Tích hợp MLOps Dashboard (sáng tạo)
+- Tích hợp MLOps Dashboard 
 - Integration testing end-to-end
 
 ### Phân công công việc
@@ -256,9 +256,9 @@ User
 | 6.1 | **Docker Compose**: multi-service compose (frontend, backend, PostgreSQL, MinIO, Redis, Traefik), volume mounts, health checks, restart policies | **Tống Phúc** | `deployment/docker-compose.yml` hoàn chỉnh |
 | 6.2 | **CI/CD GitHub Actions**: workflow tự động lint, test, build Docker images, push registry, deploy | **Tống Phúc** | `.github/workflows/ci.yml` |
 | 6.3 | **DuckDNS + Traefik**: cấu hình tên miền động, HTTPS auto (Let's Encrypt), reverse proxy routing | **Đàm Đạt** | `deployment/traefik/`, URL demo công khai |
-| 6.4 | **MLOps Dashboard** *(sáng tạo)*: tích hợp MLflow UI vào hệ thống deploy, model versioning & experiment comparison | **Tống Phúc** | MLflow service trong Docker Compose |
+| 6.4 | **MLOps Dashboard**: tích hợp MLflow UI vào hệ thống deploy, model versioning & experiment comparison | **Tống Phúc** | MLflow service trong Docker Compose |
 | 6.5 | **Integration testing**: end-to-end test pipeline (upload ảnh → predict → verify response), load test cơ bản | **Anh Tuấn** | `tests/`, test scripts |
-| 6.6 | **SAM 3 Segmentation** *(sáng tạo)*: pseudo-mask generation cho ảnh nhiều lá, tích hợp optional vào API `/segment` | **Đàm Đạt** | `src/segmentation/`, endpoint bổ sung |
+| 6.6 | **SAM 3 Segmentation**: pseudo-mask generation cho ảnh nhiều lá, tích hợp optional vào API `/segment` | **Đàm Đạt** | `src/segmentation/`, endpoint bổ sung |
 
 ### Stack triển khai
 
