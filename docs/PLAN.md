@@ -23,8 +23,7 @@
 |-----|-----------|-------|----------------------|
 | Tuần 3 | *(đã qua)* | — | Nộp đề cương (1–2 trang) |
 | Tuần 6 | *(đã qua)* | 1–2 | **Data + EDA + Preprocessing** – Dữ liệu sạch, phân tích khám phá, tiền xử lý ảnh |
-| Tuần 7–9 | Training | 3 | **Lựa chọn & Huấn luyện** – BaseTrainer, train ≥ 3 models, MLflow tracking |
-| Tuần 9–10 | **Báo cáo tiến độ lần 2 (dự kiến ngày 24/5)** | 4 | **Đánh giá & Tinh chỉnh** – Evaluation suite, tuning, error analysis, chọn model tốt nhất |
+| Tuần 7–9 | Training | 3+4 | **Lựa chọn, Huấn luyện, Đánh giá & Tinh chỉnh** – 5 model segmentation trên Kaggle GPU, push HuggingFace Hub, báo cáo tiến độ lần 2 (dự kiến 24/5) |
 | Tuần 10–12 | Ứng dụng | 5 | **Xây dựng Ứng dụng** – ONNX export, Backend FastAPI, Frontend Next.js |
 | Tuần 12–13 | DevOps | 6 | **Triển khai & DevOps** – Docker Compose, CI/CD, DuckDNS, URL công khai |
 | Tuần 13–cuối | Nộp cuối kỳ | 7 | **Báo cáo + Slide + Demo** – Hoàn thiện báo cáo 7 bước, slide bảo vệ, đóng gói |
@@ -86,111 +85,124 @@
 
 ---
 
-## PHASE 3 — Lựa chọn & Huấn luyện Mô hình
-> **Tuần 7 → Tuần 9** | **Deadline dự kiến: 12/5**
+## PHASE 3 — Lựa chọn & Huấn luyện Mô hình (Segmentation)
+> **Tuần 7 → Tuần 9** | **Deadline dự kiến: 24/5**
 
 ### Mục tiêu Phase 3
-- Xây dựng BaseTrainer và hạ tầng huấn luyện chung (training loop, MLflow tracking)
-- Huấn luyện ≥ 3 mô hình theo yêu cầu môn học (MobileNetV2, ResNet50, Swin Transformer)
-- Thử nghiệm thêm DINOv3 fine-tune 
-- Thiết kế config system chuẩn hóa cho toàn bộ thực nghiệm
+- Mỗi thành viên chọn **1 mô hình segmentation**, tự huấn luyện, đánh giá và tinh chỉnh trên **Kaggle Notebook** (GPU T4/P100, 30h/tuần)
+- Train xong → **push model lên HuggingFace Hub** để nhóm dùng chung qua API
+- Commit notebook đã chạy lên repo tại `notebooks/models/<tên_model>/`
+- Bài toán: **Instance/Semantic Segmentation** — từ ảnh lá cây xác định vùng bệnh + nhãn bệnh
+
+> ⚠️ **Lý do không dùng MLflow / train local:** PyTorch segmentation models cần GPU; train trên CPU mất hàng chục giờ/epoch. Kaggle cung cấp GPU miễn phí 30h/tuần — đủ để train và tune. MLflow được thay bằng HuggingFace Hub để lưu & serve model.
+
+### 5 Mô hình Segmentation được chọn
+
+| Model | Đặc điểm | Tham khảo |
+|-------|----------|----------|
+| **YOLOv8-seg** | Real-time instance segmentation, dễ dùng, tốc độ cao | [Ultralytics Docs](https://docs.ultralytics.com/vi/models/yolo26/) |
+| **U-Net** | Semantic segmentation kinh điển, hiệu quả với ảnh y/nông nghiệp | [AI Vietnam Blog](https://aivietnam.edu.vn/blog/intro-to-unet) |
+| **Mask R-CNN** | Instance segmentation mạnh, backbone ResNet50-FPN | [Notebook tham khảo](https://github.com/magnusdtd/AIC-HCMUS-Fragment-Segmentation/blob/main/notebook/gdgoc-hcmus-aic-maskrcnn-resnet50-fpn.ipynb) |
+| **Mask2Former** | Transformer-based universal segmentation, SOTA | [HuggingFace Docs](https://huggingface.co/docs/transformers/en/model_doc/mask2former) |
+| **RF-DETR** | Detection Transformer của Roboflow, segmentation hiệu quả | [RF-DETR Docs](https://rfdetr.roboflow.com/learn/train/) |
 
 ### Phân công công việc
 
-| # | Công việc | Người phụ trách | Output |
-|---|-----------|-----------------|--------|
-| 3.1 | Xây dựng `BaseTrainer`: training loop, early stopping, LR scheduler (CosineAnnealing / ReduceLROnPlateau), checkpoint theo macro F1 val, mixed precision (AMP), tích hợp MLflow logging | **Anh Tuấn** | `src/training/trainer.py`, `src/training/callbacks.py` |
-| 3.2 | Refactor `ModelFactory`: registry pattern cho tất cả kiến trúc, chuẩn hóa interface `create_model(name, num_classes, pretrained)` | **Anh Tuấn** | `src/models/model_factory.py` |
-| 3.3 | Thiết kế config system: YAML config riêng cho mỗi model + shared training defaults | **Anh Tuấn** | `configs/training_defaults.yaml`, `configs/models/*.yaml` |
-| 3.4 | Huấn luyện **MobileNetV2** (baseline nhẹ): transfer learning từ ImageNet, freeze backbone → unfreeze dần, log toàn bộ lên MLflow | **Xuân Trí** | `experiments/mobilenetv2/`, checkpoint `.pt` |
-| 3.5 | Huấn luyện **ResNet50** (baseline mạnh): transfer learning, thử nghiệm layer-wise LR, so sánh với MobileNetV2 | **Đàm Đạt** | `experiments/resnet50/`, checkpoint `.pt` |
-| 3.6 | Huấn luyện **Swin Transformer**: khai thác attention mechanism, thử nghiệm patch size, log MLflow | **Tống Phúc** | `experiments/swin_transformer/`, checkpoint `.pt` |
-| 3.7 | Huấn luyện **DINOv3 fine-tune**: self-supervised pre-training → linear probing vs full fine-tune, so sánh tổng quát hóa | **Tuấn Anh** | `experiments/dinov3/`, checkpoint `.pt` |
+| # | Mô hình | Người phụ trách | Output |
+|---|---------|-----------------|--------|
+| 3.1 | **YOLOv8-seg**: train + evaluate (mAP@50, mIoU) + tune hyperparams trên Kaggle | **Xuân Trí** | `notebooks/models/yolov8_seg/` · model push lên HuggingFace |
+| 3.2 | **U-Net**: train + evaluate + tune (thử nghiệm backbone encoder) trên Kaggle | **Đàm Đạt** | `notebooks/models/unet/` · model push lên HuggingFace |
+| 3.3 | **Mask R-CNN** (ResNet50-FPN): fine-tune + evaluate + tune trên Kaggle | **Tống Phúc** | `notebooks/models/mask_rcnn/` · model push lên HuggingFace |
+| 3.4 | **Mask2Former**: fine-tune từ pretrained HuggingFace + evaluate + tune trên Kaggle | **Tuấn Anh** | `notebooks/models/mask2former/` · model push lên HuggingFace |
+| 3.5 | **RF-DETR**: train + evaluate + tune trên Kaggle | **Anh Tuấn** | `notebooks/models/rf_detr/` · model push lên HuggingFace |
+| 3.6 | Tổng hợp kết quả, viết bảng so sánh mô hình, chọn model tốt nhất, viết báo cáo tiến độ lần 2 phần **Model + Evaluation** | **Tống Phúc** | Báo cáo tiến độ lần 2 |
 
-### Chi tiết kỹ thuật Phase 3
+### Quy trình mỗi thành viên cần thực hiện
 
-**Thiết lập huấn luyện chung:**
-- Framework: PyTorch + torchvision
-- Optimizer: AdamW + CosineAnnealingLR (hoặc ReduceLROnPlateau)
-- Early stopping theo macro F1 validation (patience = 5–10 epochs)
-- Mixed precision (AMP) để tăng tốc huấn luyện
-- Tracking: MLflow (params, metrics theo epoch, artifacts: confusion matrix, checkpoint)
+```
+1. Tạo Kaggle Notebook → kết nối dataset (upload lên Kaggle Dataset)
+2. Implement pipeline: load data → augmentation → train → validate
+3. Evaluate: mAP@50, mAP@50:95, mIoU, inference time
+4. Hyperparameter tuning: thử ≥ 2 config (LR, batch size, epochs, backbone...)
+5. Chọn best checkpoint → export → push lên HuggingFace Hub
+6. Download notebook đã chạy (có output) → commit vào repo
+```
 
-**Không gian siêu tham số ban đầu:**
+### Thiết lập huấn luyện chung
 
-| Siêu tham số | Khoảng tìm kiếm |
-|---|---|
-| Learning rate | 1e-5 → 1e-3 (log scale) |
-| Batch size | {16, 32, 64} |
-| Weight decay | 1e-5 → 1e-2 |
-| Dropout | 0.0 → 0.5 |
-| Mức augmentation | yếu / trung bình / mạnh |
+| Hạng mục | Chi tiết |
+|----------|----------|
+| **Môi trường** | Kaggle Notebook (GPU T4 x2 hoặc P100) |
+| **Dataset** | Upload `data/processed/` lên Kaggle Dataset, dùng mask đã tạo |
+| **Metrics chính** | mAP@50, mAP@50:95, mIoU, Dice Score |
+| **Model hosting** | HuggingFace Hub (public repo của nhóm) |
+| **Commit vào repo** | Notebook `.ipynb` đã có output đầy đủ |
+
+### Cấu trúc thư mục
+
+```
+notebooks/
+  models/
+    yolov8_seg/
+      train_evaluate_tune.ipynb   ← Kaggle notebook đã chạy
+      README.md                   ← mô tả kết quả, link HuggingFace
+    unet/
+    mask_rcnn/
+    mask2former/
+    rf_detr/
+```
 
 ### Kết quả cần đạt cuối Phase 3
 
 | Hạng mục | Mô tả |
 |----------|-------|
-| BaseTrainer | Training loop hoàn chỉnh, tái sử dụng cho tất cả model |
-| Checkpoints | ≥ 3 mô hình đã train với cấu hình chuẩn (baseline run) |
-| MLflow | Tất cả runs được log, có thể compare trong UI |
-| Config system | YAML config cho mỗi model, shared defaults |
+| 5 notebooks | Mỗi model 1 notebook Kaggle đã chạy đầy đủ (train + eval + tune) |
+| 5 models trên HuggingFace | Checkpoint tốt nhất của mỗi model được push lên HF Hub |
+| Bảng so sánh | mAP@50, mIoU, inference time, model size cho cả 5 model |
+| Báo cáo tiến độ 2 | Phần Model + Evaluation hoàn chỉnh |
 
 ---
 
 ## PHASE 4 — Đánh giá & Tinh chỉnh Mô hình
-> **Tuần 9 → Tuần 10** | **Deadline dự kiến: 15/5**
+> *(Đã được tích hợp vào Phase 3 — mỗi thành viên tự train + evaluate + tune trong cùng một Kaggle notebook)*
 
-### Mục tiêu Phase 4
-- Xây dựng evaluation suite chuẩn hóa (confusion matrix, F1, ROC, inference benchmark)
-- Hyperparameter tuning 2 pha (random search → Ray Tune)
-- Error analysis theo 4 nhóm lỗi
-- Robustness evaluation với nhiễu tổng hợp 
-- Chọn mô hình tốt nhất theo tiêu chí đa mục tiêu
-- Viết Báo cáo tiến độ lần 2
+> **Lý do gộp Phase 3 & 4:** Với workflow trên Kaggle GPU, việc tách riêng training và evaluation/tuning thành hai phase độc lập là không hiệu quả. Mỗi thành viên sẽ thực hiện toàn bộ vòng lặp **train → evaluate → tune → chọn best model** trong cùng một notebook.
 
-### Phân công công việc
+### Nội dung evaluation & tuning trong mỗi notebook
 
-| # | Công việc | Người phụ trách | Output |
-|---|-----------|-----------------|--------|
-| 4.1 | Xây dựng `Evaluator`: confusion matrix (đếm + chuẩn hóa), macro/weighted F1 theo lớp & theo domain (rice/coffee), ROC one-vs-rest, inference time benchmark (ms/ảnh) | **Anh Tuấn** | `src/evaluation/evaluator.py`, `src/evaluation/metrics.py` |
-| 4.2 | Hyperparameter tuning **MobileNetV2**: Pha 1 random search → Pha 2 Ray Tune cho config triển vọng, log MLflow | **Xuân Trí** | `experiments/mobilenetv2/tuning/`, best config YAML |
-| 4.3 | Hyperparameter tuning **ResNet50**: tương tự 2 pha, so sánh trước/sau tuning | **Đàm Đạt** | `experiments/resnet50/tuning/`, best config YAML |
-| 4.4 | Hyperparameter tuning **Swin Transformer**: tương tự 2 pha | **Tống Phúc** | `experiments/swin_transformer/tuning/`, best config YAML |
-| 4.5 | Hyperparameter tuning **DINOv3**: tương tự 2 pha | **Tuấn Anh** | `experiments/dinov3/tuning/`, best config YAML |
-| 4.6 | **Error analysis**: top-K dự đoán sai confidence cao, phân nhóm (1-visual similarity, 2-ảnh mờ/thiếu sáng, 3-bố cục phức tạp, 4-healthy vs early disease) | **Xuân Trí** | `notebooks/phase4_error_analysis_tri.ipynb`, báo cáo lỗi |
-| 4.7 | **Robustness evaluation**: tạo test set nhiễu tổng hợp (blur, brightness shift, contrast change), đo drop F1 theo mức nhiễu | **Anh Tuấn** | `src/evaluation/robustness.py`, notebook kết quả |
-| 4.8 | Tổng hợp bảng so sánh mô hình, chọn mô hình tốt nhất (tiêu chí đa mục tiêu), viết phần **Model + Evaluation** cho Báo cáo tiến độ lần 2 | **Tống Phúc** | Báo cáo tiến độ lần 2 |
+| Hạng mục | Yêu cầu |
+|----------|----------|
+| **Metrics** | mAP@50, mAP@50:95, mIoU, Dice Score, inference time (ms/ảnh) |
+| **Visualization** | Hiển thị mask dự đoán vs ground truth trên ≥ 10 ảnh test |
+| **Tuning** | Thử ≥ 2 bộ hyperparams (LR, batch size, epochs, augmentation level) |
+| **Error analysis** | Nhận xét các trường hợp model dự đoán sai (ảnh khó, bệnh hiếm...) |
+| **So sánh** | Bảng trước/sau tuning |
 
-### Chiến lược tuning (2 pha)
-- **Pha 1 (thăm dò):** random search ~10–20 trial trong không gian hẹp
-- **Pha 2 (tinh chỉnh):** Ray Tune với ASHA scheduler cho mô hình triển vọng
+### Tiêu chí chọn mô hình tốt nhất
 
-### Tiêu chí chọn mô hình cuối cùng (theo proposal §6.4)
-1. **Hiệu năng dự đoán:** Macro F1 cao và ổn định trên test set
-2. **Độ ổn định học:** khoảng cách train–val hợp lý, không overfit
-3. **Chi phí suy luận:** inference time phù hợp web serving
-4. **Tính triển khai:** kích thước model, khả năng export ONNX
-5. **Độ tin cậy:** confidence được hiệu chỉnh tốt (calibration)
+1. **mAP@50:95** — độ chính xác segmentation tổng thể
+2. **mIoU** — chất lượng phân vùng
+3. **Inference time** — phù hợp web serving (mục tiêu < 500ms/ảnh trên CPU)
+4. **Model size** — khả năng deploy
+5. **Độ ổn định** — train/val gap hợp lý
 
 ### Bảng so sánh mô hình (template)
 
-| Mô hình | Macro F1 | Weighted F1 | Accuracy | Inference (ms/img) | Size (MB) |
-|---------|----------|-------------|----------|--------------------|-----------| 
-| MobileNetV2 | — | — | — | — | — |
-| ResNet50 | — | — | — | — | — |
-| Swin Transformer | — | — | — | — | — |
-| DINOv3 fine-tune | — | — | — | — | — |
+| Mô hình | mAP@50 | mAP@50:95 | mIoU | Dice | Inference (ms) | Size (MB) |
+|---------|--------|-----------|------|------|----------------|-----------|
+| YOLOv8-seg | — | — | — | — | — | — |
+| U-Net | — | — | — | — | — | — |
+| Mask R-CNN | — | — | — | — | — | — |
+| Mask2Former | — | — | — | — | — | — |
+| RF-DETR | — | — | — | — | — | — |
 
-### Kết quả cần đạt cuối Phase 4
+### Kết quả cần đạt
 
 | Hạng mục | Mô tả |
 |----------|-------|
-| Evaluation suite | Evaluator chạy được cho tất cả model, output chuẩn hóa |
-| Best checkpoints | Mỗi model có best checkpoint sau tuning |
-| Bảng so sánh | Đầy đủ 5 metrics, phân tích theo domain |
-| Error Analysis | Báo cáo 4 nhóm lỗi, top-K sai confidence cao |
-| Robustness | Báo cáo drop F1 theo 3 loại nhiễu |
-| Báo cáo tiến độ 2 | Phần Model + Evaluation đầy đủ, có biểu đồ và bảng |
+| Best model | 1 mô hình được chọn dựa trên bảng so sánh đa tiêu chí |
+| HuggingFace Hub | 5 model checkpoints public, dùng được qua HF Inference API |
+| Báo cáo tiến độ 2 | Bảng so sánh đầy đủ, phân tích lỗi, chọn model tốt nhất |
 
 ---
 
@@ -319,25 +331,25 @@ User
 > Mục tiêu: tạo ra sản phẩm đột phá, vượt ra ngoài yêu cầu tối thiểu, có giá trị thực tiễn cao.
 
 | # | Ý tưởng sáng tạo | Phase | Người phụ trách | Giá trị mang lại |
-|---|-----------------|-------|-----------------|-----------------| 
+|---|-----------------|-------|-----------------|-----------------|
 | S1 | **Human-in-the-loop Labeling Tool** (Streamlit): AI pre-label bằng Gemma 4 + kiểm duyệt thủ công, điều hướng bàn phím, phát hiện trùng MD5 *(đã hoàn thành)* | 1–2 | Tất cả | Pipeline thu thập dữ liệu tiếng Việt độc đáo, tái sử dụng được |
-| S2 | **DINOv3 Fine-tune**: self-supervised pre-training cải thiện tổng quát hóa, so sánh với CNN truyền thống | 3 | **Tuấn Anh** | Chiều sâu học thuật, chứng minh lợi thế SSL |
+| S2 | **Mask2Former fine-tune**: Transformer-based universal segmentation SOTA, fine-tune trên dataset lá cây Việt Nam | 3+4 | **Tuấn Anh** | Chiều sâu học thuật, áp dụng mô hình SOTA vào bài toán thực tế |
 | S3 | **Expert Knowledge Base** tiếng Việt: gợi ý xử lý bệnh theo luật chuyên gia, hành động cụ thể cho nông dân | 5 | **Xuân Trí** | Giá trị ứng dụng thực tiễn cao, bối cảnh Việt Nam |
-| S4 | **Segmentation với SAM 3**: mở rộng sang classification + segmentation, pseudo-mask → refine thủ công *(đã xây dựng cơ sở)* | 6 | **Đàm Đạt** | Bài toán phong phú hơn, phù hợp ảnh thực địa nhiều lá |
-| S5 | **Robustness Evaluation**: đánh giá độ bền trước nhiễu thực địa (blur, brightness shift, contrast change) bằng test set nhiễu tổng hợp | 4 | **Anh Tuấn** | Phân tích chuyên sâu, tăng tin cậy khi deploy thực tế |
+| S4 | **Instance Segmentation** thay vì classification: tạo masks thực địa, xác định vùng bệnh + nhãn cùng lúc *(đã xây dựng mask)* | 3+4 | **Tất cả** | Bài toán phong phú hơn, phù hợp ảnh thực địa nhiều lá |
+| S5 | **RF-DETR Segmentation**: Detection Transformer của Roboflow, end-to-end fine-tuning | 3+4 | **Anh Tuấn** | Mô hình hiện đại, kết hợp detection + segmentation |
 | S6 | **MLOps Dashboard**: tích hợp MLflow UI vào hệ thống deploy, theo dõi model versioning & experiment comparison trực tiếp | 6 | **Tống Phúc** | Quy trình MLOps chuyên nghiệp, dễ mở rộng |
 
 ---
 
 ## Tổng hợp công việc
 
-| Thành viên | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Sáng tạo |
-|-----------|---------|---------|---------|---------|---------|---------|---------|----------|
-| **Lê Xuân Trí** | — | EDA (2.1) | MobileNetV2 (3.4) | Tuning MNV2 (4.2), Error Analysis (4.6) | Knowledge Base (5.4) | — | Phần 4–5 báo cáo (7.2) | S3 |
-| **Đàm Tiến Đạt** | Dataset (1.1) | — | ResNet50 (3.5) | Tuning RN50 (4.3) | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3), SAM3 (6.6) | Phần 1–3 báo cáo (7.1) | S4 |
-| **Tống Thanh Phúc** | — | Báo cáo EDA (2.3) | Swin Transformer (3.6) | Tuning SwinT (4.4), Báo cáo M2 (4.8) | DB Schema (5.5) | Docker/CI-CD (6.1, 6.2), MLOps (6.4) | Phần 6–7 báo cáo (7.3) | S6 |
-| **Dương Tuấn Anh** | Báo cáo P1 (1.2) | — | DINOv3 (3.7) | Tuning DINOv3 (4.5) | Frontend (5.3) | — | Slide (7.4) | S2 |
-| **Nguyễn Hồ Anh Tuấn** | Kiểm duyệt (1.3) | Preprocessing (2.2) | Trainer + Config (3.1–3.3) | Evaluator + Robustness (4.1, 4.7) | Model Export (5.1) | Integration Test (6.5) | Review & Package (7.5) | S5 |
+| Thành viên | Phase 1 | Phase 2 | Phase 3+4 | Phase 5 | Phase 6 | Phase 7 | Sáng tạo |
+|-----------|---------|---------|-----------|---------|---------|---------|----------|
+| **Lê Xuân Trí** | — | EDA (2.1) | YOLOv8-seg: train+eval+tune (3.1) | Knowledge Base (5.4) | — | Phần 4–5 báo cáo (7.2) | S3 |
+| **Đàm Tiến Đạt** | Dataset (1.1) | — | U-Net: train+eval+tune (3.2) | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3) | Phần 1–3 báo cáo (7.1) | S4 |
+| **Tống Thanh Phúc** | — | Báo cáo EDA (2.3) | Mask R-CNN: train+eval+tune + Báo cáo tiến độ 2 (3.3, 3.6) | DB Schema (5.5) | Docker/CI-CD (6.1, 6.2), MLOps (6.4) | Phần 6–7 báo cáo (7.3) | S6 |
+| **Dương Tuấn Anh** | Báo cáo P1 (1.2) | — | Mask2Former: train+eval+tune (3.4) | Frontend (5.3) | — | Slide (7.4) | S2 |
+| **Nguyễn Hồ Anh Tuấn** | Kiểm duyệt (1.3) | Preprocessing (2.2) | RF-DETR: train+eval+tune (3.5) | Model Export (5.1) | Integration Test (6.5) | Review & Package (7.5) | S5 |
 
 ---
 
@@ -345,9 +357,8 @@ User
 
 | Phase | Output chính | Skeleton trong repo |
 |---|---|---|
-| 3 | Trainer, callbacks, model factory, config từng model | `src/training/`, `src/models/model_factory.py`, `configs/training_defaults.yaml`, `configs/models/*.yaml` |
-| 3 | Thư mục experiment cho 4 mô hình | `experiments/mobilenetv2/`, `experiments/resnet50/`, `experiments/swin_transformer/`, `experiments/dinov3/` |
-| 4 | Evaluation suite, robustness, error analysis, tuning | `src/evaluation/`, `notebooks/phase4_error_analysis_tri.ipynb`, `notebooks/phase4_robustness_evaluation_anh_tuan.ipynb`, `experiments/*/tuning/` |
+| 3+4 | Notebooks train+eval+tune cho 5 model segmentation | `notebooks/models/yolov8_seg/`, `notebooks/models/unet/`, `notebooks/models/mask_rcnn/`, `notebooks/models/mask2former/`, `notebooks/models/rf_detr/` |
+| 3+4 | Model checkpoints trên HuggingFace Hub | README trong mỗi folder model ghi link HuggingFace |
 | 5 | ONNX export, model metadata | `scripts/export_onnx.py`, `models/README.md`, `models/class_names.json` |
 | 5 | Backend, knowledge base, DB schema, API contract | `backend/app/`, `backend/app/knowledge/`, `backend/app/db/schema.sql`, `docs/api-spec.md` |
 | 5 | Frontend Next.js skeleton | `frontend/package.json`, `frontend/src/app/`, `frontend/Dockerfile` |
