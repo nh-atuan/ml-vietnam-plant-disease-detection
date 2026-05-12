@@ -94,7 +94,7 @@
 - Commit notebook đã chạy lên repo tại `notebooks/models/<tên_model>/`
 - Bài toán: **Instance/Semantic Segmentation** — từ ảnh lá cây xác định vùng bệnh + nhãn bệnh
 
-> ⚠️ **Lý do không dùng MLflow / train local:** PyTorch segmentation models cần GPU; train trên CPU mất hàng chục giờ/epoch. Kaggle cung cấp GPU miễn phí 30h/tuần — đủ để train và tune. MLflow được thay bằng HuggingFace Hub để lưu & serve model.
+> **Lý do không dùng MLflow / train local:** PyTorch segmentation models cần GPU; train trên CPU mất hàng chục giờ/epoch. Kaggle cung cấp GPU miễn phí 30h/tuần — đủ để train và tune. MLflow được thay bằng HuggingFace Hub để lưu & serve model.
 
 ### 5 Mô hình Segmentation được chọn
 
@@ -110,12 +110,12 @@
 
 | # | Mô hình | Người phụ trách | Output |
 |---|---------|-----------------|--------|
-| 3.1 | **YOLOv8-seg**: train + evaluate (mAP@50, mIoU) + tune hyperparams trên Kaggle | **Xuân Trí** | `notebooks/models/yolov8_seg/` · model push lên HuggingFace |
-| 3.2 | **U-Net**: train + evaluate + tune (thử nghiệm backbone encoder) trên Kaggle | **Đàm Đạt** | `notebooks/models/unet/` · model push lên HuggingFace |
-| 3.3 | **Mask R-CNN** (ResNet50-FPN): fine-tune + evaluate + tune trên Kaggle | **Tống Phúc** | `notebooks/models/mask_rcnn/` · model push lên HuggingFace |
-| 3.4 | **Mask2Former**: fine-tune từ pretrained HuggingFace + evaluate + tune trên Kaggle | **Tuấn Anh** | `notebooks/models/mask2former/` · model push lên HuggingFace |
-| 3.5 | **RF-DETR**: train + evaluate + tune trên Kaggle | **Anh Tuấn** | `notebooks/models/rf_detr/` · model push lên HuggingFace |
-| 3.6 | Tổng hợp kết quả, viết bảng so sánh mô hình, chọn model tốt nhất, viết báo cáo tiến độ lần 2 phần **Model + Evaluation** | **Tống Phúc** | Báo cáo tiến độ lần 2 |
+| 3.1 | **YOLOv8-seg**: train + evaluate (mAP@50, mIoU) + tune hyperparams trên Kaggle | **Tống Phúc** | `notebooks/models/yolov8_seg/` · model push lên HuggingFace |
+| 3.2 | **U-Net**: train + evaluate + tune (thử nghiệm backbone encoder) trên Kaggle | **Tuấn Anh** | `notebooks/models/unet/` · model push lên HuggingFace |
+| 3.3 | **RF-DETR**: train + evaluate + tune trên Kaggle | **Anh Tuấn** | `notebooks/models/rf_detr/` · model push lên HuggingFace |
+| 3.4 | **Mask R-CNN** (ResNet50-FPN): fine-tune + evaluate + tune trên Kaggle | **Xuân Trí** | `notebooks/models/mask_rcnn/` · model push lên HuggingFace |
+| 3.5 | **Mask2Former**: fine-tune từ pretrained HuggingFace + evaluate + tune trên Kaggle | **Đàm Đạt** | `notebooks/models/mask2former/` · model push lên HuggingFace |
+| 3.6 | Tổng hợp kết quả, viết bảng so sánh mô hình, chọn model tốt nhất, viết báo cáo tiến độ lần 2 phần **Model + Evaluation** | **Cả nhóm** | Báo cáo tiến độ lần 2 |
 
 ### Quy trình mỗi thành viên cần thực hiện
 
@@ -166,7 +166,7 @@ notebooks/
 ## PHASE 4 — Đánh giá & Tinh chỉnh Mô hình
 > *(Đã được tích hợp vào Phase 3 — mỗi thành viên tự train + evaluate + tune trong cùng một Kaggle notebook)*
 
-> **Lý do gộp Phase 3 & 4:** Với workflow trên Kaggle GPU, việc tách riêng training và evaluation/tuning thành hai phase độc lập là không hiệu quả. Mỗi thành viên sẽ thực hiện toàn bộ vòng lặp **train → evaluate → tune → chọn best model** trong cùng một notebook.
+> **Lý do gộp Phase 3 & 4:** Với workflow trên Kaggle GPU, việc tách riêng training và evaluation/tuning thành hai phase độc lập là không hiệu quả. Mỗi thành viên sẽ thực hiện toàn bộ vòng lặp **train → evaluate → tune** trong cùng một notebook.
 
 ### Nội dung evaluation & tuning trong mỗi notebook
 
