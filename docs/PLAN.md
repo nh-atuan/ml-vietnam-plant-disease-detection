@@ -93,6 +93,7 @@
 - Train xong → **push model lên HuggingFace Hub** để nhóm dùng chung qua API
 - Commit notebook đã chạy lên repo tại `notebooks/models/<tên_model>/`
 - Bài toán: **Instance/Semantic Segmentation** — từ ảnh lá cây xác định vùng bệnh + nhãn bệnh
+- Nên áp dụng Data Augmentation (Affine, Intensity Transformation, CutMix, CutOut, Mixup) để tăng cường dữ liệu và chống overfitting.
 
 > **Lý do không dùng MLflow / train local:** PyTorch segmentation models cần GPU; train trên CPU mất hàng chục giờ/epoch. Kaggle cung cấp GPU miễn phí 30h/tuần — đủ để train và tune. MLflow được thay bằng HuggingFace Hub để lưu & serve model.
 
@@ -100,21 +101,21 @@
 
 | Model | Đặc điểm | Tham khảo |
 |-------|----------|----------|
-| **YOLOv8-seg** | Real-time instance segmentation, dễ dùng, tốc độ cao | [Ultralytics Docs](https://docs.ultralytics.com/vi/models/yolo26/) |
-| **U-Net** | Semantic segmentation kinh điển, hiệu quả với ảnh y/nông nghiệp | [AI Vietnam Blog](https://aivietnam.edu.vn/blog/intro-to-unet) |
-| **Mask R-CNN** | Instance segmentation mạnh, backbone ResNet50-FPN | [Notebook tham khảo](https://github.com/magnusdtd/AIC-HCMUS-Fragment-Segmentation/blob/main/notebook/gdgoc-hcmus-aic-maskrcnn-resnet50-fpn.ipynb) |
-| **Mask2Former** | Transformer-based universal segmentation, SOTA | [HuggingFace Docs](https://huggingface.co/docs/transformers/en/model_doc/mask2former) |
-| **RF-DETR** | Detection Transformer của Roboflow, segmentation hiệu quả | [RF-DETR Docs](https://rfdetr.roboflow.com/learn/train/) |
+| **Mask R-CNN** | CNN-based model (Baseline) | [MaskRCNN Resnet50](https://github.com/magnusdtd/AIC-HCMUS-Fragment-Segmentation/blob/main/notebook/gdgoc-hcmus-aic-maskrcnn-resnet50-fpn.ipynb) |
+| **YOLO26-seg** | CNN-based model | [Fine-tune YOLO26-seg](https://colab.research.google.com/drive/1tYi19epfw6jUgaIUD03cgsGMC-NXI6KB?usp=sharing) |
+| **RF-DETR** | Vision Transformer-based model (SOTA) | [RF-DETR Roboflow Train Guide](https://rfdetr.roboflow.com/learn/train/) |
+| **MobileSAM** | Vision Transformer-based model | [MobileSAM Fast Finetuning](https://github.com/KdaiP/MobileSAM-fast-finetuning) |
+| **Mask2Former** | Vision Transformer-based model | [Fine-tuning Mask2Former](https://debuggercafe.com/fine-tuning-mask2former/) |
 
 ### Phân công công việc
 
 | # | Mô hình | Người phụ trách | Output |
 |---|---------|-----------------|--------|
-| 3.1 | **YOLOv8-seg**: train + evaluate (mAP@50, mIoU) + tune hyperparams trên Kaggle | **Tống Phúc** | `notebooks/models/yolov8_seg/` · model push lên HuggingFace |
-| 3.2 | **U-Net**: train + evaluate + tune (thử nghiệm backbone encoder) trên Kaggle | **Tuấn Anh** | `notebooks/models/unet/` · model push lên HuggingFace |
-| 3.3 | **RF-DETR**: train + evaluate + tune trên Kaggle | **Anh Tuấn** | `notebooks/models/rf_detr/` · model push lên HuggingFace |
-| 3.4 | **Mask R-CNN** (ResNet50-FPN): fine-tune + evaluate + tune trên Kaggle | **Xuân Trí** | `notebooks/models/mask_rcnn/` · model push lên HuggingFace |
-| 3.5 | **Mask2Former**: fine-tune từ pretrained HuggingFace + evaluate + tune trên Kaggle | **Đàm Đạt** | `notebooks/models/mask2former/` · model push lên HuggingFace |
+| 3.1 | **Mask R-CNN**: train + evaluate + tune trên Kaggle | **Xuân Trí** | Commit notebook vào folder `notebooks/models/mask_rcnn/` + push model lên HuggingFace |
+| 3.2 | **YOLO26-seg**: train + evaluate + tune trên Kaggle | **Anh Tuấn** | Commit notebook vào folder `notebooks/models/yolo26_seg/` + push model lên HuggingFace |
+| 3.3 | **RF-DETR**: train + evaluate + tune trên Kaggle | **Tống Phúc** | Commit notebook vào folder `notebooks/models/rf_detr/` + push model lên HuggingFace |
+| 3.4 | **MobileSAM**: train + evaluate + tune trên Kaggle | **Đàm Đạt** | Commit notebook vào folder `notebooks/models/mobilesam/` + push model lên HuggingFace |
+| 3.5 | **Mask2Former**: train + evaluate + tune trên Kaggle | **Tuấn Anh** | Commit notebook vào folder `notebooks/models/mask2former/` + push model lên HuggingFace |
 | 3.6 | Tổng hợp kết quả, viết bảng so sánh mô hình, chọn model tốt nhất, viết báo cáo tiến độ lần 2 phần **Model + Evaluation** | **Cả nhóm** | Báo cáo tiến độ lần 2 |
 
 ### Quy trình mỗi thành viên cần thực hiện
@@ -143,13 +144,13 @@
 ```
 notebooks/
   models/
-    yolov8_seg/
+    mask_rcnn/
       train_evaluate_tune.ipynb   ← Kaggle notebook đã chạy
       README.md                   ← mô tả kết quả, link HuggingFace
-    unet/
-    mask_rcnn/
-    mask2former/
+    yolo26_seg/
     rf_detr/
+    mobilesam/
+    mask2former/
 ```
 
 ### Kết quả cần đạt cuối Phase 3
@@ -190,11 +191,11 @@ notebooks/
 
 | Mô hình | mAP@50 | mAP@50:95 | mIoU | Dice | Inference (ms) | Size (MB) |
 |---------|--------|-----------|------|------|----------------|-----------|
-| YOLOv8-seg | — | — | — | — | — | — |
-| U-Net | — | — | — | — | — | — |
 | Mask R-CNN | — | — | — | — | — | — |
-| Mask2Former | — | — | — | — | — | — |
+| YOLO26-seg | — | — | — | — | — | — |
 | RF-DETR | — | — | — | — | — | — |
+| MobileSAM | — | — | — | — | — | — |
+| Mask2Former | — | — | — | — | — | — |
 
 ### Kết quả cần đạt
 
@@ -345,11 +346,11 @@ User
 
 | Thành viên | Phase 1 | Phase 2 | Phase 3+4 | Phase 5 | Phase 6 | Phase 7 | Sáng tạo |
 |-----------|---------|---------|-----------|---------|---------|---------|----------|
-| **Lê Xuân Trí** | — | EDA (2.1) | YOLOv8-seg: train+eval+tune (3.1) | Knowledge Base (5.4) | — | Phần 4–5 báo cáo (7.2) | S3 |
-| **Đàm Tiến Đạt** | Dataset (1.1) | — | U-Net: train+eval+tune (3.2) | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3) | Phần 1–3 báo cáo (7.1) | S4 |
-| **Tống Thanh Phúc** | — | Báo cáo EDA (2.3) | Mask R-CNN: train+eval+tune + Báo cáo tiến độ 2 (3.3, 3.6) | DB Schema (5.5) | Docker/CI-CD (6.1, 6.2), MLOps (6.4) | Phần 6–7 báo cáo (7.3) | S6 |
-| **Dương Tuấn Anh** | Báo cáo P1 (1.2) | — | Mask2Former: train+eval+tune (3.4) | Frontend (5.3) | — | Slide (7.4) | S2 |
-| **Nguyễn Hồ Anh Tuấn** | Kiểm duyệt (1.3) | Preprocessing (2.2) | RF-DETR: train+eval+tune (3.5) | Model Export (5.1) | Integration Test (6.5) | Review & Package (7.5) | S5 |
+| **Lê Xuân Trí** | — | EDA (2.1) | Mask R-CNN: train+eval+tune (3.1) | Knowledge Base (5.4) | — | Phần 4–5 báo cáo (7.2) | S3 |
+| **Đàm Tiến Đạt** | Dataset (1.1) | — | MobileSAM: train+eval+tune (3.4) | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3) | Phần 1–3 báo cáo (7.1) | S4 |
+| **Tống Thanh Phúc** | — | Báo cáo EDA (2.3) | RF-DETR: train+eval+tune + Báo cáo tiến độ 2 (3.3, 3.6) | DB Schema (5.5) | Docker/CI-CD (6.1, 6.2), MLOps (6.4) | Phần 6–7 báo cáo (7.3) | S6 |
+| **Dương Tuấn Anh** | Báo cáo P1 (1.2) | — | Mask2Former: train+eval+tune (3.5) | Frontend (5.3) | — | Slide (7.4) | S2 |
+| **Nguyễn Hồ Anh Tuấn** | Kiểm duyệt (1.3) | Preprocessing (2.2) | YOLO26-seg: train+eval+tune (3.2) | Model Export (5.1) | Integration Test (6.5) | Review & Package (7.5) | S5 |
 
 ---
 
@@ -357,7 +358,7 @@ User
 
 | Phase | Output chính | Skeleton trong repo |
 |---|---|---|
-| 3+4 | Notebooks train+eval+tune cho 5 model segmentation | `notebooks/models/yolov8_seg/`, `notebooks/models/unet/`, `notebooks/models/mask_rcnn/`, `notebooks/models/mask2former/`, `notebooks/models/rf_detr/` |
+| 3+4 | Notebooks train+eval+tune cho 5 model segmentation | `notebooks/models/mask_rcnn/`, `notebooks/models/yolo26_seg/`, `notebooks/models/rf_detr/`, `notebooks/models/mobilesam/`, `notebooks/models/mask2former/` |
 | 3+4 | Model checkpoints trên HuggingFace Hub | README trong mỗi folder model ghi link HuggingFace |
 | 5 | ONNX export, model metadata | `scripts/export_onnx.py`, `models/README.md`, `models/class_names.json` |
 | 5 | Backend, knowledge base, DB schema, API contract | `backend/app/`, `backend/app/knowledge/`, `backend/app/db/schema.sql`, `docs/api-spec.md` |
