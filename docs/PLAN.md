@@ -86,7 +86,7 @@
 ---
 
 ## PHASE 3 — Lựa chọn & Huấn luyện Mô hình (Segmentation)
-> **Tuần 7 → Tuần 9** | **Deadline dự kiến: 18/5**
+> **Tuần 7 → Tuần 9** | **Deadline dự kiến: 21/5**
 
 ### Mục tiêu Phase 3
 - Mỗi thành viên chọn **1 mô hình segmentation**, tự huấn luyện, đánh giá và tinh chỉnh trên **Kaggle Notebook** (GPU T4/P100, 30h/tuần)
