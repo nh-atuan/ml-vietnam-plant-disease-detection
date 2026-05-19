@@ -18,6 +18,9 @@ ray[tune]>=2.37.0
 onnx>=1.16.0
 onnxruntime>=1.19.0
 transformers>=4.45.0
+huggingface-hub>=1.9.0
+pycocotools>=2.0.11
+ultralytics>=8.4.51
 
 # API, storage, and UI
 fastapi>=0.115.0

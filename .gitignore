@@ -153,6 +153,7 @@ cython_debug/
 # Project-specific ignores
 datasets/
 data/
+notebooks/models/yolo26_seg/_working/
 .venv-label-studio/
 
 # Node / frontend
