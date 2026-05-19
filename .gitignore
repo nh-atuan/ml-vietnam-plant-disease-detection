@@ -152,7 +152,8 @@ cython_debug/
 
 # Project-specific ignores
 datasets/
-data/
+data/*
+!data/.gitkeep
 .venv-label-studio/
 
 # Node / frontend
