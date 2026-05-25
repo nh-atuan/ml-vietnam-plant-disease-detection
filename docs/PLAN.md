@@ -86,7 +86,7 @@
 ---
 
 ## PHASE 3 — Lựa chọn, Huấn luyện & Đánh giá Mô hình (Segmentation)
-> **Tuần 7 → Tuần 9** | **Deadline dự kiến: 24/5**
+> **Tuần 7 → Tuần 9** | **Deadline: 31/5**
 
 ### Mục tiêu Phase 3
 - Mỗi thành viên chọn **1 mô hình segmentation**, tự huấn luyện và đánh giá trên **Kaggle Notebook** (GPU T4/P100, 30h/tuần)
@@ -178,7 +178,7 @@ notebooks/
 ---
 
 ## PHASE 4 — Tinh chỉnh Mô hình Tốt Nhất (Hyperparameter Tuning)
-> **Sau khi Phase 3 hoàn thành & best model được chọn**
+> **Sau khi Phase 3 hoàn thành & best model được chọn** | **Deadline dự kiến: sau 31/5 và trước 7/6**
 
 ### Mục tiêu Phase 4
 - Chỉ tune **1 model duy nhất** — model được chọn từ bảng so sánh Phase 3
