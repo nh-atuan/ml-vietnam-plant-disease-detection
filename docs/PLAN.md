@@ -85,17 +85,21 @@
 
 ---
 
-## PHASE 3 — Lựa chọn & Huấn luyện Mô hình (Segmentation)
+## PHASE 3 — Lựa chọn, Huấn luyện & Đánh giá Mô hình (Segmentation)
 > **Tuần 7 → Tuần 9** | **Deadline dự kiến: 24/5**
 
 ### Mục tiêu Phase 3
-- Mỗi thành viên chọn **1 mô hình segmentation**, tự huấn luyện, đánh giá và tinh chỉnh trên **Kaggle Notebook** (GPU T4/P100, 30h/tuần)
+- Mỗi thành viên chọn **1 mô hình segmentation**, tự huấn luyện và đánh giá trên **Kaggle Notebook** (GPU T4/P100, 30h/tuần)
+- **Mỗi model được train & evaluate trên 2 notebook riêng biệt** — 1 cho tập lúa (Rice), 1 cho tập cà phê (Coffee) — giúp tách biệt phân phối dữ liệu, dễ debug và chạy song song
+- Kết quả evaluation từ cả 5 model sẽ được tổng hợp để **chọn ra best model** cho Phase 4 (tuning)
 - Train xong → **push model lên HuggingFace Hub** để nhóm dùng chung qua API
 - Commit notebook đã chạy lên repo tại `notebooks/models/<tên_model>/`
 - Bài toán: **Instance/Semantic Segmentation** — từ ảnh lá cây xác định vùng bệnh + nhãn bệnh
-- Nên áp dụng Data Augmentation (Affine, Intensity Transformation, CutMix, CutOut, Mixup) để tăng cường dữ liệu và chống overfitting.
+- Áp dụng Data Augmentation (Affine, Intensity Transformation, CutMix, CutOut, Mixup) để tăng cường dữ liệu và chống overfitting
 
 > **Lý do không dùng MLflow / train local:** PyTorch segmentation models cần GPU; train trên CPU mất hàng chục giờ/epoch. Kaggle cung cấp GPU miễn phí 30h/tuần — đủ để train và tune. MLflow được thay bằng HuggingFace Hub để lưu & serve model.
+
+> **Lý do tách 2 notebook theo dataset:** Lúa và cà phê có đặc điểm hình thái lá, màu sắc và phân phối bệnh khác nhau rõ rệt. Tách notebook giúp mỗi thành viên chạy độc lập trên Kaggle (tránh conflict GPU quota), kết quả per-dataset rõ ràng và dễ so sánh cross-dataset.
 
 ### 5 Mô hình Segmentation được chọn
 
@@ -111,22 +115,26 @@
 
 | # | Mô hình | Người phụ trách | Output |
 |---|---------|-----------------|--------|
-| 3.1 | **Mask R-CNN**: train + evaluate + tune trên Kaggle | **Xuân Trí** | Commit notebook vào folder `notebooks/models/mask_rcnn/` + push model lên HuggingFace |
-| 3.2 | **YOLO26-seg**: train + evaluate + tune trên Kaggle | **Anh Tuấn** | Commit notebook vào folder `notebooks/models/yolo26_seg/` + push model lên HuggingFace |
-| 3.3 | **RF-DETR**: train + evaluate + tune trên Kaggle | **Tống Phúc** | Commit notebook vào folder `notebooks/models/rf_detr/` + push model lên HuggingFace |
-| 3.4 | **MobileSAM**: train + evaluate + tune trên Kaggle | **Đàm Đạt** | Commit notebook vào folder `notebooks/models/mobilesam/` + push model lên HuggingFace |
-| 3.5 | **Mask2Former**: train + evaluate + tune trên Kaggle | **Tuấn Anh** | Commit notebook vào folder `notebooks/models/mask2former/` + push model lên HuggingFace |
-| 3.6 | Tổng hợp kết quả, viết bảng so sánh mô hình, chọn model tốt nhất, viết báo cáo tiến độ lần 2 phần **Model + Evaluation** | **Cả nhóm** | Báo cáo tiến độ lần 2 |
+| 3.1 | **Mask R-CNN**: train + evaluate trên Kaggle (2 notebook: Rice & Coffee) | **Xuân Trí** | Commit notebook vào `notebooks/models/mask_rcnn/` + push model lên HuggingFace |
+| 3.2 | **YOLO26-seg**: train + evaluate trên Kaggle (2 notebook: Rice & Coffee) | **Anh Tuấn** | Commit notebook vào `notebooks/models/yolo26_seg/` + push model lên HuggingFace |
+| 3.3 | **RF-DETR**: train + evaluate trên Kaggle (2 notebook: Rice & Coffee) | **Tống Phúc** | Commit notebook vào `notebooks/models/rf_detr/` + push model lên HuggingFace |
+| 3.4 | **MobileSAM**: train + evaluate trên Kaggle (2 notebook: Rice & Coffee) | **Đàm Đạt** | Commit notebook vào `notebooks/models/mobilesam/` + push model lên HuggingFace |
+| 3.5 | **Mask2Former**: train + evaluate trên Kaggle (2 notebook: Rice & Coffee) | **Tuấn Anh** | Commit notebook vào `notebooks/models/mask2former/` + push model lên HuggingFace |
+| 3.6 | Tổng hợp kết quả evaluation, lập bảng so sánh đa tiêu chí, **chọn best model** chuyển sang Phase 4, viết báo cáo tiến độ lần 2 phần **Model + Evaluation** | **Cả nhóm** | Bảng so sánh + quyết định best model + Báo cáo tiến độ lần 2 |
 
 ### Quy trình mỗi thành viên cần thực hiện
 
 ```
-1. Tạo Kaggle Notebook → kết nối dataset (upload lên Kaggle Dataset)
+[Notebook 1 — Rice dataset]
+1. Tạo Kaggle Notebook → kết nối dataset Rice (lọc từ data/processed/ theo plant_type)
 2. Implement pipeline: load data → augmentation → train → validate
-3. Evaluate: mAP@50, mAP@50:95, mIoU, inference time
-4. Hyperparameter tuning: thử ≥ 2 config (LR, batch size, epochs, backbone...)
-5. Chọn best checkpoint → export → push lên HuggingFace Hub
-6. Download notebook đã chạy (có output) → commit vào repo
+3. Evaluate: mAP@50, mAP@50:95, mIoU, Dice Score, inference time
+4. Lưu best checkpoint Rice → push lên HuggingFace Hub
+
+[Notebook 2 — Coffee dataset]
+5. Lặp lại bước 1–4 cho tập cà phê
+6. Ghi nhận kết quả cả 2 tập → report vào bảng so sánh nhóm
+7. Download notebook đã chạy (có output) → commit vào repo
 ```
 
 ### Thiết lập huấn luyện chung
@@ -134,7 +142,7 @@
 | Hạng mục | Chi tiết |
 |----------|----------|
 | **Môi trường** | Kaggle Notebook (GPU T4 x2 hoặc P100) |
-| **Dataset** | Upload `data/processed/` lên Kaggle Dataset, dùng mask đã tạo |
+| **Dataset** | Upload `data/processed/` lên Kaggle Dataset; lọc theo `plant_type` (rice / coffee) trong notebook |
 | **Metrics chính** | mAP@50, mAP@50:95, mIoU, Dice Score |
 | **Model hosting** | HuggingFace Hub (public repo của nhóm) |
 | **Commit vào repo** | Notebook `.ipynb` đã có output đầy đủ |
@@ -145,9 +153,13 @@
 notebooks/
   models/
     mask_rcnn/
-      train_evaluate_tune.ipynb   ← Kaggle notebook đã chạy
+      train_eval_rice.ipynb       ← Kaggle notebook Rice đã chạy
+      train_eval_coffee.ipynb     ← Kaggle notebook Coffee đã chạy
       README.md                   ← mô tả kết quả, link HuggingFace
     yolo26_seg/
+      train_eval_rice.ipynb
+      train_eval_coffee.ipynb
+      README.md
     rf_detr/
     mobilesam/
     mask2former/
@@ -157,29 +169,86 @@ notebooks/
 
 | Hạng mục | Mô tả |
 |----------|-------|
-| 5 notebooks | Mỗi model 1 notebook Kaggle đã chạy đầy đủ (train + eval + tune) |
-| 5 models trên HuggingFace | Checkpoint tốt nhất của mỗi model được push lên HF Hub |
-| Bảng so sánh | mAP@50, mIoU, inference time, model size cho cả 5 model |
+| 10 notebooks | Mỗi model 2 notebook Kaggle (Rice + Coffee) đã chạy đầy đủ (train + eval) |
+| 10 model checkpoints trên HuggingFace | Best checkpoint per-dataset của mỗi model push lên HF Hub |
+| Bảng so sánh | mAP@50, mIoU, inference time, model size — per model, per dataset |
+| **Best model được chọn** | 1 model (+ dataset) được chọn để chuyển sang Phase 4 tuning |
 | Báo cáo tiến độ 2 | Phần Model + Evaluation hoàn chỉnh |
 
 ---
 
-## PHASE 4 — Đánh giá & Tinh chỉnh Mô hình
-> *(Đã được tích hợp vào Phase 3 — mỗi thành viên tự train + evaluate + tune trong cùng một Kaggle notebook)*
+## PHASE 4 — Tinh chỉnh Mô hình Tốt Nhất (Hyperparameter Tuning)
+> **Sau khi Phase 3 hoàn thành & best model được chọn**
 
-> **Lý do gộp Phase 3 & 4:** Với workflow trên Kaggle GPU, việc tách riêng training và evaluation/tuning thành hai phase độc lập là không hiệu quả. Mỗi thành viên sẽ thực hiện toàn bộ vòng lặp **train → evaluate → tune** trong cùng một notebook.
+### Mục tiêu Phase 4
+- Chỉ tune **1 model duy nhất** — model được chọn từ bảng so sánh Phase 3
+- Sử dụng **RayTune + ASHA (Asynchronous Successive Halving Algorithm)** để tối ưu hyperparameter hiệu quả: early-stop các trial kém ngay từ đầu, tập trung tài nguyên GPU vào các config hứa hẹn
+- Kết quả tuning sẽ là checkpoint cuối cùng để export ONNX và deploy
 
-### Nội dung evaluation & tuning trong mỗi notebook
+> **Lý do tách tuning ra khỏi Phase 3:** Tuning tất cả 5 model song song là lãng phí GPU quota. Chỉ tune model đã được chứng minh tốt nhất qua evaluation → tối ưu tài nguyên và thời gian.
 
-| Hạng mục | Yêu cầu |
-|----------|----------|
-| **Metrics** | mAP@50, mAP@50:95, mIoU, Dice Score, inference time (ms/ảnh) |
-| **Visualization** | Hiển thị mask dự đoán vs ground truth trên ≥ 10 ảnh test |
-| **Tuning** | Thử ≥ 2 bộ hyperparams (LR, batch size, epochs, augmentation level) |
-| **Error analysis** | Nhận xét các trường hợp model dự đoán sai (ảnh khó, bệnh hiếm...) |
-| **So sánh** | Bảng trước/sau tuning |
+> **Lý do dùng ASHA thay vì grid/random search:** ASHA tự động loại bỏ sớm các trial kém hiệu năng (early stopping dựa trên intermediate results), cho phép thử nhiều config hơn trong cùng thời gian GPU, đặc biệt phù hợp với giới hạn 30h/tuần của Kaggle.
 
-### Tiêu chí chọn mô hình tốt nhất
+### Không gian tìm kiếm Hyperparameter (Search Space)
+
+| Hyperparameter | Search Space gợi ý |
+|----------------|-------------------|
+| **Learning Rate** | `loguniform(1e-5, 1e-2)` |
+| **Batch Size** | `choice([4, 8, 16])` |
+| **Epochs** | `choice([20, 30, 50])` |
+| **Backbone / Neck** | `choice([...])` (tùy model) |
+| **Augmentation level** | `choice(['light', 'medium', 'heavy'])` |
+| **Weight Decay** | `loguniform(1e-5, 1e-2)` |
+
+### Cấu hình ASHA Scheduler
+
+```python
+from ray import tune
+from ray.tune.schedulers import ASHAScheduler
+
+scheduler = ASHAScheduler(
+    metric="mAP50",          # metric để đánh giá trial
+    mode="max",
+    max_t=50,                # số epoch tối đa mỗi trial
+    grace_period=5,          # số epoch tối thiểu trước khi có thể prune
+    reduction_factor=3,      # mỗi lần halving, giữ lại 1/3 trials tốt nhất
+)
+
+tuner = tune.Tuner(
+    train_fn,
+    param_space=search_space,
+    tune_config=tune.TuneConfig(
+        scheduler=scheduler,
+        num_samples=20,      # tổng số config thử
+    ),
+)
+results = tuner.fit()
+```
+
+### Quy trình Phase 4
+
+```
+1. Xác nhận best model từ bảng so sánh Phase 3 (cả nhóm quyết định)
+2. Tạo Kaggle Notebook mới: tune_<model_name>_<dataset>.ipynb
+3. Cài đặt ray[tune] (pip install "ray[tune]")
+4. Định nghĩa search space và ASHA scheduler
+5. Chạy tuning (num_samples ≥ 15 trials)
+6. Lấy best config → train lại với best config trên full train set
+7. Evaluate lần cuối trên test set → so sánh với baseline Phase 3
+8. Export checkpoint tốt nhất → push lên HuggingFace Hub (override best checkpoint)
+9. Commit notebook đã chạy vào repo
+```
+
+### Phân công công việc
+
+| # | Công việc | Người phụ trách | Output |
+|---|-----------|-----------------|--------|
+| 4.1 | Quyết định best model từ bảng so sánh Phase 3 | **Cả nhóm** | Biên bản chọn model (ghi vào README) |
+| 4.2 | Setup RayTune + ASHA, implement tuning notebook cho best model | **Người phụ trách model đó** | `notebooks/models/<model>/tune_<dataset>.ipynb` |
+| 4.3 | Retrain với best config, evaluate cuối, push checkpoint | **Người phụ trách model đó** | Checkpoint final trên HuggingFace Hub |
+| 4.4 | Viết báo cáo phần Tuning: bảng before/after, phân tích lỗi, kết luận | **Người phụ trách model đó** | Phần Tuning trong báo cáo tiến độ 2 |
+
+### Tiêu chí chọn mô hình tốt nhất (từ Phase 3)
 
 1. **mAP@50:95** — độ chính xác segmentation tổng thể
 2. **mIoU** — chất lượng phân vùng
@@ -187,23 +256,30 @@ notebooks/
 4. **Model size** — khả năng deploy
 5. **Độ ổn định** — train/val gap hợp lý
 
-### Bảng so sánh mô hình (template)
+### Bảng so sánh mô hình Phase 3 (template — điền sau khi train xong)
 
-| Mô hình | mAP@50 | mAP@50:95 | mIoU | Dice | Inference (ms) | Size (MB) |
-|---------|--------|-----------|------|------|----------------|-----------|
-| Mask R-CNN | — | — | — | — | — | — |
-| YOLO26-seg | — | — | — | — | — | — |
-| RF-DETR | — | — | — | — | — | — |
-| MobileSAM | — | — | — | — | — | — |
-| Mask2Former | — | — | — | — | — | — |
+| Mô hình | Dataset | mAP@50 | mAP@50:95 | mIoU | Dice | Inference (ms) | Size (MB) |
+|---------|---------|--------|-----------|------|------|----------------|-----------|
+| Mask R-CNN | Rice | — | — | — | — | — | — |
+| Mask R-CNN | Coffee | — | — | — | — | — | — |
+| YOLO26-seg | Rice | — | — | — | — | — | — |
+| YOLO26-seg | Coffee | — | — | — | — | — | — |
+| RF-DETR | Rice | — | — | — | — | — | — |
+| RF-DETR | Coffee | — | — | — | — | — | — |
+| MobileSAM | Rice | — | — | — | — | — | — |
+| MobileSAM | Coffee | — | — | — | — | — | — |
+| Mask2Former | Rice | — | — | — | — | — | — |
+| Mask2Former | Coffee | — | — | — | — | — | — |
 
-### Kết quả cần đạt
+### Kết quả cần đạt cuối Phase 4
 
 | Hạng mục | Mô tả |
 |----------|-------|
-| Best model | 1 mô hình được chọn dựa trên bảng so sánh đa tiêu chí |
-| HuggingFace Hub | 5 model checkpoints public, dùng được qua HF Inference API |
-| Báo cáo tiến độ 2 | Bảng so sánh đầy đủ, phân tích lỗi, chọn model tốt nhất |
+| Best model sau tuning | 1 checkpoint final với hyperparams tối ưu, eval trên test set |
+| Bảng before/after tuning | So sánh metrics trước và sau ASHA tuning |
+| HuggingFace Hub | Final checkpoint public, dùng được qua HF Inference API |
+| Notebook tuning | `tune_<model>_<dataset>.ipynb` đã chạy đầy đủ, có output ray[tune] |
+| Báo cáo | Phần Tuning hoàn chỉnh với phân tích lỗi và kết luận chọn model |
 
 ---
 
@@ -344,13 +420,13 @@ User
 
 ## Tổng hợp công việc
 
-| Thành viên | Phase 1 | Phase 2 | Phase 3+4 | Phase 5 | Phase 6 | Phase 7 | Sáng tạo |
-|-----------|---------|---------|-----------|---------|---------|---------|----------|
-| **Lê Xuân Trí** | — | EDA (2.1) | Mask R-CNN: train+eval+tune (3.1) | Knowledge Base (5.4) | — | Phần 4–5 báo cáo (7.2) | S3 |
-| **Đàm Tiến Đạt** | Dataset (1.1) | — | MobileSAM: train+eval+tune (3.4) | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3) | Phần 1–3 báo cáo (7.1) | S4 |
-| **Tống Thanh Phúc** | — | Báo cáo EDA (2.3) | RF-DETR: train+eval+tune + Báo cáo tiến độ 2 (3.3, 3.6) | DB Schema (5.5) | Docker/CI-CD (6.1, 6.2), MLOps (6.4) | Phần 6–7 báo cáo (7.3) | S6 |
-| **Dương Tuấn Anh** | Báo cáo P1 (1.2) | — | Mask2Former: train+eval+tune (3.5) | Frontend (5.3) | — | Slide (7.4) | S2 |
-| **Nguyễn Hồ Anh Tuấn** | Kiểm duyệt (1.3) | Preprocessing (2.2) | YOLO26-seg: train+eval+tune (3.2) | Model Export (5.1) | Integration Test (6.5) | Review & Package (7.5) | S5 |
+| Thành viên | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Sáng tạo |
+|-----------|---------|---------|---------|---------|---------|---------|---------|----------|
+| **Lê Xuân Trí** | — | EDA (2.1) | Mask R-CNN: train+eval ×2 datasets (3.1) | Tuning nếu Mask R-CNN là best model (4.2–4.4) | Knowledge Base (5.4) | — | Phần 4–5 báo cáo (7.2) | S3 |
+| **Đàm Tiến Đạt** | Dataset (1.1) | — | MobileSAM: train+eval ×2 datasets (3.4) | Tuning nếu MobileSAM là best model (4.2–4.4) | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3) | Phần 1–3 báo cáo (7.1) | S4 |
+| **Tống Thanh Phúc** | — | Báo cáo EDA (2.3) | RF-DETR: train+eval ×2 datasets + Báo cáo tiến độ 2 (3.3, 3.6) | Tuning nếu RF-DETR là best model (4.2–4.4) | DB Schema (5.5) | Docker/CI-CD (6.1, 6.2), MLOps (6.4) | Phần 6–7 báo cáo (7.3) | S6 |
+| **Dương Tuấn Anh** | Báo cáo P1 (1.2) | — | Mask2Former: train+eval ×2 datasets (3.5) | Tuning nếu Mask2Former là best model (4.2–4.4) | Frontend (5.3) | — | Slide (7.4) | S2 |
+| **Nguyễn Hồ Anh Tuấn** | Kiểm duyệt (1.3) | Preprocessing (2.2) | YOLO26-seg: train+eval ×2 datasets (3.2) | Tuning nếu YOLO26-seg là best model (4.2–4.4) | Model Export (5.1) | Integration Test (6.5) | Review & Package (7.5) | S5 |
 
 ---
 
@@ -358,8 +434,10 @@ User
 
 | Phase | Output chính | Skeleton trong repo |
 |---|---|---|
-| 3+4 | Notebooks train+eval+tune cho 5 model segmentation | `notebooks/models/mask_rcnn/`, `notebooks/models/yolo26_seg/`, `notebooks/models/rf_detr/`, `notebooks/models/mobilesam/`, `notebooks/models/mask2former/` |
-| 3+4 | Model checkpoints trên HuggingFace Hub | README trong mỗi folder model ghi link HuggingFace |
+| 3 | Notebooks train+eval (Rice & Coffee) cho 5 model segmentation | `notebooks/models/mask_rcnn/{train_eval_rice,train_eval_coffee}.ipynb`, tương tự cho `yolo26_seg/`, `rf_detr/`, `mobilesam/`, `mask2former/` |
+| 3 | Model checkpoints trên HuggingFace Hub (per-dataset) | README trong mỗi folder model ghi link HuggingFace |
+| 4 | Notebook tuning best model bằng RayTune ASHA | `notebooks/models/<best_model>/tune_<dataset>.ipynb` |
+| 4 | Final model checkpoint sau tuning | Checkpoint final trên HuggingFace Hub |
 | 5 | ONNX export, model metadata | `scripts/export_onnx.py`, `models/README.md`, `models/class_names.json` |
 | 5 | Backend, knowledge base, DB schema, API contract | `backend/app/`, `backend/app/knowledge/`, `backend/app/db/schema.sql`, `docs/api-spec.md` |
 | 5 | Frontend Next.js skeleton | `frontend/package.json`, `frontend/src/app/`, `frontend/Dockerfile` |
