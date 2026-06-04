@@ -1,0 +1,92 @@
+\documentclass[12pt]{article}
+
+\usepackage{hcmus-report-template}
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{dirtree}
+\usepackage{tabularx}
+\usepackage{booktabs}
+
+% Disable indentation on new paragraphs
+\setlength{\parindent}{0pt}
+
+% Line spacing 1.5
+\renewcommand{\baselinestretch}{1.5}
+
+% Thiết lập khoảng cách (skip) là 0.2cm cho tất cả các bảng
+\captionsetup[table]{skip=0.2cm}
+% Thiết lập khoảng cách (skip) là 0.2cm cho tất cả các hình
+\captionsetup[figure]{skip=0.2cm}
+
+% Optional: graphic path
+% \graphicspath{PATH_TO_GRAPHIC_FOLDER}
+
+% To use Times font family, uncomment this row
+% \usepackage{mathptmx}
+
+% To use roman section / subsection, uncomment these rows
+% \renewcommand{\thesection}{\Roman{section}}
+% \renewcommand{\thesubsection}{\thesection.\Roman{subsection}}
+
+% Define course name, report name and report title.
+\newcommand{\coursename}{Môn học gì đó}
+\newcommand{\reportname}{Đề tài gì đó}
+\newcommand{\reporttitle}{TÊN GÌ ĐÓ}
+
+\newcommand{\studentname}{Thành viên gì đó - MSSV gì đó \\ }
+\newcommand{\teachername}{Thầy nào đó}
+
+% Header
+\lhead{\reporttitle}
+\rhead{
+Trường Đại học Khoa học Tự nhiên - ĐHQG HCM\\
+\coursename
+}
+
+% Footer
+
+
+% ============ DOCUMENT ============
+\begin{document}
+
+\pagenumbering{roman}
+\input{content/title}
+
+\cleardoublepage
+\pagenumbering{roman}
+\pagestyle{empty} 
+
+\tableofcontents
+% \pagebreak
+% \thispagestyle{empty}
+
+\cleardoublepage
+\pagenumbering{arabic} 
+\pagestyle{plain}
+      
+\listoftables
+\addcontentsline{toc}{section}{Danh sách bảng}
+\pagebreak
+
+\listoffigures
+\addcontentsline{toc}{section}{Danh sách hình vẽ}
+
+\clearpage
+\input{content/glossary}
+\clearpage
+
+% \setcounter{page}{1}
+
+\input{content/intro}
+\input{content/conclusion}
+
+% References
+\input{ref/ref.tex}
+
+% Appendix
+% \appendix
+% Add \cleardoublepage to move appendices to next page.
+% \input{appendix/appendix.tex}
+\end{document}
