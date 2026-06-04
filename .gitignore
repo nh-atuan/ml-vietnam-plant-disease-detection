@@ -182,6 +182,8 @@ models/**/*.ckpt
 models/**/*.safetensors
 !models/README.md
 !models/class_names.json
+notebooks/models/yolo26_seg/rice/
+notebooks/models/yolo26_seg/coffee/
 mlruns/
 ray_results/
 wandb/

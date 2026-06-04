@@ -178,7 +178,7 @@ notebooks/
 ---
 
 ## PHASE 4 — Tinh chỉnh Mô hình Tốt Nhất (Hyperparameter Tuning)
-> **Sau khi Phase 3 hoàn thành & best model được chọn** | **Deadline dự kiến: sau 31/5 và trước 7/6**
+> **Sau khi Phase 3 hoàn thành & best model được chọn** | **Deadline: 7/6**
 
 ### Mục tiêu Phase 4
 - Chỉ tune **1 model duy nhất** — model được chọn từ bảng so sánh Phase 3
