@@ -1,0 +1,176 @@
+% ============================================================
+% PHẦN 5 — KẾT QUẢ THỰC NGHIỆM
+% ============================================================
+
+\section{Kết quả thực nghiệm}
+\label{sec:results}
+
+\subsection{Biểu đồ quá trình học (Learning Curves)}
+
+\subsubsection{Mask R-CNN}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.48\textwidth]{img/maskrcnn_rice_loss.png}
+    % \hfill
+    % \includegraphics[width=0.48\textwidth]{img/maskrcnn_coffee_loss.png}
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Biểu đồ Loss Mask R-CNN --- Rice]}\vspace{2cm}}}
+    \hfill
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Biểu đồ Loss Mask R-CNN --- Coffee]}\vspace{2cm}}}
+    \caption{Learning curves (Train/Val Loss) của Mask R-CNN trên tập Rice (trái) và Coffee (phải)}
+    \label{fig:maskrcnn_loss}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: mAP Mask R-CNN --- Rice]}\vspace{2cm}}}
+    \hfill
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: mAP Mask R-CNN --- Coffee]}\vspace{2cm}}}
+    \caption{Learning curves (Train/Val mAP@50) của Mask R-CNN trên tập Rice (trái) và Coffee (phải)}
+    \label{fig:maskrcnn_map}
+\end{figure}
+
+\textit{[TODO: Nhận xét --- Mô hình có hội tụ không? Có bị dao động mạnh? Có dấu hiệu overfitting/underfitting?]}
+
+\subsubsection{YOLO26-seg}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP YOLO --- Rice]}\vspace{2cm}}}
+    \hfill
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP YOLO --- Coffee]}\vspace{2cm}}}
+    \caption{Learning curves của YOLO26-seg trên tập Rice (trái) và Coffee (phải)}
+    \label{fig:yolo_curves}
+\end{figure}
+
+\textit{[TODO: Nhận xét learning curves YOLO26-seg]}
+
+\subsubsection{RF-DETR}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP RF-DETR --- Rice]}\vspace{2cm}}}
+    \hfill
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP RF-DETR --- Coffee]}\vspace{2cm}}}
+    \caption{Learning curves của RF-DETR trên tập Rice (trái) và Coffee (phải)}
+    \label{fig:rfdetr_curves}
+\end{figure}
+
+\textit{[TODO: Nhận xét learning curves RF-DETR]}
+
+\subsubsection{MobileSAM}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mIoU MobileSAM --- Rice]}\vspace{2cm}}}
+    \hfill
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mIoU MobileSAM --- Coffee]}\vspace{2cm}}}
+    \caption{Learning curves của MobileSAM trên tập Rice (trái) và Coffee (phải)}
+    \label{fig:mobilesam_curves}
+\end{figure}
+
+\textit{[TODO: Nhận xét learning curves MobileSAM]}
+
+\subsubsection{Mask2Former}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP Mask2Former --- Rice]}\vspace{2cm}}}
+    \hfill
+    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP Mask2Former --- Coffee]}\vspace{2cm}}}
+    \caption{Learning curves của Mask2Former trên tập Rice (trái) và Coffee (phải)}
+    \label{fig:mask2former_curves}
+\end{figure}
+
+\textit{[TODO: Nhận xét learning curves Mask2Former]}
+
+% -------------------------------------------------------
+\subsection{Đánh giá trên tập Test}
+\label{subsec:test_eval}
+
+\subsubsection{Bảng so sánh tổng hợp (Phase 3)}
+
+\begin{table}[H]
+    \caption{Kết quả đánh giá 5 mô hình trên tập Test --- Rice dataset}
+    \centering
+    \begin{tabular}{lrrrrrc}
+        \toprule
+        \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
+        \midrule
+        Mask R-CNN    & --- & --- & --- & --- & --- & --- \\
+        YOLO26-seg    & --- & --- & --- & --- & --- & --- \\
+        RF-DETR       & --- & --- & --- & --- & --- & --- \\
+        MobileSAM     & --- & --- & --- & --- & --- & --- \\
+        Mask2Former   & --- & --- & --- & --- & --- & --- \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:results_rice}
+\end{table}
+
+\begin{table}[H]
+    \caption{Kết quả đánh giá 5 mô hình trên tập Test --- Coffee dataset}
+    \centering
+    \begin{tabular}{lrrrrrc}
+        \toprule
+        \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
+        \midrule
+        Mask R-CNN    & --- & --- & --- & --- & --- & --- \\
+        YOLO26-seg    & --- & --- & --- & --- & --- & --- \\
+        RF-DETR       & --- & --- & --- & --- & --- & --- \\
+        MobileSAM     & --- & --- & --- & --- & --- & --- \\
+        Mask2Former   & --- & --- & --- & --- & --- & --- \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:results_coffee}
+\end{table}
+
+\textit{[TODO: Điền số liệu sau khi hoàn thành Phase 3. Tô đậm hàng best model được chọn.]}
+
+\subsubsection{Confusion Matrix}
+
+\textit{[TODO: Hiển thị confusion matrix (per-class) của best model trên tập Test. Nhận xét các lớp bị nhầm lẫn nhiều nhất, đặc biệt các cặp dễ nhầm đã xác định từ EDA: BrownSpot $\leftrightarrow$ LeafBlast, AlgalLeafSpot $\leftrightarrow$ Rust.]}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.6\textwidth}{\centering\vspace{3cm}\textit{[TODO: Confusion Matrix --- Best Model --- Rice]}\vspace{3cm}}}
+    \caption{Confusion Matrix của mô hình tốt nhất trên tập Test --- Rice dataset}
+    \label{fig:cm_rice}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.6\textwidth}{\centering\vspace{3cm}\textit{[TODO: Confusion Matrix --- Best Model --- Coffee]}\vspace{3cm}}}
+    \caption{Confusion Matrix của mô hình tốt nhất trên tập Test --- Coffee dataset}
+    \label{fig:cm_coffee}
+\end{figure}
+
+% -------------------------------------------------------
+\subsection{Kết quả sau tinh chỉnh (Phase 4 --- ASHA Tuning)}
+\label{subsec:tuning_results}
+
+\begin{table}[H]
+    \caption{So sánh kết quả trước và sau tuning bằng RayTune ASHA}
+    \centering
+    \begin{tabular}{llrrrr}
+        \toprule
+        \textbf{Giai đoạn} & \textbf{Config} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} \\
+        \midrule
+        Phase 3 (Baseline) & LR=\textit{[?]}, BS=\textit{[?]} & --- & --- & --- & --- \\
+        Phase 4 (Best)     & LR=\textit{[?]}, BS=\textit{[?]} & --- & --- & --- & --- \\
+        \midrule
+        \multicolumn{2}{l}{\textbf{Cải thiện ($\Delta$)}} & \textbf{---} & \textbf{---} & \textbf{---} & \textbf{---} \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:tuning_comparison}
+\end{table}
+
+\textit{[TODO: Điền sau khi hoàn thành Phase 4. Ghi rõ best config tìm được và cải thiện tuyệt đối/tương đối so với baseline.]}
+
+\subsubsection{Visualizations --- Qualitative Results}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{\textwidth}{\centering\vspace{3cm}\textit{[TODO: Ảnh gốc | Ground truth mask | Predicted mask của best model sau tuning (3--4 ví dụ).]}\vspace{3cm}}}
+    \caption{Kết quả phân vùng định tính của mô hình tốt nhất (sau Phase 4 tuning)}
+    \label{fig:qualitative}
+\end{figure}

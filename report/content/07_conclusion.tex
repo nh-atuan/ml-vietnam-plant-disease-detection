@@ -1,0 +1,25 @@
+% ============================================================
+% PHẦN 7 — KẾT LUẬN
+% ============================================================
+
+\section{Kết luận}
+\label{sec:conclusion}
+
+Báo cáo này trình bày quy trình xây dựng và đánh giá hệ thống \textbf{Instance Segmentation} tự động chẩn đoán bệnh trên lá cây nông nghiệp Việt Nam (lúa và cà phê). Nhóm đã thực hiện:
+
+\begin{enumerate}
+    \item \textbf{Thu thập và tiền xử lý dữ liệu:} Bộ dữ liệu 7.149 ảnh sạch, 8 lớp bệnh, chia tỷ lệ 70/15/15 với pipeline augmentation đầy đủ.
+    \item \textbf{Huấn luyện 5 mô hình segmentation:} Mask R-CNN, YOLO26-seg, RF-DETR, MobileSAM, Mask2Former --- trên hai tập Rice và Coffee độc lập.
+    \item \textbf{Đánh giá đa tiêu chí:} Sử dụng mAP@50, mAP@50:95, mIoU, Dice Score, inference time và model size.
+    \item \textbf{Tinh chỉnh hyperparameter:} Áp dụng RayTune ASHA trên mô hình được chọn.
+\end{enumerate}
+
+\textit{[TODO: Điền kết quả cuối cùng, nhận xét tổng quát về hiệu năng best model, giới hạn và hướng phát triển tiếp theo.]}
+
+\textbf{Hướng phát triển:}
+\begin{itemize}
+    \item Mở rộng dataset với nhiều loài cây hơn (xoài, sầu riêng...) và bệnh mới.
+    \item Áp dụng semi-supervised learning để tận dụng ảnh không có nhãn.
+    \item Tích hợp Expert Knowledge Base tiếng Việt cung cấp gợi ý xử lý bệnh cụ thể cho nông dân (Phase 5).
+    \item Triển khai mô hình dưới dạng ứng dụng web mobile-first với backend FastAPI + ONNX Runtime.
+\end{itemize}

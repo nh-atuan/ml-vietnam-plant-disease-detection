@@ -1,0 +1,122 @@
+% ============================================================
+% PHẦN 3 — LỰA CHỌN MÔ HÌNH & KIẾN TRÚC
+% ============================================================
+
+\section{Lựa chọn mô hình và kiến trúc}
+\label{sec:models}
+
+Nhóm triển khai và so sánh \textbf{5 mô hình segmentation} thuộc hai nhóm kiến trúc: CNN-based và Vision Transformer-based (ViT-based). Mỗi mô hình được huấn luyện độc lập trên \emph{2 tập riêng biệt} (Rice và Coffee) trên Kaggle Notebook (GPU T4/P100).
+
+\subsection{Tổng quan các mô hình}
+
+\begin{table}[H]
+    \caption{Tổng quan 5 mô hình segmentation được lựa chọn}
+    \centering
+    \begin{tabularx}{\textwidth}{llXl}
+        \toprule
+        \textbf{Mô hình} & \textbf{Loại} & \textbf{Đặc điểm nổi bật} & \textbf{Người phụ trách} \\
+        \midrule
+        Mask R-CNN       & CNN-based     & Baseline hai nhánh (detection + segmentation) & Lê Xuân Trí \\
+        YOLO26-seg       & CNN-based     & Real-time, kiến trúc một nhánh & Nguyễn Hồ Anh Tuấn \\
+        RF-DETR          & ViT-based     & End-to-end detection transformer (SOTA) & Tống Thanh Phúc \\
+        MobileSAM        & ViT-based     & SAM rút gọn, segment anything & Đàm Tiến Đạt \\
+        Mask2Former      & ViT-based     & Universal segmentation SOTA & Dương Tuấn Anh \\
+        \bottomrule
+    \end{tabularx}
+    \label{tab:model_overview}
+\end{table}
+
+% ----------------------------------------
+\subsection{Mô hình 1: Mask R-CNN (Baseline CNN)}
+\label{subsec:maskrcnn}
+
+\subsubsection{Lý do lựa chọn}
+Mask R-CNN \cite{he2017maskrcnn} là mô hình instance segmentation CNN nền tảng, được sử dụng làm \textbf{baseline} để so sánh với các mô hình ViT-based. Kiến trúc hai nhánh tách biệt giúp dễ debug và hiểu rõ từng thành phần.
+
+\subsubsection{Kiến trúc chi tiết}
+\begin{itemize}
+    \item \textbf{Backbone:} ResNet-50 kết hợp Feature Pyramid Network (FPN) --- trích xuất đặc trưng đa tỷ lệ.
+    \item \textbf{Region Proposal Network (RPN):} Đề xuất các vùng ứng viên (anchors) chứa đối tượng.
+    \item \textbf{RoI Align:} Căn chỉnh đặc trưng chính xác hơn RoI Pooling, quan trọng cho mask quality.
+    \item \textbf{Mask Head:} Nhánh FCN nhỏ dự đoán binary mask $28\times28$ cho mỗi instance.
+    \item \textbf{Hàm kích hoạt:} ReLU (backbone, FPN, RPN); Sigmoid (mask head output).
+    \item \textbf{Số tham số:} $\approx$ 44M (ResNet-50 FPN backbone).
+\end{itemize}
+
+% Uncomment và thêm sơ đồ kiến trúc khi có:
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.85\textwidth]{img/maskrcnn_arch.png}
+%     \caption{Kiến trúc Mask R-CNN với backbone ResNet-50 FPN}
+%     \label{fig:maskrcnn_arch}
+% \end{figure}
+
+% ----------------------------------------
+\subsection{Mô hình 2: YOLO26-seg (CNN Real-time)}
+\label{subsec:yolo}
+
+\subsubsection{Lý do lựa chọn}
+YOLO26-seg là phiên bản segmentation của YOLO --- kiến trúc CNN one-stage nổi tiếng về \textbf{tốc độ inference cao}. Nhóm chọn mô hình này để đánh giá trade-off giữa tốc độ và độ chính xác, đặc biệt quan trọng khi deploy trên web với yêu cầu latency $< 500$ms/ảnh.
+
+\subsubsection{Kiến trúc chi tiết}
+\begin{itemize}
+    \item \textbf{Backbone:} CSPDarknet --- khai thác cross-stage partial connections để giảm tham số.
+    \item \textbf{Neck:} PANet (Path Aggregation Network) --- tổng hợp đặc trưng đa tầng.
+    \item \textbf{Head:} Decoupled head tách detection và segmentation; mask prototype branch.
+    \item \textbf{Hàm kích hoạt:} SiLU (Swish).
+    \item \textbf{Số tham số:} $\approx$ \textit{[TODO]} M (phụ thuộc variant được chọn: YOLOv8n/s/m/l).
+\end{itemize}
+
+% ----------------------------------------
+\subsection{Mô hình 3: RF-DETR (Vision Transformer SOTA)}
+\label{subsec:rfdetr}
+
+\subsubsection{Lý do lựa chọn}
+RF-DETR \cite{rfdetr2024} là Detection Transformer của Roboflow --- mô hình \textbf{end-to-end} không cần NMS, thiết kế cho fine-tuning nhanh trên dataset nhỏ/trung bình. Là đại diện ViT-based SOTA trong nhóm.
+
+\subsubsection{Kiến trúc chi tiết}
+\begin{itemize}
+    \item \textbf{Backbone:} DINOv2 (ViT-based) --- self-supervised pretrained trên tập lớn.
+    \item \textbf{Encoder-Decoder:} Deformable Attention Transformer.
+    \item \textbf{Hàm kích hoạt:} GELU.
+    \item \textbf{Số tham số:} $\approx$ \textit{[TODO]} M.
+\end{itemize}
+
+% ----------------------------------------
+\subsection{Mô hình 4: MobileSAM (Segment Anything thu gọn)}
+\label{subsec:mobilesam}
+
+\subsubsection{Lý do lựa chọn}
+MobileSAM \cite{mobile_sam} là phiên bản rút gọn của SAM (Segment Anything Model), thay thế ViT-H encoder bằng \textbf{TinyViT} --- nhỏ hơn 60x và nhanh hơn 40x, phù hợp deploy. Nhóm fine-tune để áp dụng vào domain bệnh lá cây.
+
+\subsubsection{Kiến trúc chi tiết}
+\begin{itemize}
+    \item \textbf{Image Encoder:} TinyViT-5M (thay thế ViT-H của SAM gốc).
+    \item \textbf{Prompt Encoder:} Nhận điểm, box hoặc mask prompt.
+    \item \textbf{Mask Decoder:} Transformer decoder nhẹ tạo mask đa tỷ lệ.
+    \item \textbf{Hàm kích hoạt:} GELU.
+    \item \textbf{Số tham số:} $\approx$ 9.66M (TinyViT encoder) + 3.87M (decoder).
+\end{itemize}
+
+% ----------------------------------------
+\subsection{Mô hình 5: Mask2Former (Universal Segmentation SOTA)}
+\label{subsec:mask2former}
+
+\subsubsection{Lý do lựa chọn}
+Mask2Former \cite{cheng2022mask2former} là mô hình \textbf{universal segmentation} SOTA, áp dụng cho cả instance, semantic và panoptic segmentation. Đây cũng là điểm sáng tạo học thuật S2 của nhóm --- fine-tune Transformer SOTA trên dataset lá cây Việt Nam.
+
+\subsubsection{Kiến trúc chi tiết}
+\begin{itemize}
+    \item \textbf{Backbone:} Swin Transformer hoặc ResNet (tùy config) --- trích xuất đặc trưng phân cấp.
+    \item \textbf{Pixel Decoder:} Multi-scale Deformable Attention Transformer (MSDeformAttn).
+    \item \textbf{Transformer Decoder:} Masked attention --- query mỗi instance chỉ attend vào vùng foreground liên quan.
+    \item \textbf{Hàm kích hoạt:} GELU (transformer layers); ReLU (pixel decoder FFN).
+    \item \textbf{Số tham số:} $\approx$ 44M (ResNet-50 backbone) hoặc $\approx$ 107M (Swin-L backbone).
+\end{itemize}
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.85\textwidth]{img/mask2former_arch.png}
+%     \caption{Kiến trúc Mask2Former với masked attention transformer decoder}
+%     \label{fig:mask2former_arch}
+% \end{figure}

@@ -1,0 +1,84 @@
+% ============================================================
+% PHẦN 2 — TỔNG QUAN DỮ LIỆU ĐẦU VÀO
+% ============================================================
+
+\section{Tổng quan dữ liệu đầu vào}
+\label{sec:data}
+
+\subsection{Nguồn và quy mô dữ liệu}
+
+Bộ dữ liệu được xây dựng từ nhiều nguồn công khai kết hợp công cụ thu thập bán tự động (Human-in-the-loop Labeling Tool). Sau khi loại bỏ ảnh lỗi, trùng lặp và hợp nhất nhãn, tập dữ liệu cuối gồm \textbf{7.149 ảnh sạch} thuộc 8 lớp bệnh trên hai loại cây:
+
+\begin{table}[H]
+    \caption{Thống kê bộ dữ liệu sau tiền xử lý}
+    \centering
+    \begin{tabular}{llrr}
+        \toprule
+        \textbf{Loại cây} & \textbf{Nhãn bệnh} & \textbf{Số ảnh (gốc)} & \textbf{Số ảnh (sạch)} \\
+        \midrule
+        Lúa & Healthy, BrownSpot, Hispa, LeafBlast, LeafMiner & 3.421 & \textit{[TODO]} \\
+        Cà phê & Healthy, PowderyMildew, Rust, AlgalLeafSpot & 3.879 & \textit{[TODO]} \\
+        \midrule
+        \multicolumn{2}{l}{\textbf{Tổng cộng}} & \textbf{7.300} & \textbf{7.149} \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:dataset_stats}
+\end{table}
+
+\subsection{Phân chia dữ liệu Train/Validation/Test}
+
+Nhóm áp dụng tỷ lệ phân chia \textbf{70/15/15} (Train / Validation / Test):
+
+\begin{table}[H]
+    \caption{Tỷ lệ phân chia tập dữ liệu}
+    \centering
+    \begin{tabular}{lrr}
+        \toprule
+        \textbf{Tập} & \textbf{Tỷ lệ} & \textbf{Số ảnh (ước tính)} \\
+        \midrule
+        Train      & 70\%  & $\approx$ 5.004 \\
+        Validation & 15\%  & $\approx$ 1.072 \\
+        Test       & 15\%  & $\approx$ 1.072 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:split}
+\end{table}
+
+\textbf{Lý do chọn tỷ lệ 70/15/15:} Tập dữ liệu có quy mô trung bình ($\sim$7.000 ảnh); tỷ lệ này đảm bảo tập Train đủ lớn để học đặc trưng phân vùng, trong khi Validation và Test mỗi tập đủ $\sim$1.000 ảnh để đánh giá tin cậy về mặt thống kê. Phân chia được thực hiện theo chiến lược \emph{stratified split} để duy trì phân phối lớp đồng đều giữa các tập.
+
+\subsection{Tiền xử lý ảnh}
+
+\subsubsection{Chuẩn hóa kích thước}
+\begin{itemize}
+    \item \textbf{Resize:} Tất cả ảnh được resize về canvas $256 \times 256$ pixel, sử dụng \emph{letterbox padding} (padding trắng giữ tỷ lệ khung hình gốc) để tránh biến dạng hình học.
+    \item \textbf{Normalize:} Chuẩn hóa giá trị pixel về $[0, 1]$ rồi chuẩn hóa z-score theo thống kê tập Train: $\mu = \textit{[TODO]}$, $\sigma = \textit{[TODO]}$ (xem \texttt{normalization\_stats.json}).
+\end{itemize}
+
+\subsubsection{Xử lý dữ liệu mất cân bằng}
+Một số lớp bệnh hiếm (ví dụ: \texttt{LeafMiner}) có số lượng ảnh thấp hơn đáng kể so với \texttt{Healthy}. Nhóm áp dụng \textbf{WeightedRandomSampler} trong DataLoader để đảm bảo mỗi batch huấn luyện có phân phối lớp cân bằng hơn.
+
+\subsubsection{Tăng cường dữ liệu (Data Augmentation)}
+
+Pipeline augmentation được áp dụng \emph{chỉ trên tập Train} với các kỹ thuật:
+
+\begin{table}[H]
+    \caption{Các kỹ thuật tăng cường dữ liệu được sử dụng}
+    \centering
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Kỹ thuật} & \textbf{Tham số} & \textbf{Mục đích} \\
+        \midrule
+        RandomResizedCrop  & scale=(0.5, 1.0)  & Đa dạng hóa góc nhìn, scale \\
+        RandomHorizontalFlip & p=0.5           & Bất biến với lật ngang \\
+        RandomVerticalFlip   & p=0.3           & Bất biến với lật dọc \\
+        ColorJitter          & brightness, contrast, saturation & Đa dạng ánh sáng \\
+        Affine transform     & rotate, shear, translate & Bất biến hình học \\
+        MixUp                & $\alpha = 0.4$  & Chống overfitting \\
+        CutMix               & $\alpha = 1.0$  & Chống overfitting \\
+        CutOut               & n\_holes=1, length=64 & Tăng cường độ bền \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:augmentation}
+\end{table}
+
+\textbf{Lưu ý:} MixUp và CutMix được áp dụng ở cấp batch (trong vòng lặp huấn luyện), không phải trong DataLoader pipeline, và \emph{không áp dụng lên mask segmentation} để đảm bảo tính hợp lệ của nhãn pixel.

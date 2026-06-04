@@ -1,0 +1,96 @@
+% ============================================================
+% PHẦN 6 — THẢO LUẬN & PHÂN TÍCH LỖI
+% ============================================================
+
+\section{Thảo luận và phân tích lỗi}
+\label{sec:discussion}
+
+\subsection{Hiện tượng Overfitting / Underfitting}
+
+\textit{[TODO: Điền sau khi có kết quả train. Sử dụng bảng dưới làm khung phân tích.]}
+
+\begin{table}[H]
+    \caption{Phân tích Overfitting/Underfitting cho từng mô hình}
+    \centering
+    \begin{tabularx}{\textwidth}{lXXX}
+        \toprule
+        \textbf{Mô hình} & \textbf{Train--Val gap} & \textbf{Nhận xét} & \textbf{Cách khắc phục đã dùng} \\
+        \midrule
+        Mask R-CNN    & --- & \textit{[TODO]} & Augmentation, Early Stopping \\
+        YOLO26-seg    & --- & \textit{[TODO]} & Dropout, CutMix \\
+        RF-DETR       & --- & \textit{[TODO]} & \textit{[TODO]} \\
+        MobileSAM     & --- & \textit{[TODO]} & \textit{[TODO]} \\
+        Mask2Former   & --- & \textit{[TODO]} & Dropout (attn), weight decay \\
+        \bottomrule
+    \end{tabularx}
+    \label{tab:overfit_analysis}
+\end{table}
+
+\textbf{Gợi ý phân tích khi điền:}
+\begin{itemize}
+    \item \textbf{Overfitting:} Train mAP cao nhưng Val mAP thấp hơn đáng kể ($>10\%$); Loss train tiếp tục giảm nhưng loss val bắt đầu tăng sau một số epoch.
+    \item \textbf{Underfitting:} Cả train và val đều thấp; loss không giảm hoặc giảm rất chậm.
+    \item \textbf{Hội tụ tốt:} Train và val loss đều giảm ổn định; gap nhỏ và ổn định.
+\end{itemize}
+
+% -------------------------------------------------------
+\subsection{Phân tích các trường hợp dự đoán sai}
+\label{subsec:error_analysis}
+
+\textit{[TODO: Lấy 3--5 ví dụ cụ thể ảnh mô hình dự đoán sai. Với mỗi ví dụ: hiển thị ảnh gốc, ground truth mask, predicted mask; đưa ra giả thuyết tại sao sai.]}
+
+Dựa trên phân tích EDA (Phase 2), các cặp lớp dễ nhầm lẫn đã được xác định:
+\begin{itemize}
+    \item \textbf{BrownSpot $\leftrightarrow$ LeafBlast (lúa):} Cả hai đều có vết nâu, khác nhau chủ yếu ở hình dạng vết và viền màu. Bhattacharyya distance thấp giữa hai lớp.
+    \item \textbf{AlgalLeafSpot $\leftrightarrow$ Rust (cà phê):} Cả hai tạo ra các đốm trên lá, màu sắc tương tự trong điều kiện ánh sáng kém.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{\textwidth}{\centering\vspace{3cm}\textit{[TODO: Ảnh gốc | GT | Prediction với label sai. Chú thích lý do sai bên dưới.]}\vspace{3cm}}}
+    \caption{Ví dụ các trường hợp dự đoán sai của mô hình tốt nhất}
+    \label{fig:error_cases}
+\end{figure}
+
+\textbf{Nguyên nhân sai dự đoán (giả thuyết):}
+\begin{enumerate}
+    \item \textbf{Nhiễu nền thực địa:} Ảnh chụp ngoài đồng có nền phức tạp (đất, cỏ, ánh sáng không đều), mô hình nhầm vùng nền là bệnh.
+    \item \textbf{Vết bệnh quá nhỏ:} Các vết bệnh giai đoạn đầu kích thước $< 10\times10$ px --- khó phát hiện ở độ phân giải $256\times256$.
+    \item \textbf{Chồng lấp lá:} Nhiều lá chồng nhau làm mô hình khó tách biệt instance.
+    \item \textbf{Phân phối lớp mất cân bằng:} Lớp \texttt{Healthy} chiếm tỷ lệ cao, mô hình có xu hướng predict healthy nhiều hơn.
+\end{enumerate}
+
+% -------------------------------------------------------
+\subsection{So sánh tổng hợp các mô hình}
+\label{subsec:model_comparison}
+
+\begin{table}[H]
+    \caption{Bảng so sánh đa tiêu chí giữa 5 mô hình (điền sau Phase 3)}
+    \centering
+    \begin{tabularx}{\textwidth}{lXXXXX}
+        \toprule
+        \textbf{Tiêu chí} & \textbf{Mask R-CNN} & \textbf{YOLO-seg} & \textbf{RF-DETR} & \textbf{MobileSAM} & \textbf{Mask2Former} \\
+        \midrule
+        mAP@50:95       & --- & --- & --- & --- & --- \\
+        mIoU            & --- & --- & --- & --- & --- \\
+        Inference (ms)  & --- & --- & --- & --- & --- \\
+        Model size (MB) & --- & --- & --- & --- & --- \\
+        Train stability & --- & --- & --- & --- & --- \\
+        \midrule
+        \textbf{Tổng điểm} & --- & --- & --- & --- & --- \\
+        \textbf{Xếp hạng}  & ---  & ---  & ---  & ---  & --- \\
+        \bottomrule
+    \end{tabularx}
+    \label{tab:model_comparison}
+\end{table}
+
+\subsection{Mô hình được chọn cho Phase 4}
+
+\textit{[TODO: Điền sau khi cả nhóm quyết định dựa trên bảng so sánh. Ghi rõ tên model, dataset (Rice/Coffee), lý do chọn theo 5 tiêu chí: mAP@50:95, mIoU, inference time, model size, độ ổn định train/val.]}
+
+\textbf{Quyết định:} Mô hình \textbf{\textit{[TÊN MODEL]}} trên tập \textbf{\textit{[Rice / Coffee]}} được chọn để tinh chỉnh trong Phase 4, vì:
+\begin{itemize}
+    \item \textit{[TODO: Lý do 1 --- dựa theo tiêu chí mAP@50:95]}
+    \item \textit{[TODO: Lý do 2 --- dựa theo inference time / deploy feasibility]}
+    \item \textit{[TODO: Lý do 3 --- độ ổn định, gap train/val nhỏ]}
+\end{itemize}

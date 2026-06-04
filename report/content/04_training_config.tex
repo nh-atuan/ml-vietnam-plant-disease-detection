@@ -1,0 +1,93 @@
+% ============================================================
+% PHẦN 4 — CẤU HÌNH HUẤN LUYỆN
+% ============================================================
+
+\section{Cấu hình huấn luyện}
+\label{sec:training_config}
+
+Phần này trình bày cấu hình huấn luyện chung và cấu hình riêng cho từng mô hình. Tất cả thực nghiệm được thực hiện trên \textbf{Kaggle Notebook} với GPU T4 x2 hoặc P100, framework PyTorch.
+
+\subsection{Hàm mất mát (Loss Function)}
+
+\begin{table}[H]
+    \caption{Hàm mất mát sử dụng cho từng mô hình}
+    \centering
+    \begin{tabularx}{\textwidth}{lXl}
+        \toprule
+        \textbf{Mô hình} & \textbf{Hàm mất mát} & \textbf{Lý do} \\
+        \midrule
+        Mask R-CNN    & $\mathcal{L} = \mathcal{L}_{cls} + \mathcal{L}_{box} + \mathcal{L}_{mask}$ (Cross-entropy + Smooth-L1 + Binary CE) & Thiết kế nguyên bản hai nhánh \\
+        YOLO26-seg    & $\mathcal{L} = \mathcal{L}_{box} + \mathcal{L}_{cls} + \mathcal{L}_{dfl} + \mathcal{L}_{mask}$ & Tích hợp sẵn trong YOLO framework \\
+        RF-DETR       & Hungarian matching loss (CE + GIoU + L1) & End-to-end, không cần NMS \\
+        MobileSAM     & Focal Loss + Dice Loss (mask) & Focal: xử lý imbalance; Dice: tối ưu mask overlap \\
+        Mask2Former   & $\mathcal{L} = \lambda_{cls} \mathcal{L}_{cls} + \lambda_{mask}\mathcal{L}_{mask} + \lambda_{dice}\mathcal{L}_{dice}$ & Bipartite matching theo masked attention \\
+        \bottomrule
+    \end{tabularx}
+    \label{tab:loss_functions}
+\end{table}
+
+\textbf{Giải thích chọn Focal Loss:} Với bài toán bệnh lá cây, vùng bệnh thường nhỏ hơn nhiều so với vùng nền (background) --- gây ra class imbalance nặng ở cấp pixel. Focal Loss $\mathcal{L}_{FL} = -\alpha_t (1 - p_t)^\gamma \log(p_t)$ giảm trọng số các pixel dễ phân loại, tập trung vào các vùng khó.
+
+\subsection{Thuật toán tối ưu và Learning Rate}
+
+\begin{table}[H]
+    \caption{Cấu hình optimizer và learning rate cho từng mô hình}
+    \centering
+    \begin{tabular}{llll}
+        \toprule
+        \textbf{Mô hình} & \textbf{Optimizer} & \textbf{Learning Rate} & \textbf{LR Scheduler} \\
+        \midrule
+        Mask R-CNN    & SGD (momentum=0.9, weight\_decay=5e-4) & 0.005 & StepLR (step=3, $\gamma$=0.1) \\
+        YOLO26-seg    & AdamW ($\beta_1$=0.9, $\beta_2$=0.999)  & \textit{[TODO]} & Cosine Annealing \\
+        RF-DETR       & AdamW & \textit{[TODO]} & Linear Warmup + Cosine \\
+        MobileSAM     & Adam & \textit{[TODO]} & ReduceLROnPlateau \\
+        Mask2Former   & AdamW (weight\_decay=0.05) & 1e-4 (backbone), 1e-3 (head) & Polynomial decay \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:optimizer_config}
+\end{table}
+
+\textbf{Lý do dùng AdamW cho ViT-based models:} AdamW thêm weight decay trực tiếp vào update rule thay vì gradient (khác Adam), phù hợp hơn cho Transformer architecture vốn nhạy cảm với regularization. SGD với momentum được giữ cho Mask R-CNN theo paper gốc.
+
+\subsection{Siêu tham số (Hyperparameters)}
+
+\begin{table}[H]
+    \caption{Siêu tham số huấn luyện baseline (Phase 3)}
+    \centering
+    \begin{tabular}{llllll}
+        \toprule
+        \textbf{Siêu tham số} & \textbf{Mask R-CNN} & \textbf{YOLO-seg} & \textbf{RF-DETR} & \textbf{MobileSAM} & \textbf{Mask2Former} \\
+        \midrule
+        Batch Size & 4 & 8 & 4 & 4 & 4 \\
+        Epochs     & 30 & 50 & 30 & 20 & 30 \\
+        Image size & 256$\times$256 & 640$\times$640 & 640$\times$640 & 1024$\times$1024 & 256$\times$256 \\
+        Pretrained & COCO & COCO & COCO & SA-1B & COCO \\
+        \textit{[TODO: điền sau khi train]} & & & & & \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:hyperparams}
+\end{table}
+
+\textbf{Phương pháp tinh chỉnh tham số (Phase 4):} Nhóm áp dụng \textbf{RayTune với ASHA Scheduler} (Asynchronous Successive Halving Algorithm) để tự động tìm hyperparameter tối ưu cho model tốt nhất. ASHA loại bỏ sớm các trial kém hiệu năng dựa trên kết quả trung gian, cho phép thử $\geq 20$ cấu hình trong giới hạn GPU quota 30h/tuần của Kaggle.
+
+\subsubsection{Không gian tìm kiếm Phase 4}
+
+\begin{table}[H]
+    \caption{Không gian tìm kiếm hyperparameter (Phase 4 --- RayTune ASHA)}
+    \centering
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Hyperparameter} & \textbf{Search Space} \\
+        \midrule
+        Learning Rate  & \texttt{loguniform(1e-5, 1e-2)} \\
+        Batch Size     & \texttt{choice([4, 8, 16])} \\
+        Epochs         & \texttt{choice([20, 30, 50])} \\
+        Weight Decay   & \texttt{loguniform(1e-5, 1e-2)} \\
+        Augmentation   & \texttt{choice(['light', 'medium', 'heavy'])} \\
+        Backbone/Neck  & \texttt{choice([...])} (tùy model) \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:search_space}
+\end{table}
+
+Cấu hình ASHA Scheduler: \texttt{metric="mAP50"}, \texttt{mode="max"}, \texttt{max\_t=50}, \texttt{grace\_period=5}, \texttt{reduction\_factor=3}, \texttt{num\_samples=20}.

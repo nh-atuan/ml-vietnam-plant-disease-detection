@@ -1,3 +1,24 @@
 \phantomsection
 \addcontentsline{toc}{section}{Bảng thuật ngữ}
 \section*{Bảng thuật ngữ}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{lX}
+        \toprule
+        \textbf{Thuật ngữ} & \textbf{Định nghĩa} \\
+        \midrule
+        Instance Segmentation & Phân vùng từng đối tượng riêng lẻ trong ảnh, trả về mask pixel-level và nhãn lớp cho mỗi instance. \\
+        mAP@50               & Mean Average Precision ở ngưỡng IoU = 0.50 --- chỉ số đánh giá detection/segmentation phổ biến. \\
+        mAP@50:95            & mAP trung bình trên nhiều ngưỡng IoU từ 0.50 đến 0.95 (bước 0.05) --- đánh giá nghiêm ngặt hơn. \\
+        mIoU                 & Mean Intersection over Union --- trung bình tỷ lệ giao/hợp giữa predicted mask và ground truth mask. \\
+        Dice Score           & $2 \cdot |A \cap B| / (|A| + |B|)$ --- tương tự IoU nhưng ít nhạy cảm hơn với imbalance. \\
+        FPN                  & Feature Pyramid Network --- kết nối đặc trưng đa tỷ lệ trong CNN backbone. \\
+        ViT                  & Vision Transformer --- kiến trúc attention-based thay thế CNN cho computer vision. \\
+        ASHA                 & Asynchronous Successive Halving Algorithm --- thuật toán early-stopping cho hyperparameter search. \\
+        ONNX                 & Open Neural Network Exchange --- định dạng model độc lập framework, tối ưu cho inference. \\
+        RPN                  & Region Proposal Network --- mạng con trong Mask R-CNN đề xuất vùng ứng viên chứa đối tượng. \\
+        SAM                  & Segment Anything Model --- mô hình segmentation tổng quát của Meta AI. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}

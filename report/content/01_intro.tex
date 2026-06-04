@@ -1,0 +1,28 @@
+% ============================================================
+% PHẦN 1 — GIỚI THIỆU BÀI TOÁN
+% ============================================================
+
+\section{Giới thiệu bài toán}
+\label{sec:intro}
+
+Bệnh trên lá cây nông nghiệp là một trong những nguyên nhân chính gây tổn thất mùa màng ở Việt Nam, đặc biệt đối với hai cây trồng chủ lực là \textbf{lúa} (\textit{Oryza sativa}) và \textbf{cà phê} (\textit{Coffea spp.}). Việc phát hiện bệnh sớm và chính xác giúp nông dân đưa ra biện pháp xử lý kịp thời, giảm thiệt hại về năng suất và chi phí thuốc bảo vệ thực vật.
+
+Tuy nhiên, chẩn đoán bệnh cây truyền thống đòi hỏi chuyên gia nông nghiệp --- đội ngũ vốn thiếu hụt ở các vùng nông thôn. Do đó, bài toán \textbf{tự động nhận diện bệnh trên lá cây} từ ảnh chụp thực địa bằng học máy là một hướng nghiên cứu có giá trị ứng dụng cao.
+
+\subsection{Phát biểu bài toán}
+
+Nhóm xây dựng hệ thống \textbf{Instance Segmentation} (phân vùng đối tượng) trên ảnh lá cây, với mục tiêu:
+\begin{itemize}
+    \item \textbf{Đầu vào:} Ảnh lá cây chụp ngoài thực địa (có thể chứa nhiều lá, nhiều vùng bệnh).
+    \item \textbf{Đầu ra:} Mask pixel-wise xác định \emph{vùng bị bệnh} kèm theo \emph{nhãn loại bệnh} tương ứng.
+    \item \textbf{Phạm vi:} 8 lớp nhãn gồm \texttt{Healthy}, \texttt{BrownSpot}, \texttt{Hispa}, \texttt{LeafBlast}, \texttt{LeafMiner} (lúa) và \texttt{PowderyMildew}, \texttt{Rust}, \texttt{AlgalLeafSpot} (cà phê).
+\end{itemize}
+
+\subsection{Lý do chọn Instance Segmentation}
+
+Khác với phân loại ảnh (Classification) chỉ trả về nhãn chung cho cả ảnh, Instance Segmentation:
+\begin{enumerate}
+    \item Xác định \emph{chính xác vùng} bị bệnh trên lá → hỗ trợ nông dân quan sát trực quan.
+    \item Xử lý được ảnh có \emph{nhiều lá chồng chéo} hoặc \emph{nhiều loại bệnh đồng thời}.
+    \item Phù hợp với điều kiện ảnh thực địa đa dạng về góc chụp, ánh sáng và nền.
+\end{enumerate}
