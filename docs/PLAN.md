@@ -170,6 +170,8 @@ notebooks/
 
 ### Kết quả cần đạt cuối Phase 3
 
+> **Output/Artifacts sau khi huấn luyện 5 mô hình:** [Google Drive — Training Outputs](https://drive.google.com/drive/folders/1L5tih3t2_aAUrNUAEsf5aejOtmnY2oFR?usp=sharing) *(checkpoints, logs, metrics, biểu đồ — phục vụ benchmark & viết báo cáo)*
+
 | Hạng mục | Mô tả |
 |----------|-------|
 | 10 notebooks | Mỗi model 2 notebook Kaggle (Rice + Coffee) đã chạy đầy đủ (train + eval) |
