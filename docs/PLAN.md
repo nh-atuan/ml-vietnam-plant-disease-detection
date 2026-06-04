@@ -120,7 +120,10 @@
 | 3.3 | **RF-DETR**: train + evaluate trên Kaggle (2 notebook: Rice & Coffee) | **Tống Phúc** | Commit notebook vào `notebooks/models/rf_detr/` + push model lên HuggingFace |
 | 3.4 | **MobileSAM**: train + evaluate trên Kaggle (2 notebook: Rice & Coffee) | **Đàm Đạt** | Commit notebook vào `notebooks/models/mobilesam/` + push model lên HuggingFace |
 | 3.5 | **Mask2Former**: train + evaluate trên Kaggle (2 notebook: Rice & Coffee) | **Tuấn Anh** | Commit notebook vào `notebooks/models/mask2former/` + push model lên HuggingFace |
-| 3.6 | Tổng hợp kết quả evaluation, lập bảng so sánh đa tiêu chí, **chọn best model** chuyển sang Phase 4, viết báo cáo tiến độ lần 2 phần **Model + Evaluation** | **Cả nhóm** | Bảng so sánh + quyết định best model + Báo cáo tiến độ lần 2 |
+| 3.6 | Tổng hợp kết quả evaluation, lập bảng so sánh đa tiêu chí, **chọn best model** chuyển sang Phase 4 | **Đàm Đạt** | Bảng so sánh đa tiêu chí + quyết định best model (ghi vào README) |
+| 3.7 | Viết báo cáo tiến độ lần 2 — phần **Benchmark & Evaluation** (tổng quan 5 model, bảng kết quả, phân tích lựa chọn best model) | **Tống Phúc** | Phần Benchmark trong báo cáo tiến độ lần 2 |
+| 3.8 | Hỗ trợ viết báo cáo benchmark: bổ sung phân tích so sánh định tính giữa các kiến trúc CNN và Transformer, nhận xét về trade-off accuracy vs. inference time | **Tuấn Anh** | Bổ sung phân tích kiến trúc trong phần Benchmark |
+| 3.9 | Hỗ trợ viết báo cáo benchmark: vẽ biểu đồ so sánh (bar chart mAP, mIoU, inference time), bảng heat-map per-class performance, nhận xét trực quan | **Xuân Trí** | Biểu đồ + bảng so sánh hình ảnh trong phần Benchmark |
 
 ### Quy trình mỗi thành viên cần thực hiện
 
@@ -243,10 +246,12 @@ results = tuner.fit()
 
 | # | Công việc | Người phụ trách | Output |
 |---|-----------|-----------------|--------|
-| 4.1 | Quyết định best model từ bảng so sánh Phase 3 | **Cả nhóm** | Biên bản chọn model (ghi vào README) |
-| 4.2 | Setup RayTune + ASHA, implement tuning notebook cho best model | **Người phụ trách model đó** | `notebooks/models/<model>/tune_<dataset>.ipynb` |
-| 4.3 | Retrain với best config, evaluate cuối, push checkpoint | **Người phụ trách model đó** | Checkpoint final trên HuggingFace Hub |
-| 4.4 | Viết báo cáo phần Tuning: bảng before/after, phân tích lỗi, kết luận | **Người phụ trách model đó** | Phần Tuning trong báo cáo tiến độ 2 |
+| 4.1 | Xác nhận best model từ bảng so sánh Phase 3, thống nhất toàn nhóm | **Đàm Đạt** | Biên bản chọn model (ghi vào README) |
+| 4.2 | Setup RayTune + ASHA, implement tuning notebook cho best model | **Đàm Đạt** | `notebooks/models/<model>/tune_<dataset>.ipynb` |
+| 4.3 | Retrain với best config, evaluate cuối, push checkpoint lên HuggingFace | **Đàm Đạt** | Checkpoint final trên HuggingFace Hub |
+| 4.4 | Viết báo cáo phần **Tuning**: bảng before/after metrics, phân tích hyperparameter sensitivity, kết luận | **Anh Tuấn** | Phần Tuning trong báo cáo tiến độ 2 |
+| 4.5 | Hỗ trợ viết báo cáo tuning: trình bày lý thuyết ASHA scheduler, giải thích search space, liên hệ với kết quả Phase 3 | **Tuấn Anh** | Lý thuyết & phân tích ASHA trong phần Tuning |
+| 4.6 | Hỗ trợ viết báo cáo tuning: vẽ biểu đồ learning curve before/after tuning, loss surface visualization, trial performance chart của RayTune | **Xuân Trí** | Biểu đồ minh họa trong phần Tuning |
 
 ### Tiêu chí chọn mô hình tốt nhất (từ Phase 3)
 
@@ -422,11 +427,11 @@ User
 
 | Thành viên | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Sáng tạo |
 |-----------|---------|---------|---------|---------|---------|---------|---------|----------|
-| **Lê Xuân Trí** | — | EDA (2.1) | Mask R-CNN: train+eval ×2 datasets (3.1) | Tuning nếu Mask R-CNN là best model (4.2–4.4) | Knowledge Base (5.4) | — | Phần 4–5 báo cáo (7.2) | S3 |
-| **Đàm Tiến Đạt** | Dataset (1.1) | — | MobileSAM: train+eval ×2 datasets (3.4) | Tuning nếu MobileSAM là best model (4.2–4.4) | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3) | Phần 1–3 báo cáo (7.1) | S4 |
-| **Tống Thanh Phúc** | — | Báo cáo EDA (2.3) | RF-DETR: train+eval ×2 datasets + Báo cáo tiến độ 2 (3.3, 3.6) | Tuning nếu RF-DETR là best model (4.2–4.4) | DB Schema (5.5) | Docker/CI-CD (6.1, 6.2), MLOps (6.4) | Phần 6–7 báo cáo (7.3) | S6 |
-| **Dương Tuấn Anh** | Báo cáo P1 (1.2) | — | Mask2Former: train+eval ×2 datasets (3.5) | Tuning nếu Mask2Former là best model (4.2–4.4) | Frontend (5.3) | — | Slide (7.4) | S2 |
-| **Nguyễn Hồ Anh Tuấn** | Kiểm duyệt (1.3) | Preprocessing (2.2) | YOLO26-seg: train+eval ×2 datasets (3.2) | Tuning nếu YOLO26-seg là best model (4.2–4.4) | Model Export (5.1) | Integration Test (6.5) | Review & Package (7.5) | S5 |
+| **Lê Xuân Trí** | — | EDA (2.1) | Mask R-CNN: train+eval ×2 datasets (3.1); **Hỗ trợ báo cáo Benchmark — biểu đồ so sánh (3.9)** | **Hỗ trợ báo cáo Tuning — biểu đồ learning curve & RayTune (4.6)** | Knowledge Base (5.4) | — | Phần 4–5 báo cáo (7.2) | S3 |
+| **Đàm Tiến Đạt** | Dataset (1.1) | — | MobileSAM: train+eval ×2 datasets (3.4); **Benchmark & chọn best model (3.6)** | **Setup RayTune+ASHA, Retrain, Evaluate & Push checkpoint (4.1–4.3)** | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3) | Phần 1–3 báo cáo (7.1) | S4 |
+| **Tống Thanh Phúc** | — | Báo cáo EDA (2.3) | RF-DETR: train+eval ×2 datasets (3.3); **Viết báo cáo Benchmark (3.7)** | — | DB Schema (5.5) | Docker/CI-CD (6.1, 6.2), MLOps (6.4) | Phần 6–7 báo cáo (7.3) | S6 |
+| **Dương Tuấn Anh** | Báo cáo P1 (1.2) | — | Mask2Former: train+eval ×2 datasets (3.5); **Hỗ trợ báo cáo Benchmark — phân tích kiến trúc (3.8)** | **Hỗ trợ báo cáo Tuning — lý thuyết ASHA (4.5)** | Frontend (5.3) | — | Slide (7.4) | S2 |
+| **Nguyễn Hồ Anh Tuấn** | Kiểm duyệt (1.3) | Preprocessing (2.2) | YOLO26-seg: train+eval ×2 datasets (3.2) | **Viết báo cáo Tuning — bảng before/after, phân tích (4.4)** | Model Export (5.1) | Integration Test (6.5) | Review & Package (7.5) | S5 |
 
 ---
 
