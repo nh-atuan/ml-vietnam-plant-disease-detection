@@ -1,99 +1,90 @@
 % ============================================================
 % PHẦN 5 — KẾT QUẢ THỰC NGHIỆM
+% Người phụ trách: mỗi thành viên tự viết cho mô hình của mình
 % ============================================================
 
 \section{Kết quả thực nghiệm}
 \label{sec:results}
 
-\subsection{Biểu đồ quá trình học (Learning Curves)}
+\textit{Phần này do từng thành viên tự hoàn thiện cho mô hình của mình (Mục~\ref{subsec:res_maskrcnn}
+đến \ref{subsec:res_mask2former}), sau đó cả nhóm tổng hợp bảng so sánh chung
+(Mục~\ref{subsec:comparison}) và kết quả sau tinh chỉnh Phase~4 (Mục~\ref{subsec:tuning_results}).}
 
-\subsubsection{Mask R-CNN}
+% ----------------------------------------
+\subsection{Mask R-CNN --- \textit{Lê Xuân Trí}}
+\label{subsec:res_maskrcnn}
 
-\begin{figure}[H]
-    \centering
-    % \includegraphics[width=0.48\textwidth]{img/maskrcnn_rice_loss.png}
-    % \hfill
-    % \includegraphics[width=0.48\textwidth]{img/maskrcnn_coffee_loss.png}
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Biểu đồ Loss Mask R-CNN --- Rice]}\vspace{2cm}}}
-    \hfill
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Biểu đồ Loss Mask R-CNN --- Coffee]}\vspace{2cm}}}
-    \caption{Learning curves (Train/Val Loss) của Mask R-CNN trên tập Rice (trái) và Coffee (phải)}
-    \label{fig:maskrcnn_loss}
-\end{figure}
+\subsubsection{Biểu đồ quá trình học (Learning Curves)}
+\textit{[TODO --- Lê Xuân Trí: Chèn biểu đồ Loss và mAP@50 trên Train/Val theo epoch cho cả tập Rice và Coffee (4 biểu đồ). Nhận xét: mô hình có hội tụ không? Có dao động mạnh? Dấu hiệu overfitting/underfitting?]}
 
-\begin{figure}[H]
-    \centering
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: mAP Mask R-CNN --- Rice]}\vspace{2cm}}}
-    \hfill
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: mAP Mask R-CNN --- Coffee]}\vspace{2cm}}}
-    \caption{Learning curves (Train/Val mAP@50) của Mask R-CNN trên tập Rice (trái) và Coffee (phải)}
-    \label{fig:maskrcnn_map}
-\end{figure}
+\subsubsection{Đánh giá trên tập Test}
+\textit{[TODO --- Lê Xuân Trí: Điền bảng kết quả mAP@50, mAP@50:95, mIoU, Dice, inference time, model size cho cả Rice và Coffee.]}
 
-\textit{[TODO: Nhận xét --- Mô hình có hội tụ không? Có bị dao động mạnh? Có dấu hiệu overfitting/underfitting?]}
+\subsubsection{Confusion Matrix}
+\textit{[TODO --- Lê Xuân Trí: Chèn confusion matrix per-class của Mask R-CNN trên tập Test (Rice và Coffee). Nhận xét lớp nào bị nhầm nhiều nhất.]}
 
-\subsubsection{YOLO26-seg}
+% ----------------------------------------
+\subsection{YOLO26-seg --- \textit{Nguyễn Hồ Anh Tuấn}}
+\label{subsec:res_yolo}
 
-\begin{figure}[H]
-    \centering
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP YOLO --- Rice]}\vspace{2cm}}}
-    \hfill
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP YOLO --- Coffee]}\vspace{2cm}}}
-    \caption{Learning curves của YOLO26-seg trên tập Rice (trái) và Coffee (phải)}
-    \label{fig:yolo_curves}
-\end{figure}
+\subsubsection{Biểu đồ quá trình học (Learning Curves)}
+\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Chèn biểu đồ Loss và mAP@50 trên Train/Val theo epoch cho cả Rice và Coffee. Nhận xét hội tụ.]}
 
-\textit{[TODO: Nhận xét learning curves YOLO26-seg]}
+\subsubsection{Đánh giá trên tập Test}
+\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Điền bảng kết quả đầy đủ.]}
 
-\subsubsection{RF-DETR}
+\subsubsection{Confusion Matrix}
+\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Chèn confusion matrix và nhận xét.]}
 
-\begin{figure}[H]
-    \centering
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP RF-DETR --- Rice]}\vspace{2cm}}}
-    \hfill
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP RF-DETR --- Coffee]}\vspace{2cm}}}
-    \caption{Learning curves của RF-DETR trên tập Rice (trái) và Coffee (phải)}
-    \label{fig:rfdetr_curves}
-\end{figure}
+% ----------------------------------------
+\subsection{RF-DETR --- \textit{Tống Thanh Phúc}}
+\label{subsec:res_rfdetr}
 
-\textit{[TODO: Nhận xét learning curves RF-DETR]}
+\subsubsection{Biểu đồ quá trình học (Learning Curves)}
+\textit{[TODO --- Tống Thanh Phúc: Chèn biểu đồ Loss và mAP@50 trên Train/Val theo epoch cho cả Rice và Coffee. Nhận xét hội tụ.]}
 
-\subsubsection{MobileSAM}
+\subsubsection{Đánh giá trên tập Test}
+\textit{[TODO --- Tống Thanh Phúc: Điền bảng kết quả đầy đủ.]}
 
-\begin{figure}[H]
-    \centering
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mIoU MobileSAM --- Rice]}\vspace{2cm}}}
-    \hfill
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mIoU MobileSAM --- Coffee]}\vspace{2cm}}}
-    \caption{Learning curves của MobileSAM trên tập Rice (trái) và Coffee (phải)}
-    \label{fig:mobilesam_curves}
-\end{figure}
+\subsubsection{Confusion Matrix}
+\textit{[TODO --- Tống Thanh Phúc: Chèn confusion matrix và nhận xét.]}
 
-\textit{[TODO: Nhận xét learning curves MobileSAM]}
+% ----------------------------------------
+\subsection{MobileSAM --- \textit{Đàm Tiến Đạt}}
+\label{subsec:res_mobilesam}
 
-\subsubsection{Mask2Former}
+\subsubsection{Biểu đồ quá trình học (Learning Curves)}
+\textit{[TODO --- Đàm Tiến Đạt: Chèn biểu đồ Loss và mIoU trên Train/Val theo epoch cho cả Rice và Coffee. Nhận xét hội tụ.]}
 
-\begin{figure}[H]
-    \centering
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP Mask2Former --- Rice]}\vspace{2cm}}}
-    \hfill
-    \fbox{\parbox{0.48\textwidth}{\centering\vspace{2cm}\textit{[TODO: Loss/mAP Mask2Former --- Coffee]}\vspace{2cm}}}
-    \caption{Learning curves của Mask2Former trên tập Rice (trái) và Coffee (phải)}
-    \label{fig:mask2former_curves}
-\end{figure}
+\subsubsection{Đánh giá trên tập Test}
+\textit{[TODO --- Đàm Tiến Đạt: Điền bảng kết quả đầy đủ.]}
 
-\textit{[TODO: Nhận xét learning curves Mask2Former]}
+\subsubsection{Confusion Matrix}
+\textit{[TODO --- Đàm Tiến Đạt: Chèn confusion matrix và nhận xét.]}
 
-% -------------------------------------------------------
-\subsection{Đánh giá trên tập Test}
-\label{subsec:test_eval}
+% ----------------------------------------
+\subsection{Mask2Former --- \textit{Dương Tuấn Anh}}
+\label{subsec:res_mask2former}
 
-\subsubsection{Bảng so sánh tổng hợp (Phase 3)}
+\subsubsection{Biểu đồ quá trình học (Learning Curves)}
+\textit{[TODO --- Dương Tuấn Anh: Chèn biểu đồ Loss và mAP@50 trên Train/Val theo epoch cho cả Rice và Coffee. Nhận xét hội tụ.]}
+
+\subsubsection{Đánh giá trên tập Test}
+\textit{[TODO --- Dương Tuấn Anh: Điền bảng kết quả đầy đủ.]}
+
+\subsubsection{Confusion Matrix}
+\textit{[TODO --- Dương Tuấn Anh: Chèn confusion matrix và nhận xét.]}
+
+% ----------------------------------------
+\subsection{Bảng so sánh tổng hợp (Phase 3)}
+\label{subsec:comparison}
+
+\textit{[TODO --- Cả nhóm tổng hợp sau khi 5 thành viên hoàn thành. Tô đậm hàng của mô hình được chọn làm best model.]}
 
 \begin{table}[H]
     \caption{Kết quả đánh giá 5 mô hình trên tập Test --- Rice dataset}
     \centering
-    \begin{tabular}{lrrrrrc}
+    \begin{tabular}{lrrrrrr}
         \toprule
         \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
         \midrule
@@ -110,7 +101,7 @@
 \begin{table}[H]
     \caption{Kết quả đánh giá 5 mô hình trên tập Test --- Coffee dataset}
     \centering
-    \begin{tabular}{lrrrrrc}
+    \begin{tabular}{lrrrrrr}
         \toprule
         \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
         \midrule
@@ -124,29 +115,11 @@
     \label{tab:results_coffee}
 \end{table}
 
-\textit{[TODO: Điền số liệu sau khi hoàn thành Phase 3. Tô đậm hàng best model được chọn.]}
-
-\subsubsection{Confusion Matrix}
-
-\textit{[TODO: Hiển thị confusion matrix (per-class) của best model trên tập Test. Nhận xét các lớp bị nhầm lẫn nhiều nhất, đặc biệt các cặp dễ nhầm đã xác định từ EDA: BrownSpot $\leftrightarrow$ LeafBlast, AlgalLeafSpot $\leftrightarrow$ Rust.]}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\parbox{0.6\textwidth}{\centering\vspace{3cm}\textit{[TODO: Confusion Matrix --- Best Model --- Rice]}\vspace{3cm}}}
-    \caption{Confusion Matrix của mô hình tốt nhất trên tập Test --- Rice dataset}
-    \label{fig:cm_rice}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\parbox{0.6\textwidth}{\centering\vspace{3cm}\textit{[TODO: Confusion Matrix --- Best Model --- Coffee]}\vspace{3cm}}}
-    \caption{Confusion Matrix của mô hình tốt nhất trên tập Test --- Coffee dataset}
-    \label{fig:cm_coffee}
-\end{figure}
-
-% -------------------------------------------------------
+% ----------------------------------------
 \subsection{Kết quả sau tinh chỉnh (Phase 4 --- ASHA Tuning)}
 \label{subsec:tuning_results}
+
+\textit{[TODO --- Người phụ trách mô hình được chọn (Phase 4): Điền bảng so sánh before/after tuning và chèn visualizations định tính.]}
 
 \begin{table}[H]
     \caption{So sánh kết quả trước và sau tuning bằng RayTune ASHA}
@@ -155,8 +128,8 @@
         \toprule
         \textbf{Giai đoạn} & \textbf{Config} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} \\
         \midrule
-        Phase 3 (Baseline) & LR=\textit{[?]}, BS=\textit{[?]} & --- & --- & --- & --- \\
-        Phase 4 (Best)     & LR=\textit{[?]}, BS=\textit{[?]} & --- & --- & --- & --- \\
+        Phase 3 (Baseline) & \textit{[TODO]} & --- & --- & --- & --- \\
+        Phase 4 (Best)     & \textit{[TODO]} & --- & --- & --- & --- \\
         \midrule
         \multicolumn{2}{l}{\textbf{Cải thiện ($\Delta$)}} & \textbf{---} & \textbf{---} & \textbf{---} & \textbf{---} \\
         \bottomrule
@@ -164,13 +137,4 @@
     \label{tab:tuning_comparison}
 \end{table}
 
-\textit{[TODO: Điền sau khi hoàn thành Phase 4. Ghi rõ best config tìm được và cải thiện tuyệt đối/tương đối so với baseline.]}
-
-\subsubsection{Visualizations --- Qualitative Results}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\parbox{\textwidth}{\centering\vspace{3cm}\textit{[TODO: Ảnh gốc | Ground truth mask | Predicted mask của best model sau tuning (3--4 ví dụ).]}\vspace{3cm}}}
-    \caption{Kết quả phân vùng định tính của mô hình tốt nhất (sau Phase 4 tuning)}
-    \label{fig:qualitative}
-\end{figure}
+\textit{[TODO: Chèn 3--4 ví dụ ảnh gốc / ground truth mask / predicted mask của best model sau tuning để minh họa định tính.]}

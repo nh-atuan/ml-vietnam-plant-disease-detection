@@ -26,97 +26,154 @@ Nhóm triển khai và so sánh \textbf{5 mô hình segmentation} thuộc hai nh
     \label{tab:model_overview}
 \end{table}
 
+% ============================================================
+% Hộp nhắc nhở yêu cầu — hiển thị một lần, áp dụng cho tất cả
+% ============================================================
+\begin{center}
+\fbox{%
+    \parbox{0.92\textwidth}{%
+        \textbf{Yêu cầu bắt buộc — Kiến trúc chi tiết (áp dụng cho cả 5 mô hình):}\\[0.3em]
+        Mỗi thành viên phụ trách mô hình phải hoàn thiện đầy đủ ba nội dung sau trong
+        mục \emph{Kiến trúc chi tiết} của mô hình mình:
+        \begin{enumerate}
+            \item \textbf{Vẽ sơ đồ kiến trúc} --- Sơ đồ khối thể hiện luồng dữ liệu
+                  qua từng thành phần; phải có chú thích hình bên dưới.
+            \item \textbf{Mô tả số lượng tham số} --- Nêu tổng số tham số của mô hình
+                  (trainable \& frozen) và số tham số từng thành phần chính.
+            \item \textbf{Hàm kích hoạt được sử dụng} --- Liệt kê hàm kích hoạt tại
+                  từng vị trí trong mạng (backbone, neck, head, decoder...).
+        \end{enumerate}
+        \textit{Thiếu bất kỳ điểm nào trong ba điểm trên là \textbf{chưa đạt yêu cầu}.}
+    }%
+}
+\end{center}
+
 % ----------------------------------------
-\subsection{Mô hình 1: Mask R-CNN (Baseline CNN)}
+\subsection{Mô hình 1: Mask R-CNN --- \textit{Lê Xuân Trí}}
 \label{subsec:maskrcnn}
 
 \subsubsection{Lý do lựa chọn}
 Mask R-CNN \cite{he2017maskrcnn} là mô hình instance segmentation CNN nền tảng, được sử dụng làm \textbf{baseline} để so sánh với các mô hình ViT-based. Kiến trúc hai nhánh tách biệt giúp dễ debug và hiểu rõ từng thành phần.
 
 \subsubsection{Kiến trúc chi tiết}
-\begin{itemize}
-    \item \textbf{Backbone:} ResNet-50 kết hợp Feature Pyramid Network (FPN) --- trích xuất đặc trưng đa tỷ lệ.
-    \item \textbf{Region Proposal Network (RPN):} Đề xuất các vùng ứng viên (anchors) chứa đối tượng.
-    \item \textbf{RoI Align:} Căn chỉnh đặc trưng chính xác hơn RoI Pooling, quan trọng cho mask quality.
-    \item \textbf{Mask Head:} Nhánh FCN nhỏ dự đoán binary mask $28\times28$ cho mỗi instance.
-    \item \textbf{Hàm kích hoạt:} ReLU (backbone, FPN, RPN); Sigmoid (mask head output).
-    \item \textbf{Số tham số:} $\approx$ 44M (ResNet-50 FPN backbone).
-\end{itemize}
 
-% Uncomment và thêm sơ đồ kiến trúc khi có:
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.85\textwidth]{img/maskrcnn_arch.png}
-%     \caption{Kiến trúc Mask R-CNN với backbone ResNet-50 FPN}
-%     \label{fig:maskrcnn_arch}
-% \end{figure}
+\begin{enumerate}
+    \item \textbf{Sơ đồ kiến trúc} \textit{[Lê Xuân Trí điền]}\\
+          \textit{[TODO: Chèn hình sơ đồ kiến trúc Mask R-CNN với chú thích bên dưới.
+          Phải thể hiện rõ: Image → Backbone (ResNet-FPN) → RPN → RoI Align → Cls/Box/Mask heads.]}
+    % \begin{figure}[H]
+    %     \centering
+    %     \includegraphics[width=0.85\textwidth]{img/maskrcnn_arch.png}
+    %     \caption{Kiến trúc Mask R-CNN với backbone ResNet-50 FPN}
+    %     \label{fig:maskrcnn_arch}
+    % \end{figure}
+
+    \item \textbf{Số lượng tham số} \textit{[Lê Xuân Trí điền]}\\
+          \textit{[TODO: Điền tổng số tham số trainable/frozen, ví dụ:
+          Backbone ResNet-50 FPN $\approx$~?M params; RPN $\approx$~?M; Mask head $\approx$~?M;
+          Tổng: $\approx$~44M params (ước tính theo paper gốc --- cần xác nhận lại với
+          \texttt{sum(p.numel() for p in model.parameters())}).]}
+
+    \item \textbf{Hàm kích hoạt} \textit{[Lê Xuân Trí điền]}\\
+          \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
+          Gợi ý: ReLU (ResNet backbone, FPN, RPN convs); Sigmoid (mask output head).
+          Cần xác nhận lại theo code thực tế.]}
+\end{enumerate}
 
 % ----------------------------------------
-\subsection{Mô hình 2: YOLO26-seg (CNN Real-time)}
+\subsection{Mô hình 2: YOLO26-seg --- \textit{Nguyễn Hồ Anh Tuấn}}
 \label{subsec:yolo}
 
 \subsubsection{Lý do lựa chọn}
 YOLO26-seg là phiên bản segmentation của YOLO --- kiến trúc CNN one-stage nổi tiếng về \textbf{tốc độ inference cao}. Nhóm chọn mô hình này để đánh giá trade-off giữa tốc độ và độ chính xác, đặc biệt quan trọng khi deploy trên web với yêu cầu latency $< 500$ms/ảnh.
 
 \subsubsection{Kiến trúc chi tiết}
-\begin{itemize}
-    \item \textbf{Backbone:} CSPDarknet --- khai thác cross-stage partial connections để giảm tham số.
-    \item \textbf{Neck:} PANet (Path Aggregation Network) --- tổng hợp đặc trưng đa tầng.
-    \item \textbf{Head:} Decoupled head tách detection và segmentation; mask prototype branch.
-    \item \textbf{Hàm kích hoạt:} SiLU (Swish).
-    \item \textbf{Số tham số:} $\approx$ \textit{[TODO]} M (phụ thuộc variant được chọn: YOLOv8n/s/m/l).
-\end{itemize}
+
+\begin{enumerate}
+    \item \textbf{Sơ đồ kiến trúc} \textit{[Nguyễn Hồ Anh Tuấn điền]}\\
+          \textit{[TODO: Chèn hình sơ đồ kiến trúc YOLO26-seg với chú thích bên dưới.
+          Phải thể hiện rõ: Image → CSPDarknet backbone → PANet neck → Decoupled head (detect + segment).]}
+
+    \item \textbf{Số lượng tham số} \textit{[Nguyễn Hồ Anh Tuấn điền]}\\
+          \textit{[TODO: Điền tổng số tham số theo variant được chọn (nano/small/medium/large).
+          Ghi rõ số params của backbone, neck, và detection/mask head riêng biệt.]}
+
+    \item \textbf{Hàm kích hoạt} \textit{[Nguyễn Hồ Anh Tuấn điền]}\\
+          \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
+          Gợi ý: SiLU/Swish (backbone, neck); Sigmoid (objectness, class scores, mask coefficients).
+          Cần xác nhận theo code thực tế.]}
+\end{enumerate}
 
 % ----------------------------------------
-\subsection{Mô hình 3: RF-DETR (Vision Transformer SOTA)}
+\subsection{Mô hình 3: RF-DETR --- \textit{Tống Thanh Phúc}}
 \label{subsec:rfdetr}
 
 \subsubsection{Lý do lựa chọn}
 RF-DETR \cite{rfdetr2024} là Detection Transformer của Roboflow --- mô hình \textbf{end-to-end} không cần NMS, thiết kế cho fine-tuning nhanh trên dataset nhỏ/trung bình. Là đại diện ViT-based SOTA trong nhóm.
 
 \subsubsection{Kiến trúc chi tiết}
-\begin{itemize}
-    \item \textbf{Backbone:} DINOv2 (ViT-based) --- self-supervised pretrained trên tập lớn.
-    \item \textbf{Encoder-Decoder:} Deformable Attention Transformer.
-    \item \textbf{Hàm kích hoạt:} GELU.
-    \item \textbf{Số tham số:} $\approx$ \textit{[TODO]} M.
-\end{itemize}
+
+\begin{enumerate}
+    \item \textbf{Sơ đồ kiến trúc} \textit{[Tống Thanh Phúc điền]}\\
+          \textit{[TODO: Chèn hình sơ đồ kiến trúc RF-DETR với chú thích bên dưới.
+          Phải thể hiện rõ: Image → DINOv2 backbone → Deformable Attention Encoder → Transformer Decoder → Bipartite matching output.]}
+
+    \item \textbf{Số lượng tham số} \textit{[Tống Thanh Phúc điền]}\\
+          \textit{[TODO: Điền tổng số tham số của RF-DETR.
+          Ghi rõ params của DINOv2 encoder (frozen vs fine-tuned), decoder, và detection head.]}
+
+    \item \textbf{Hàm kích hoạt} \textit{[Tống Thanh Phúc điền]}\\
+          \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
+          Gợi ý: GELU (transformer FFN layers); Sigmoid (object classification).
+          Cần xác nhận theo code thực tế.]}
+\end{enumerate}
 
 % ----------------------------------------
-\subsection{Mô hình 4: MobileSAM (Segment Anything thu gọn)}
+\subsection{Mô hình 4: MobileSAM --- \textit{Đàm Tiến Đạt}}
 \label{subsec:mobilesam}
 
 \subsubsection{Lý do lựa chọn}
-MobileSAM \cite{mobile_sam} là phiên bản rút gọn của SAM (Segment Anything Model), thay thế ViT-H encoder bằng \textbf{TinyViT} --- nhỏ hơn 60x và nhanh hơn 40x, phù hợp deploy. Nhóm fine-tune để áp dụng vào domain bệnh lá cây.
+MobileSAM \cite{mobile_sam} là phiên bản rút gọn của SAM (Segment Anything Model), thay thế ViT-H encoder bằng \textbf{TinyViT} --- nhỏ hơn 60× và nhanh hơn 40×, phù hợp deploy. Nhóm fine-tune để áp dụng vào domain bệnh lá cây.
 
 \subsubsection{Kiến trúc chi tiết}
-\begin{itemize}
-    \item \textbf{Image Encoder:} TinyViT-5M (thay thế ViT-H của SAM gốc).
-    \item \textbf{Prompt Encoder:} Nhận điểm, box hoặc mask prompt.
-    \item \textbf{Mask Decoder:} Transformer decoder nhẹ tạo mask đa tỷ lệ.
-    \item \textbf{Hàm kích hoạt:} GELU.
-    \item \textbf{Số tham số:} $\approx$ 9.66M (TinyViT encoder) + 3.87M (decoder).
-\end{itemize}
+
+\begin{enumerate}
+    \item \textbf{Sơ đồ kiến trúc} \textit{[Đàm Tiến Đạt điền]}\\
+          \textit{[TODO: Chèn hình sơ đồ kiến trúc MobileSAM với chú thích bên dưới.
+          Phải thể hiện rõ: Image → TinyViT Image Encoder → Prompt Encoder → Mask Decoder → Binary mask output.]}
+
+    \item \textbf{Số lượng tham số} \textit{[Đàm Tiến Đạt điền]}\\
+          \textit{[TODO: Điền tổng số tham số.
+          Gợi ý tham khảo: TinyViT-5M encoder $\approx$~5.7M; Prompt encoder $\approx$~6K; Mask decoder $\approx$~3.87M; Tổng $\approx$~9.66M.
+          Cần xác nhận lại theo code thực tế.]}
+
+    \item \textbf{Hàm kích hoạt} \textit{[Đàm Tiến Đạt điền]}\\
+          \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
+          Gợi ý: GELU (TinyViT transformer blocks); Sigmoid (mask output); LayerNorm (normalization).
+          Cần xác nhận theo code thực tế.]}
+\end{enumerate}
 
 % ----------------------------------------
-\subsection{Mô hình 5: Mask2Former (Universal Segmentation SOTA)}
+\subsection{Mô hình 5: Mask2Former --- \textit{Dương Tuấn Anh}}
 \label{subsec:mask2former}
 
 \subsubsection{Lý do lựa chọn}
 Mask2Former \cite{cheng2022mask2former} là mô hình \textbf{universal segmentation} SOTA, áp dụng cho cả instance, semantic và panoptic segmentation. Đây cũng là điểm sáng tạo học thuật S2 của nhóm --- fine-tune Transformer SOTA trên dataset lá cây Việt Nam.
 
 \subsubsection{Kiến trúc chi tiết}
-\begin{itemize}
-    \item \textbf{Backbone:} Swin Transformer hoặc ResNet (tùy config) --- trích xuất đặc trưng phân cấp.
-    \item \textbf{Pixel Decoder:} Multi-scale Deformable Attention Transformer (MSDeformAttn).
-    \item \textbf{Transformer Decoder:} Masked attention --- query mỗi instance chỉ attend vào vùng foreground liên quan.
-    \item \textbf{Hàm kích hoạt:} GELU (transformer layers); ReLU (pixel decoder FFN).
-    \item \textbf{Số tham số:} $\approx$ 44M (ResNet-50 backbone) hoặc $\approx$ 107M (Swin-L backbone).
-\end{itemize}
 
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.85\textwidth]{img/mask2former_arch.png}
-%     \caption{Kiến trúc Mask2Former với masked attention transformer decoder}
-%     \label{fig:mask2former_arch}
-% \end{figure}
+\begin{enumerate}
+    \item \textbf{Sơ đồ kiến trúc} \textit{[Dương Tuấn Anh điền]}\\
+          \textit{[TODO: Chèn hình sơ đồ kiến trúc Mask2Former với chú thích bên dưới.
+          Phải thể hiện rõ: Image → Swin/ResNet backbone → Pixel Decoder (MSDeformAttn) → Masked Attention Transformer Decoder → Per-instance mask predictions.]}
+
+    \item \textbf{Số lượng tham số} \textit{[Dương Tuấn Anh điền]}\\
+          \textit{[TODO: Điền tổng số tham số theo backbone được chọn.
+          Gợi ý tham khảo: ResNet-50 backbone $\approx$~44M; Swin-L backbone $\approx$~107M.
+          Ghi rõ params của backbone, pixel decoder, và transformer decoder riêng biệt.]}
+
+    \item \textbf{Hàm kích hoạt} \textit{[Dương Tuấn Anh điền]}\\
+          \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
+          Gợi ý: GELU (transformer FFN); ReLU (pixel decoder FFN); Sigmoid (mask predictions).
+          Cần xác nhận theo code thực tế và config được dùng.]}
+\end{enumerate}

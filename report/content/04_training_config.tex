@@ -1,93 +1,91 @@
 % ============================================================
 % PHẦN 4 — CẤU HÌNH HUẤN LUYỆN
+% Người phụ trách: mỗi thành viên tự viết cho mô hình của mình
 % ============================================================
 
 \section{Cấu hình huấn luyện}
 \label{sec:training_config}
 
-Phần này trình bày cấu hình huấn luyện chung và cấu hình riêng cho từng mô hình. Tất cả thực nghiệm được thực hiện trên \textbf{Kaggle Notebook} với GPU T4 x2 hoặc P100, framework PyTorch.
+\textit{Phần này do từng thành viên tự hoàn thiện theo mô hình mình phụ trách.
+Mỗi mô hình cần trình bày đầy đủ các mục con bên dưới.
+Xem thêm không gian tìm kiếm hyperparameter của Phase~4 tại Mục~\ref{subsec:tuning_results}.}
 
-\subsection{Hàm mất mát (Loss Function)}
+% ----------------------------------------
+\subsection{Mask R-CNN --- \textit{Lê Xuân Trí}}
+\label{subsec:config_maskrcnn}
 
-\begin{table}[H]
-    \caption{Hàm mất mát sử dụng cho từng mô hình}
-    \centering
-    \begin{tabularx}{\textwidth}{lXl}
-        \toprule
-        \textbf{Mô hình} & \textbf{Hàm mất mát} & \textbf{Lý do} \\
-        \midrule
-        Mask R-CNN    & $\mathcal{L} = \mathcal{L}_{cls} + \mathcal{L}_{box} + \mathcal{L}_{mask}$ (Cross-entropy + Smooth-L1 + Binary CE) & Thiết kế nguyên bản hai nhánh \\
-        YOLO26-seg    & $\mathcal{L} = \mathcal{L}_{box} + \mathcal{L}_{cls} + \mathcal{L}_{dfl} + \mathcal{L}_{mask}$ & Tích hợp sẵn trong YOLO framework \\
-        RF-DETR       & Hungarian matching loss (CE + GIoU + L1) & End-to-end, không cần NMS \\
-        MobileSAM     & Focal Loss + Dice Loss (mask) & Focal: xử lý imbalance; Dice: tối ưu mask overlap \\
-        Mask2Former   & $\mathcal{L} = \lambda_{cls} \mathcal{L}_{cls} + \lambda_{mask}\mathcal{L}_{mask} + \lambda_{dice}\mathcal{L}_{dice}$ & Bipartite matching theo masked attention \\
-        \bottomrule
-    \end{tabularx}
-    \label{tab:loss_functions}
-\end{table}
+\subsubsection{Tiền xử lý đầu vào đặc thù}
+\textit{[TODO --- Lê Xuân Trí: Mô tả pipeline tiền xử lý riêng của Mask R-CNN (kích thước input, format annotation COCO JSON, chuẩn hóa pixel, v.v.).]}
 
-\textbf{Giải thích chọn Focal Loss:} Với bài toán bệnh lá cây, vùng bệnh thường nhỏ hơn nhiều so với vùng nền (background) --- gây ra class imbalance nặng ở cấp pixel. Focal Loss $\mathcal{L}_{FL} = -\alpha_t (1 - p_t)^\gamma \log(p_t)$ giảm trọng số các pixel dễ phân loại, tập trung vào các vùng khó.
+\subsubsection{Hàm mất mát}
+\textit{[TODO --- Lê Xuân Trí: Nêu hàm mất mát sử dụng ($\mathcal{L}_{cls}$, $\mathcal{L}_{box}$, $\mathcal{L}_{mask}$), công thức và lý do.]}
 
-\subsection{Thuật toán tối ưu và Learning Rate}
+\subsubsection{Thuật toán tối ưu \& Learning Rate}
+\textit{[TODO --- Lê Xuân Trí: Ghi rõ optimizer (SGD/Adam/AdamW), learning rate, momentum, weight decay, LR scheduler và lý do lựa chọn.]}
 
-\begin{table}[H]
-    \caption{Cấu hình optimizer và learning rate cho từng mô hình}
-    \centering
-    \begin{tabular}{llll}
-        \toprule
-        \textbf{Mô hình} & \textbf{Optimizer} & \textbf{Learning Rate} & \textbf{LR Scheduler} \\
-        \midrule
-        Mask R-CNN    & SGD (momentum=0.9, weight\_decay=5e-4) & 0.005 & StepLR (step=3, $\gamma$=0.1) \\
-        YOLO26-seg    & AdamW ($\beta_1$=0.9, $\beta_2$=0.999)  & \textit{[TODO]} & Cosine Annealing \\
-        RF-DETR       & AdamW & \textit{[TODO]} & Linear Warmup + Cosine \\
-        MobileSAM     & Adam & \textit{[TODO]} & ReduceLROnPlateau \\
-        Mask2Former   & AdamW (weight\_decay=0.05) & 1e-4 (backbone), 1e-3 (head) & Polynomial decay \\
-        \bottomrule
-    \end{tabular}
-    \label{tab:optimizer_config}
-\end{table}
+\subsubsection{Siêu tham số}
+\textit{[TODO --- Lê Xuân Trí: Liệt kê batch size, số epochs, pretrained weights, image size và các siêu tham số quan trọng khác.]}
 
-\textbf{Lý do dùng AdamW cho ViT-based models:} AdamW thêm weight decay trực tiếp vào update rule thay vì gradient (khác Adam), phù hợp hơn cho Transformer architecture vốn nhạy cảm với regularization. SGD với momentum được giữ cho Mask R-CNN theo paper gốc.
+% ----------------------------------------
+\subsection{YOLO26-seg --- \textit{Nguyễn Hồ Anh Tuấn}}
+\label{subsec:config_yolo}
 
-\subsection{Siêu tham số (Hyperparameters)}
+\subsubsection{Tiền xử lý đầu vào đặc thù}
+\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Mô tả pipeline tiền xử lý riêng của YOLO26-seg (kích thước $640\times640$, format nhãn YOLO-txt, letterbox, chuẩn hóa pixel, v.v.).]}
 
-\begin{table}[H]
-    \caption{Siêu tham số huấn luyện baseline (Phase 3)}
-    \centering
-    \begin{tabular}{llllll}
-        \toprule
-        \textbf{Siêu tham số} & \textbf{Mask R-CNN} & \textbf{YOLO-seg} & \textbf{RF-DETR} & \textbf{MobileSAM} & \textbf{Mask2Former} \\
-        \midrule
-        Batch Size & 4 & 8 & 4 & 4 & 4 \\
-        Epochs     & 30 & 50 & 30 & 20 & 30 \\
-        Image size & 256$\times$256 & 640$\times$640 & 640$\times$640 & 1024$\times$1024 & 256$\times$256 \\
-        Pretrained & COCO & COCO & COCO & SA-1B & COCO \\
-        \textit{[TODO: điền sau khi train]} & & & & & \\
-        \bottomrule
-    \end{tabular}
-    \label{tab:hyperparams}
-\end{table}
+\subsubsection{Hàm mất mát}
+\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Nêu hàm mất mát ($\mathcal{L}_{box}$, $\mathcal{L}_{cls}$, $\mathcal{L}_{dfl}$, $\mathcal{L}_{mask}$) và lý do.]}
 
-\textbf{Phương pháp tinh chỉnh tham số (Phase 4):} Nhóm áp dụng \textbf{RayTune với ASHA Scheduler} (Asynchronous Successive Halving Algorithm) để tự động tìm hyperparameter tối ưu cho model tốt nhất. ASHA loại bỏ sớm các trial kém hiệu năng dựa trên kết quả trung gian, cho phép thử $\geq 20$ cấu hình trong giới hạn GPU quota 30h/tuần của Kaggle.
+\subsubsection{Thuật toán tối ưu \& Learning Rate}
+\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Optimizer, LR, scheduler (Cosine Annealing...) và lý do.]}
 
-\subsubsection{Không gian tìm kiếm Phase 4}
+\subsubsection{Siêu tham số}
+\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Batch size, epochs, variant (nano/small/medium/large), pretrained weights, v.v.]}
 
-\begin{table}[H]
-    \caption{Không gian tìm kiếm hyperparameter (Phase 4 --- RayTune ASHA)}
-    \centering
-    \begin{tabular}{ll}
-        \toprule
-        \textbf{Hyperparameter} & \textbf{Search Space} \\
-        \midrule
-        Learning Rate  & \texttt{loguniform(1e-5, 1e-2)} \\
-        Batch Size     & \texttt{choice([4, 8, 16])} \\
-        Epochs         & \texttt{choice([20, 30, 50])} \\
-        Weight Decay   & \texttt{loguniform(1e-5, 1e-2)} \\
-        Augmentation   & \texttt{choice(['light', 'medium', 'heavy'])} \\
-        Backbone/Neck  & \texttt{choice([...])} (tùy model) \\
-        \bottomrule
-    \end{tabular}
-    \label{tab:search_space}
-\end{table}
+% ----------------------------------------
+\subsection{RF-DETR --- \textit{Tống Thanh Phúc}}
+\label{subsec:config_rfdetr}
 
-Cấu hình ASHA Scheduler: \texttt{metric="mAP50"}, \texttt{mode="max"}, \texttt{max\_t=50}, \texttt{grace\_period=5}, \texttt{reduction\_factor=3}, \texttt{num\_samples=20}.
+\subsubsection{Tiền xử lý đầu vào đặc thù}
+\textit{[TODO --- Tống Thanh Phúc: Mô tả pipeline tiền xử lý riêng của RF-DETR (kích thước input, format annotation, chuẩn hóa, v.v.).]}
+
+\subsubsection{Hàm mất mát}
+\textit{[TODO --- Tống Thanh Phúc: Nêu hàm mất mát (Hungarian matching loss: CE + GIoU + L1) và lý do.]}
+
+\subsubsection{Thuật toán tối ưu \& Learning Rate}
+\textit{[TODO --- Tống Thanh Phúc: Optimizer (AdamW), LR, linear warmup + cosine scheduler và lý do.]}
+
+\subsubsection{Siêu tham số}
+\textit{[TODO --- Tống Thanh Phúc: Batch size, epochs, frozen/unfrozen backbone layers, v.v.]}
+
+% ----------------------------------------
+\subsection{MobileSAM --- \textit{Đàm Tiến Đạt}}
+\label{subsec:config_mobilesam}
+
+\subsubsection{Tiền xử lý đầu vào đặc thù}
+\textit{[TODO --- Đàm Tiến Đạt: Mô tả pipeline tiền xử lý riêng của MobileSAM (kích thước $1024\times1024$, image embedding, prompt format, v.v.).]}
+
+\subsubsection{Hàm mất mát}
+\textit{[TODO --- Đàm Tiến Đạt: Nêu hàm mất mát (Focal Loss + Dice Loss) với công thức và lý do chọn Focal cho pixel imbalance.]}
+
+\subsubsection{Thuật toán tối ưu \& Learning Rate}
+\textit{[TODO --- Đàm Tiến Đạt: Optimizer (Adam), LR, ReduceLROnPlateau và lý do.]}
+
+\subsubsection{Siêu tham số}
+\textit{[TODO --- Đàm Tiến Đạt: Batch size, epochs, frozen encoder vs fine-tune toàn bộ, v.v.]}
+
+% ----------------------------------------
+\subsection{Mask2Former --- \textit{Dương Tuấn Anh}}
+\label{subsec:config_mask2former}
+
+\subsubsection{Tiền xử lý đầu vào đặc thù}
+\textit{[TODO --- Dương Tuấn Anh: Mô tả pipeline tiền xử lý riêng của Mask2Former (chuẩn hóa ImageNet mean/std, format annotation COCO panoptic/instance, v.v.).]}
+
+\subsubsection{Hàm mất mát}
+\textit{[TODO --- Dương Tuấn Anh: Nêu hàm mất mát ($\lambda_{cls}\mathcal{L}_{cls} + \lambda_{mask}\mathcal{L}_{mask} + \lambda_{dice}\mathcal{L}_{dice}$) với các hệ số $\lambda$ và lý do.]}
+
+\subsubsection{Thuật toán tối ưu \& Learning Rate}
+\textit{[TODO --- Dương Tuấn Anh: Optimizer (AdamW, weight\_decay=0.05), LR khác nhau cho backbone ($10^{-4}$) và head ($10^{-3}$), polynomial decay và lý do.]}
+
+\subsubsection{Siêu tham số}
+\textit{[TODO --- Dương Tuấn Anh: Batch size, epochs, backbone được dùng (ResNet-50 hay Swin), pretrained weights, v.v.]}

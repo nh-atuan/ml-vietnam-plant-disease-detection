@@ -82,3 +82,8 @@ Pipeline augmentation được áp dụng \emph{chỉ trên tập Train} với c
 \end{table}
 
 \textbf{Lưu ý:} MixUp và CutMix được áp dụng ở cấp batch (trong vòng lặp huấn luyện), không phải trong DataLoader pipeline, và \emph{không áp dụng lên mask segmentation} để đảm bảo tính hợp lệ của nhãn pixel.
+
+\subsubsection{Tiền xử lý riêng theo từng mô hình}
+
+Ngoài pipeline tiền xử lý chung trên, \textbf{mỗi mô hình sẽ có bước tiền xử lý bổ sung riêng} trong quá trình huấn luyện để đảm bảo định dạng đầu vào phù hợp với yêu cầu của từng kiến trúc. Ví dụ: YOLO yêu cầu ảnh $640 \times 640$ và nhãn theo định dạng YOLO-txt; MobileSAM/SAM yêu cầu ảnh $1024 \times 1024$ với embedding từ image encoder; Mask2Former yêu cầu chuẩn hóa theo mean/std của ImageNet và format annotation COCO panoptic. Mỗi thành viên phụ trách mô hình cần mô tả rõ pipeline tiền xử lý đặc thù này trong phần \textbf{Cấu hình huấn luyện} (Mục~\ref{sec:training_config}) của mô hình mình.
+
