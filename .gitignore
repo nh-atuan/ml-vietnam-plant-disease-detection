@@ -191,6 +191,8 @@ experiments/**/checkpoints/
 experiments/**/artifacts/
 experiments/**/runs/
 experiments/**/tuning/ray_results/
+notebooks/models/mask2former/mask2former_rice
+notebooks/models/mask2former/mask2former_coffee
 
 # Runtime storage and deployment secrets
 backend/uploads/
