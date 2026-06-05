@@ -230,6 +230,30 @@ Metrics evaluate chính gồm:
 - `Dice`
 - `inference_ms_per_image`
 
+## Kết Quả Test Đã Chạy
+
+Các kết quả dưới đây được lấy từ output đã lưu trong hai notebook `train-eva-coffee.ipynb` và `train-eva-rice.ipynb`. Cả hai đều evaluate trên split `test` với config `train_lr1e4`.
+
+| Domain | Test images | mAP50_bbox | mAP50_95_bbox | mAP50_segm | mAP50_95_segm | mIoU | Dice | Inference ms/image |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| coffee | 576 | 0.820 | 0.598 | 0.842835 | 0.825083 | 0.857505 | 0.871758 | 70.306413 |
+| rice | 514 | 0.736 | 0.718 | 0.703828 | 0.687440 | 0.813240 | 0.830791 | 198.306173 |
+
+Với bài toán segmentation, hai chỉ số nên báo cáo chính là:
+
+- `mAP50_segm`
+- `mAP50_95_segm`
+
+Các file chứa kết quả test sau khi chạy notebook:
+
+```text
+/kaggle/working/rf_detr_artifacts/coffee/metrics_train_lr1e4.csv
+/kaggle/working/rf_detr_artifacts/rice/metrics_train_lr1e4.csv
+/kaggle/working/rf_detr_artifacts/rf_detr_domain_metrics.csv
+/kaggle/working/rf_detr_artifacts/coffee/best_model/metrics.csv
+/kaggle/working/rf_detr_artifacts/rice/best_model/metrics.csv
+```
+
 ## Upload Hugging Face
 
 Hai notebook có cell upload artifact `best_model/` lên Hugging Face Hub.
