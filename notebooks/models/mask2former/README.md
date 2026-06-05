@@ -2,7 +2,7 @@
 
 **Tác giả:** Dương Tuấn Anh (23120208)
 **Task:** 3.5 (Phase 3+4) + Sáng tạo S2
-**Status:** 🚧 In progress — chờ chạy trên Kaggle
+**Status:** Metrics filled from Kaggle outputs
 
 ## Mục tiêu
 
@@ -86,21 +86,14 @@ Tính bằng `torchmetrics.detection.MeanAveragePrecision(iou_type='segm')` + ma
 
 ## Kết quả
 
-> Sẽ điền sau khi chạy xong trên Kaggle.
+Nguồn số liệu: `models/mask2former_rice/results_summary.json`, `models/mask2former_coffee/results_summary.json` và checkpoint trong `notebooks/models/mask2former/mask2former_*`.
 
-### Rice (lúa)
-
-| Run | mAP@50 | mAP@50:95 | mIoU | Dice | Inference (ms) |
-|-----|--------|-----------|------|------|----------------|
-| `run1_baseline` (Swin-T, 384) | TBD | TBD | TBD | TBD | TBD |
-| `run2_tuned` (Swin-S, 512) | TBD | TBD | TBD | TBD | TBD |
-
-### Coffee (cà phê)
-
-| Run | mAP@50 | mAP@50:95 | mIoU | Dice | Inference (ms) |
-|-----|--------|-----------|------|------|----------------|
-| `run1_baseline` (Swin-T, 384) | TBD | TBD | TBD | TBD | TBD |
-| `run2_tuned` (Swin-S, 512) | TBD | TBD | TBD | TBD | TBD |
+| Run | Model | Epochs | imgsz | mAP@50 mask | mAP@50:95 mask | mIoU | Dice | Inference ms/img | Size MB |
+|-----|-------|--------|-------|-------------|-----------------|------|------|------------------|---------|
+| `rice_run1_baseline` | Mask2Former Swin-T | 30 | 384 | 0.697070 | 0.676212 | 0.650746 | 0.661816 | 96.81 | 181.066724 |
+| `rice_run2_tuned` | Mask2Former Swin-S | 30 | 512 | 0.106045 | 0.103760 | 0.254639 | 0.258554 | 104.15 | 262.478332 |
+| `coffee_run1_baseline` | Mask2Former Swin-T | 30 | 384 | 0.920018 | 0.899791 | 0.886989 | 0.899863 | 62.88 | 181.066724 |
+| `coffee_run2_tuned` | Mask2Former Swin-S | 30 | 512 | 0.126147 | 0.122286 | 0.737423 | 0.750855 | 107.76 | 262.478332 |
 
 ## HuggingFace Hub
 
