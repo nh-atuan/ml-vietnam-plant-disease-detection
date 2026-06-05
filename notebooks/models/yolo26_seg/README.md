@@ -71,9 +71,11 @@ Fill this table after the Kaggle notebook has run.
 
 | Run | Model | Epochs | imgsz | mAP@50 mask | mAP@50:95 mask | mIoU | Dice | Inference ms/img | Size MB |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| phase3_yolo26n_seg_rice | yolo26n-seg.pt | 50 | 640 | TBD | TBD | TBD | TBD | TBD | TBD |
-| phase3_yolo26n_seg_coffee | yolo26n-seg.pt | 50 | 640 | TBD | TBD | TBD | TBD | TBD | TBD |
+| phase3_yolo26n_seg_rice | yolo26n-seg.pt | 50 | 640 | 0.761382 | 0.750642 | 0.820998 | 0.833742 | 65.72 | 6.23129 |
+| phase3_yolo26n_seg_coffee | yolo26n-seg.pt | 50 | 640 | 0.127095 | 0.123509 | 0.876297 | 0.888267 | 20.21 | 6.227811 |
 
-Best model: TBD  
-HuggingFace Hub: TBD
+Best model: `phase3_yolo26n_seg_rice` by mask mAP@50:95; per-dataset best checkpoints are `best_yolo26_seg_rice.pt` and `best_yolo26_seg_coffee.pt`.  
+HuggingFace Hub: not uploaded in the captured notebook outputs (`HF_UPLOAD=0`). Planned repo IDs: `<team-or-user>/ml-vietnam-plant-disease-yolo26-seg-rice`, `<team-or-user>/ml-vietnam-plant-disease-yolo26-seg-coffee`.
+
+Note: Coffee custom mask mIoU/Dice were reported by `train_eval_coffee.ipynb` with `metric_scope = semantic_union_masks`.
 
