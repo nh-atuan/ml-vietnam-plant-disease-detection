@@ -13,12 +13,12 @@ This folder contains the Phase 3 Mask R-CNN baseline notebooks for plant disease
 
 ## Final Test Results
 
-| Domain | Config | mAP@50 | mAP@50:95 | mIoU | Dice | CPU ms/image | Size MB |
-|---|---|---:|---:|---:|---:|---:|---:|
-| Rice | Baseline | 0.128024 | 0.084388 | 0.680408 | 0.738192 | - | - |
-| Rice | Tuned best | 0.182200 | 0.109017 | 0.552449 | 0.612051 | 569.70 | 501.73 |
-| Coffee | Baseline | 0.680218 | 0.422597 | 0.726384 | 0.792677 | - | - |
-| Coffee | Tuned best | 0.798665 | 0.591939 | 0.770262 | 0.823600 | 586.49 | 503.44 |
+| Model Type | mAP@50 | mAP@50:95 | mIoU | Dice | Accuracy | Inference (ms) | Throughput (img/s) | Size (MB) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Rice Mask R-CNN (Baseline) | 0.596557 | 0.529380 | 0.866922 | 0.893484 | 0.099948 | 760.50 | 1.3149 | 503.44 |
+| Rice Mask R-CNN (Tuned best) | 0.540375 | 0.480468 | 0.870831 | 0.899939 | 0.031775 | 760.50 | 1.3149 | 503.44 |
+| Coffee Mask R-CNN (Baseline) | 0.947967 | 0.904079 | 0.912823 | 0.935618 | 0.525223 | 702.36 | 1.4238 | 501.73 |
+| Coffee Mask R-CNN (Tuned best) | 0.919455 | 0.859970 | 0.897318 | 0.922537 | 0.278725 | 702.36 | 1.4238 | 501.73 |
 
 ## Stage 3 Coverage
 
