@@ -77,10 +77,10 @@
 ## Results:
 
 | Model Type | mAP@50 | mAP@50:95 | mIoU | Dice | Inference (ms) | Size (MB) |
-|---------|--------|-----------|------|------|----------------|-----------|
-| Rice MobileSAM (PyTorch) | 0.5637 | 0.5141 | 0.5440 | 0.5712 | 65.90 | 41.3 |
-| Rice MobileSAM (ONNX) | 0.5637 | 0.5141 | 0.5440 | 0.5712 | 160.24 | 17.1 |
-| Rice MobileSAM (ONNX Quantized) | 0.5469 | 0.5008 | 0.5315 | 0.5589 | 166.07 | 8.96 |
-| Coffee MobileSAM (PyTorch) | 0.6923 | 0.6591 | 0.6671 | 0.6848 | 62.14 | 41.3 |
-| Coffee MobileSAM (ONNX) | 0.6923 | 0.6591 | 0.6671 | 0.6848 | 146.31 | 17.1 |
-| Coffee MobileSAM (ONNX Quantized) | 0.6923 | 0.6559 | 0.6639 | 0.6820 | 148.13 | 8.96 |
+|---|---|---|---|---|---|---|
+| Rice MobileSAM (PyTorch) | 0.5637 | 0.5141 | 0.5440 | 0.5712 | 1487.54 | 41.3 |
+| Rice MobileSAM (ONNX) | 0.5637 | 0.5141 | 0.5440 | 0.5712 | 1795.38 | 17.1 |
+| Rice MobileSAM (ONNX Quantized) | 0.5469 | 0.5008 | 0.5315 | 0.5589 | 1836.90 | 8.96 |
+| Coffee MobileSAM (PyTorch) | 0.6923 | 0.6591 | 0.6671 | 0.6848 | 1616.84 | 41.3 |
+| Coffee MobileSAM (ONNX) | 0.6923 | 0.6591 | 0.6671 | 0.6848 | 1605.21 | 17.1 |
+| Coffee MobileSAM (ONNX Quantized) | 0.6923 | 0.6559 | 0.6639 | 0.6820 | 1270.50 | 8.96 |
