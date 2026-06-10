@@ -7,8 +7,8 @@
 \label{sec:results}
 
 \textit{Phần này do từng thành viên tự hoàn thiện cho mô hình của mình (Mục~\ref{subsec:res_maskrcnn}
-đến \ref{subsec:res_mask2former}), sau đó cả nhóm tổng hợp bảng so sánh chung
-(Mục~\ref{subsec:comparison}) và kết quả sau tinh chỉnh Phase~4 (Mục~\ref{subsec:tuning_results}).}
+    đến \ref{subsec:res_mask2former}), sau đó cả nhóm tổng hợp bảng so sánh chung
+    (Mục~\ref{subsec:comparison}) và kết quả sau tinh chỉnh Phase~4 (Mục~\ref{subsec:tuning_results}).}
 
 % ----------------------------------------
 \subsection{Mask R-CNN --- \textit{Lê Xuân Trí}}
@@ -54,13 +54,125 @@
 \label{subsec:res_mobilesam}
 
 \subsubsection{Biểu đồ quá trình học (Learning Curves)}
-\textit{[TODO --- Đàm Tiến Đạt: Chèn biểu đồ Loss và mIoU trên Train/Val theo epoch cho cả Rice và Coffee. Nhận xét hội tụ.]}
+
+Quá trình huấn luyện mô hình MobileSAM trên hai tập dữ liệu Rice (Lúa) và Coffee (Cà phê) được theo dõi thông qua các chỉ số Loss, mIoU và Dice Score trên cả tập Train và Validation. Các biểu đồ học tập được mô tả chi tiết trong Hình~\ref{fig:mobilesam_learning_curves}.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/mobilesam/train_loss.png}
+        \caption{Loss trên tập Train (Train Loss)}
+        \label{fig:mobilesam_train_loss}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/mobilesam/val_loss.png}
+        \caption{Loss trên tập Validation (Val Loss)}
+        \label{fig:mobilesam_val_loss}
+    \end{subfigure}
+
+    \vspace{0.3cm}
+
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/mobilesam/miou.png}
+        \caption{Chỉ số mIoU qua các epoch}
+        \label{fig:mobilesam_miou}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/mobilesam/dice_score.png}
+        \caption{Chỉ số Dice Score qua các epoch}
+        \label{fig:mobilesam_dice}
+    \end{subfigure}
+    \caption{Biểu đồ quá trình học (Learning Curves) của mô hình MobileSAM.}
+    \label{fig:mobilesam_learning_curves}
+\end{figure}
+
+\textbf{Nhận xét về sự hội tụ:}
+\begin{itemize}
+    \item \textbf{Đồ thị Loss:} Giá trị Train Loss và Validation Loss giảm nhanh và đều đặn trong khoảng 10 epoch đầu tiên, sau đó tiệm cận trạng thái ổn định và đạt được sự hội tụ từ sau epoch thứ 15. Khoảng cách (gap) giữa đường loss của tập Train và tập Validation duy trì ở mức rất nhỏ, cho thấy mô hình không gặp hiện tượng quá khớp (overfitting) hay chưa học đủ (underfitting), nhờ vào tính tổng quát hóa tốt của TinyViT Image Encoder được tiền huấn luyện kỹ lưỡng.
+    \item \textbf{Đồ thị độ chính xác (mIoU và Dice Score):} Các chỉ số này tăng trưởng đồng bộ với sự giảm của Loss. Đặc biệt, hiệu năng phân vùng trên tập Coffee (mIoU đạt $\approx 0.667$) cao hơn hẳn so với tập Rice (mIoU đạt $\approx 0.544$). Điều này phản ánh thực tế sinh học và thị giác máy tính: các vết bệnh trên lá cà phê (gỉ sắt, đốm tảo) thường tập trung, có ranh giới rõ ràng và màu sắc tương phản mạnh so với màu xanh lá, giúp mô hình dễ học và phân vùng chính xác hơn so với các vết bệnh nhỏ lẻ, phân tán dọc theo phiến lá hẹp của lúa.
+\end{itemize}
 
 \subsubsection{Đánh giá trên tập Test}
-\textit{[TODO --- Đàm Tiến Đạt: Điền bảng kết quả đầy đủ.]}
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Kết quả đánh giá mô hình MobileSAM trên tập Test}
+    \label{tab:mobilesam_results}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        \textbf{Mô hình}     & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
+        \midrule
+        \multicolumn{7}{l}{\textbf{Rice Dataset (Lúa)}}                                                                                        \\
+        \quad PyTorch        & 0.5637          & 0.5141             & 0.5440        & 0.5712        & 1487.54             & 41.3               \\
+        \quad ONNX           & 0.5637          & 0.5141             & 0.5440        & 0.5712        & 1795.38             & 17.1               \\
+        \quad ONNX Quantized & 0.5469          & 0.5008             & 0.5315        & 0.5589        & 1836.90             & 8.96               \\
+        \midrule
+        \multicolumn{7}{l}{\textbf{Coffee Dataset (Cà phê)}}                                                                                   \\
+        \quad PyTorch        & 0.6923          & 0.6591             & 0.6671        & 0.6848        & 1616.84             & 41.3               \\
+        \quad ONNX           & 0.6923          & 0.6591             & 0.6671        & 0.6848        & 1605.21             & 17.1               \\
+        \quad ONNX Quantized & 0.6923          & 0.6559             & 0.6639        & 0.6820        & 1270.50             & 8.96               \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{Nhận xét kết quả thực nghiệm (Bảng~\ref{tab:mobilesam_results}):}
+\begin{itemize}
+    \item \textbf{Độ chính xác (Accuracy):}
+          \begin{itemize}
+              \item Các phiên bản PyTorch và ONNX gốc (FP32) cho ra các chỉ số hiệu năng tương đương tuyệt đối trên cả hai bộ dữ liệu (mAP@50 đạt 0.5637 trên Rice và 0.6923 trên Coffee). Điều này cho thấy quá trình chuyển đổi sang định dạng ONNX diễn ra chính xác mà không gặp lỗi làm suy hao chất lượng mô hình.
+              \item Khi thực hiện lượng tử hóa sang dạng số nguyên 8-bit (ONNX Quantized), độ chính xác giảm rất ít. Trên tập Rice, mAP@50 chỉ giảm khoảng 1.68\% (từ 0.5637 xuống 0.5469) và mIoU giảm 1.25\%. Trên tập Coffee, mAP@50 được giữ nguyên hoàn toàn ở mức 0.6923, trong khi mIoU chỉ giảm nhẹ khoảng 0.32\%. Kết quả này chứng minh rằng việc áp dụng lượng tử hóa tĩnh (Static Quantization) cho mô hình MobileSAM cực kỳ hiệu quả, giữ vững được chất lượng chẩn đoán vết bệnh.
+          \end{itemize}
+    \item \textbf{Kích thước mô hình (Model Size):} Kích thước file mô hình giảm mạnh từ 41.3 MB (PyTorch gốc) xuống còn 17.1 MB (ONNX gốc, giảm ~58.6\%) và chỉ còn \textbf{8.96 MB} ở phiên bản ONNX Quantized (tiết kiệm tới \textbf{78.3\%} không gian lưu trữ so với bản PyTorch gốc). Kích thước siêu nhỏ gọn này giúp mô hình đáp ứng hoàn hảo các yêu cầu triển khai trên môi trường hạn chế tài nguyên như thiết bị nhúng và ứng dụng di động.
+    \item \textbf{Thời gian suy luận (Inference Time):}
+          \begin{itemize}
+              \item Trên tập dữ liệu Coffee, phiên bản lượng tử hóa mang lại sự tăng tốc rõ rệt, giảm thời gian suy luận từ 1616.84 ms xuống còn \textbf{1270.50 ms} (nhanh hơn khoảng 21.4\%).
+              \item Trên tập Rice, thời gian chạy của bản ONNX Quantized (1836.90 ms) lại tăng nhẹ so với bản PyTorch gốc (1487.54 ms). Điều này xảy ra do overhead từ các bước convert kiểu dữ liệu (quantize/dequantize) giữa các tầng của ONNX Runtime khi phải xử lý số lượng đối tượng nhỏ và phức tạp trên lá lúa bằng CPU kiểm thử.
+          \end{itemize}
+\end{itemize}
 
 \subsubsection{Confusion Matrix}
-\textit{[TODO --- Đàm Tiến Đạt: Chèn confusion matrix và nhận xét.]}
+
+Để đánh giá chi tiết khả năng nhận diện và phân loại của mô hình MobileSAM đối với từng lớp bệnh cụ thể, nhóm nghiên cứu đã biểu diễn Confusion Matrix (Ma trận nhầm lẫn) của mô hình PyTorch trên tập Test của hai bộ dữ liệu (Hình~\ref{fig:mobilesam_confusion_matrices}).
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/mobilesam/confusion_matrix_pytorch_test_rice.png}
+        \caption{Ma trận nhầm lẫn trên tập Rice}
+        \label{fig:mobilesam_cm_rice}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/mobilesam/confusion_matrix_pytorch_test_coffee.png}
+        \caption{Ma trận nhầm lẫn trên tập Coffee}
+        \label{fig:mobilesam_cm_coffee}
+    \end{subfigure}
+    \caption{Ma trận nhầm lẫn (Confusion Matrix) của mô hình MobileSAM trên tập Test.}
+    \label{fig:mobilesam_confusion_matrices}
+\end{figure}
+
+\textbf{Nhận xét chi tiết từ Confusion Matrix:}
+\begin{itemize}
+    \item \textbf{Đối với bộ dữ liệu Rice (Lúa):}
+          \begin{itemize}
+              \item Lớp lá khỏe mạnh (\texttt{Healthy}) đạt độ chính xác nhận diện rất tốt nhờ hình thái phiến lá trơn láng, không chứa khuyết tật/vết màu khác lạ.
+              \item Sự nhầm lẫn chính tập trung ở hai lớp \texttt{BrownSpot} (đốm nâu) và \texttt{LeafBlast} (đạo ôn). Điều này phản ánh đúng thực tế thị giác máy tính khi cả hai loại bệnh này đều tạo ra những đốm màu nâu/xám nhỏ có biên dạng tương đối giống nhau trên phiến lá, khiến mô hình đôi khi dự đoán sai lệch giữa chúng.
+              \item Lớp \texttt{LeafMiner} (sâu vẽ bùa) thỉnh thoảng bị nhầm lẫn với \texttt{Hispa} vì cả hai đều biểu hiện bằng các vệt màu trắng/xám chạy dọc theo thân lá.
+          \end{itemize}
+    \item \textbf{Đối với bộ dữ liệu Coffee (Cà phê):}
+          \begin{itemize}
+              \item Mô hình phân loại rất chính xác lớp lá khỏe (\texttt{Healthy}) và lớp bệnh phấn trắng (\texttt{PowderyMildew}) do các mảng phấn trắng bám trên lá có đặc trưng màu sắc và kết cấu cực kỳ riêng biệt.
+              \item Sự nhầm lẫn đáng kể nhất xảy ra giữa lớp bệnh gỉ sắt (\texttt{Rust}) và đốm tảo (\texttt{AlgalLeafSpot}). Hai bệnh này đều biểu hiện dưới dạng các đốm có màu vàng cam hoặc đỏ gạch phân bổ trên bề mặt lá, làm cho mô hình dễ bị nhầm lẫn khi phân loại nhãn dù cho mặt nạ phân vùng vùng bệnh vẫn có tính chính xác cao.
+          \end{itemize}
+\end{itemize}
 
 % ----------------------------------------
 \subsection{Mask2Former --- \textit{Dương Tuấn Anh}}
@@ -88,11 +200,11 @@
         \toprule
         \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
         \midrule
-        Mask R-CNN    & --- & --- & --- & --- & --- & --- \\
-        YOLO26-seg    & --- & --- & --- & --- & --- & --- \\
-        RF-DETR       & --- & --- & --- & --- & --- & --- \\
-        MobileSAM     & --- & --- & --- & --- & --- & --- \\
-        Mask2Former   & --- & --- & --- & --- & --- & --- \\
+        Mask R-CNN       & ---             & ---                & ---           & ---           & ---                 & ---                \\
+        YOLO26-seg       & ---             & ---                & ---           & ---           & ---                 & ---                \\
+        RF-DETR          & ---             & ---                & ---           & ---           & ---                 & ---                \\
+        MobileSAM        & ---             & ---                & ---           & ---           & ---                 & ---                \\
+        Mask2Former      & ---             & ---                & ---           & ---           & ---                 & ---                \\
         \bottomrule
     \end{tabular}
     \label{tab:results_rice}
@@ -105,11 +217,11 @@
         \toprule
         \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
         \midrule
-        Mask R-CNN    & --- & --- & --- & --- & --- & --- \\
-        YOLO26-seg    & --- & --- & --- & --- & --- & --- \\
-        RF-DETR       & --- & --- & --- & --- & --- & --- \\
-        MobileSAM     & --- & --- & --- & --- & --- & --- \\
-        Mask2Former   & --- & --- & --- & --- & --- & --- \\
+        Mask R-CNN       & ---             & ---                & ---           & ---           & ---                 & ---                \\
+        YOLO26-seg       & ---             & ---                & ---           & ---           & ---                 & ---                \\
+        RF-DETR          & ---             & ---                & ---           & ---           & ---                 & ---                \\
+        MobileSAM        & ---             & ---                & ---           & ---           & ---                 & ---                \\
+        Mask2Former      & ---             & ---                & ---           & ---           & ---                 & ---                \\
         \bottomrule
     \end{tabular}
     \label{tab:results_coffee}
@@ -126,12 +238,12 @@
     \centering
     \begin{tabular}{llrrrr}
         \toprule
-        \textbf{Giai đoạn} & \textbf{Config} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} \\
+        \textbf{Giai đoạn}                                & \textbf{Config} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} \\
         \midrule
-        Phase 3 (Baseline) & \textit{[TODO]} & --- & --- & --- & --- \\
-        Phase 4 (Best)     & \textit{[TODO]} & --- & --- & --- & --- \\
+        Phase 3 (Baseline)                                & \textit{[TODO]} & ---             & ---                & ---           & ---           \\
+        Phase 4 (Best)                                    & \textit{[TODO]} & ---             & ---                & ---           & ---           \\
         \midrule
-        \multicolumn{2}{l}{\textbf{Cải thiện ($\Delta$)}} & \textbf{---} & \textbf{---} & \textbf{---} & \textbf{---} \\
+        \multicolumn{2}{l}{\textbf{Cải thiện ($\Delta$)}} & \textbf{---}    & \textbf{---}    & \textbf{---}       & \textbf{---}                  \\
         \bottomrule
     \end{tabular}
     \label{tab:tuning_comparison}
