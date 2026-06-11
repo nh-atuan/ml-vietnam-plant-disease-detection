@@ -63,17 +63,89 @@
 \textit{[TODO --- Đàm Tiến Đạt: Chèn confusion matrix và nhận xét.]}
 
 % ----------------------------------------
-\subsection{Mask2Former --- \textit{Dương Tuấn Anh}}
+\subsection{Mask2Former}
 \label{subsec:res_mask2former}
 
 \subsubsection{Biểu đồ quá trình học (Learning Curves)}
-\textit{[TODO --- Dương Tuấn Anh: Chèn biểu đồ Loss và mAP@50 trên Train/Val theo epoch cho cả Rice và Coffee. Nhận xét hội tụ.]}
+
+Hình~\ref{fig:m2f_loss_rice} và Hình~\ref{fig:m2f_loss_coffee} biểu diễn loss huấn luyện và kiểm định theo $30$ epoch cho hai cấu hình trên từng domain. Ở cấu hình baseline (Swin-T), cả hai đường loss giảm đều và bám sát nhau: trên Rice, loss kiểm định hạ từ $6{,}8$ xuống quanh $4{,}5$ rồi đi ngang, khoảng cách train--val nhỏ cho thấy mô hình hội tụ tốt và không overfit rõ rệt; xu hướng tương tự lặp lại trên Coffee. Ngược lại, cấu hình tuned (Swin-S, ảnh $512$, batch $2$, augmentation mạnh) dao động mạnh và không thể hiện xu hướng giảm ổn định: loss kiểm định bật lên các đỉnh cao bất thường ở nhiều epoch và không hội tụ về mức của baseline. Đây là dấu hiệu sớm cho thấy cấu hình tuned không cải thiện được chất lượng, sẽ được phân tích kỹ ở Mục~\ref{sec:discussion}.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/m2f_rice_loss_baseline.png}
+        \caption{run1\_baseline (Swin-T)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/m2f_rice_loss_tuned.png}
+        \caption{run2\_tuned (Swin-S)}
+    \end{subfigure}
+    \caption{Loss train/val theo epoch của Mask2Former trên tập \textbf{Rice}.}
+    \label{fig:m2f_loss_rice}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/m2f_coffee_loss_baseline.png}
+        \caption{run1\_baseline (Swin-T)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/m2f_coffee_loss_tuned.png}
+        \caption{run2\_tuned (Swin-S)}
+    \end{subfigure}
+    \caption{Loss train/val theo epoch của Mask2Former trên tập \textbf{Coffee}.}
+    \label{fig:m2f_loss_coffee}
+\end{figure}
 
 \subsubsection{Đánh giá trên tập Test}
-\textit{[TODO --- Dương Tuấn Anh: Điền bảng kết quả đầy đủ.]}
 
-\subsubsection{Confusion Matrix}
-\textit{[TODO --- Dương Tuấn Anh: Chèn confusion matrix và nhận xét.]}
+Bảng~\ref{tab:m2f_test} tổng hợp kết quả của hai cấu hình trên tập Test của từng domain. Cấu hình baseline cho kết quả tốt vượt trội: mAP@50 đạt $0{,}920$ trên Coffee và $0{,}697$ trên Rice, kèm mIoU và Dice ở mức cao. Cấu hình tuned suy giảm nghiêm trọng ở mAP trên cả hai domain (mAP@50 chỉ còn $0{,}106$ trên Rice và $0{,}126$ trên Coffee), xác nhận quan sát từ learning curves. Một chi tiết đáng lưu ý: trên Coffee, mIoU và Dice của cấu hình tuned vẫn ở mức khá ($0{,}737$ và $0{,}751$) trong khi mAP sụp đổ. Điều này cho thấy mô hình vẫn khoanh được vùng bệnh nhưng điểm tin cậy và thứ tự xếp hạng instance kém, khiến mAP --- vốn nhạy với confidence ranking --- bị ảnh hưởng nặng hơn nhiều so với các chỉ số chồng lấp vùng.
+
+\begin{table}[H]
+    \caption{Kết quả Mask2Former trên tập Test theo từng cấu hình và domain}
+    \centering
+    \begin{tabular}{llrrrrrr}
+        \toprule
+        \textbf{Domain} & \textbf{Cấu hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
+        \midrule
+        \multirow{2}{*}{Rice}
+            & baseline (Swin-T) & \textbf{0,697} & \textbf{0,676} & \textbf{0,651} & \textbf{0,662} & 96,81  & 181,07 \\
+            & tuned (Swin-S)    & 0,106 & 0,104 & 0,255 & 0,259 & 104,15 & 262,48 \\
+        \midrule
+        \multirow{2}{*}{Coffee}
+            & baseline (Swin-T) & \textbf{0,920} & \textbf{0,900} & \textbf{0,887} & \textbf{0,900} & 62,88  & 181,07 \\
+            & tuned (Swin-S)    & 0,126 & 0,122 & 0,737 & 0,751 & 107,76 & 262,48 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:m2f_test}
+\end{table}
+
+Cấu hình \textbf{run1\_baseline (Swin-T)} được chọn làm kết quả đại diện của Mask2Former trong bảng so sánh tổng hợp (Bảng~\ref{tab:results_rice} và~\ref{tab:results_coffee}).
+
+\subsubsection{Trực quan hóa dự đoán}
+
+Hình~\ref{fig:m2f_viz_rice} và~\ref{fig:m2f_viz_coffee} đối chiếu ảnh gốc, ground-truth và mask dự đoán của mô hình baseline trên một số ảnh Test. Mask dự đoán bám tương đối sát vùng bệnh trên các ảnh nền sạch; các trường hợp lệch chủ yếu rơi vào ảnh có nền phức tạp hoặc vùng bệnh nhỏ, được phân tích ở Mục~\ref{subsec:error_analysis}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=0.62\textheight]{img/m2f_rice_viz.png}
+    \caption{Mask2Former (baseline) trên tập \textbf{Rice}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
+    \label{fig:m2f_viz_rice}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=0.62\textheight]{img/m2f_coffee_viz.png}
+    \caption{Mask2Former (baseline) trên tập \textbf{Coffee}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
+    \label{fig:m2f_viz_coffee}
+\end{figure}
 
 % ----------------------------------------
 \subsection{Bảng so sánh tổng hợp (Phase 3)}
@@ -92,7 +164,7 @@
         YOLO26-seg    & --- & --- & --- & --- & --- & --- \\
         RF-DETR       & --- & --- & --- & --- & --- & --- \\
         MobileSAM     & --- & --- & --- & --- & --- & --- \\
-        Mask2Former   & --- & --- & --- & --- & --- & --- \\
+        Mask2Former   & 0,697 & 0,676 & 0,651 & 0,662 & 96,81 & 181,07 \\
         \bottomrule
     \end{tabular}
     \label{tab:results_rice}
@@ -109,7 +181,7 @@
         YOLO26-seg    & --- & --- & --- & --- & --- & --- \\
         RF-DETR       & --- & --- & --- & --- & --- & --- \\
         MobileSAM     & --- & --- & --- & --- & --- & --- \\
-        Mask2Former   & --- & --- & --- & --- & --- & --- \\
+        Mask2Former   & 0,920 & 0,900 & 0,887 & 0,900 & 62,88 & 181,07 \\
         \bottomrule
     \end{tabular}
     \label{tab:results_coffee}

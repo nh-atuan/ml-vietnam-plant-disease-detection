@@ -75,17 +75,40 @@ Xem thêm không gian tìm kiếm hyperparameter của Phase~4 tại Mục~\ref{
 \textit{[TODO --- Đàm Tiến Đạt: Batch size, epochs, frozen encoder vs fine-tune toàn bộ, v.v.]}
 
 % ----------------------------------------
-\subsection{Mask2Former --- \textit{Dương Tuấn Anh}}
+\subsection{Mask2Former}
 \label{subsec:config_mask2former}
 
 \subsubsection{Tiền xử lý đầu vào đặc thù}
-\textit{[TODO --- Dương Tuấn Anh: Mô tả pipeline tiền xử lý riêng của Mask2Former (chuẩn hóa ImageNet mean/std, format annotation COCO panoptic/instance, v.v.).]}
+Annotation được giữ ở định dạng \textbf{COCO instance} (\texttt{train/val/test.coco.json}) để khớp với \texttt{Mask2FormerImageProcessor} của Hugging Face. Ảnh được resize về cạnh dài $384$ pixel ở cấu hình baseline và $512$ pixel ở cấu hình tuned, sau đó chuẩn hóa theo mean/std của ImageNet ($\mu = [0{,}485, 0{,}456, 0{,}406]$, $\sigma = [0{,}229, 0{,}224, 0{,}225]$) đúng như phân phối mà trọng số pre-trained trên COCO kỳ vọng. Trong khi huấn luyện, các mask ground-truth được chuyển sang dạng tập mask nhị phân kèm nhãn lớp tương ứng với từng instance.
 
 \subsubsection{Hàm mất mát}
-\textit{[TODO --- Dương Tuấn Anh: Nêu hàm mất mát ($\lambda_{cls}\mathcal{L}_{cls} + \lambda_{mask}\mathcal{L}_{mask} + \lambda_{dice}\mathcal{L}_{dice}$) với các hệ số $\lambda$ và lý do.]}
+Mask2Former tối ưu hàm mất mát của bài toán mask classification, ghép cặp dự đoán với ground-truth bằng \emph{bipartite matching} (thuật toán Hungarian) trước khi tính loss:
+\[
+    \mathcal{L} = \lambda_{cls}\,\mathcal{L}_{cls} + \lambda_{ce}\,\mathcal{L}_{ce} + \lambda_{dice}\,\mathcal{L}_{dice},
+\]
+trong đó $\mathcal{L}_{cls}$ là cross-entropy cho nhãn lớp của mỗi query, còn $\mathcal{L}_{ce}$ (binary cross-entropy theo pixel) và $\mathcal{L}_{dice}$ cùng giám sát chất lượng mask. Nhóm giữ nguyên trọng số mặc định của bản cài đặt gốc ($\lambda_{cls}{=}2$, $\lambda_{ce}{=}5$, $\lambda_{dice}{=}5$). Sự kết hợp BCE và Dice là cần thiết: BCE ổn định gradient ở mức pixel, trong khi Dice trực tiếp tối ưu độ chồng lấp vùng và ít nhạy cảm với mất cân bằng foreground/background --- đặc điểm phổ biến ở ảnh lá nơi vùng bệnh thường nhỏ so với nền.
 
 \subsubsection{Thuật toán tối ưu \& Learning Rate}
-\textit{[TODO --- Dương Tuấn Anh: Optimizer (AdamW, weight\_decay=0.05), LR khác nhau cho backbone ($10^{-4}$) và head ($10^{-3}$), polynomial decay và lý do.]}
+Mô hình được huấn luyện bằng \textbf{AdamW}. Cấu hình baseline dùng learning rate $5\times10^{-5}$ với weight decay $1\times10^{-4}$; cấu hình tuned tăng learning rate lên $1\times10^{-4}$ và giảm weight decay xuống $5\times10^{-5}$. AdamW phù hợp với kiến trúc Transformer nhờ tách phần phạt $L_2$ khỏi bước cập nhật momentum, giúp huấn luyện ổn định hơn so với SGD khi fine-tune trên dữ liệu hạn chế.
 
 \subsubsection{Siêu tham số}
-\textit{[TODO --- Dương Tuấn Anh: Batch size, epochs, backbone được dùng (ResNet-50 hay Swin), pretrained weights, v.v.]}
+Nhóm thử nghiệm hai cấu hình để khảo sát ảnh hưởng của dung lượng backbone, độ phân giải đầu vào và cường độ augmentation (Bảng~\ref{tab:m2f_hparams}). Cả hai đều khởi tạo từ trọng số COCO-instance và huấn luyện $30$ epoch trên Kaggle (GPU P100/T4).
+
+\begin{table}[H]
+    \caption{Hai cấu hình huấn luyện Mask2Former (áp dụng cho cả Rice và Coffee)}
+    \centering
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Siêu tham số} & \textbf{run1\_baseline} & \textbf{run2\_tuned} \\
+        \midrule
+        Backbone        & Swin-T (tiny)       & Swin-S (small)      \\
+        Image size      & $384$               & $512$               \\
+        Batch size      & $4$                 & $2$                 \\
+        Learning rate   & $5\times10^{-5}$    & $1\times10^{-4}$    \\
+        Weight decay    & $1\times10^{-4}$    & $5\times10^{-5}$    \\
+        Epochs          & $30$                & $30$                \\
+        Augmentation    & light               & strong              \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:m2f_hparams}
+\end{table}

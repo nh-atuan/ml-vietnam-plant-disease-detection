@@ -18,6 +18,9 @@
 \end{itemize}
 Ghi rõ cách khắc phục đã áp dụng (Dropout, Early Stopping, tăng augmentation, giảm LR, v.v.).]}
 
+\paragraph{Mask2Former.}
+Cấu hình baseline (Swin-T) hội tụ tốt trên cả hai domain: loss train và val cùng giảm ổn định và bám sát nhau (Hình~\ref{fig:m2f_loss_rice}, \ref{fig:m2f_loss_coffee}), gap train--val nhỏ, mAP test cao --- không có dấu hiệu overfit. Cấu hình tuned (Swin-S) lại rơi vào trạng thái \emph{underfitting bất ổn}: loss train không giảm bền vững và loss val dao động mạnh quanh mức cao, kéo theo mAP test sụp đổ. Nguyên nhân không nằm ở dung lượng mô hình mà ở tương tác giữa các siêu tham số được đẩy lên đồng thời: backbone lớn hơn (Swin-S), độ phân giải $512$ và augmentation \texttt{strong} làm bài toán khó hơn, trong khi batch size chỉ còn $2$ khiến ước lượng gradient nhiễu và batch statistics kém tin cậy; learning rate $1\times10^{-4}$ trở nên quá lớn trong điều kiện đó, đẩy quá trình huấn luyện ra khỏi vùng ổn định. Hệ quả là $30$ epoch không đủ để mô hình hội tụ. Hướng khắc phục hợp lý là cô lập từng thay đổi (tăng batch bằng gradient accumulation, hạ learning rate, giảm cường độ augmentation hoặc kéo dài lịch huấn luyện) thay vì thay đổi tất cả cùng lúc; trong phạm vi đồ án, nhóm chọn baseline làm cấu hình đại diện.
+
 % ----------------------------------------
 \subsection{Phân tích các trường hợp dự đoán sai}
 \label{subsec:error_analysis}
@@ -33,6 +36,9 @@ Với mỗi ví dụ: hiển thị ảnh gốc, ground truth mask, predicted mas
 
 \textit{[TODO --- Từng thành viên: Phân tích xem mô hình của mình có mắc các lỗi nhầm lẫn trên không,
 và đưa ra giả thuyết nguyên nhân (nhiễu nền, vết bệnh nhỏ, chồng lấp lá, mất cân bằng lớp...).]}
+
+\paragraph{Mask2Former.}
+Trên các ảnh trực quan hóa (Hình~\ref{fig:m2f_viz_rice}, \ref{fig:m2f_viz_coffee}), mô hình baseline khoanh đúng vùng bệnh ở phần lớn ảnh có nền sạch và lá nằm rõ trong khung hình. Các lỗi tập trung ở ba nhóm tình huống. Thứ nhất, ảnh chụp thực địa có \emph{nền phức tạp} (đất, lá khác, ánh sáng loang) khiến mask bị tràn ra ngoài vùng bệnh hoặc bắt nhầm vùng nền có màu tương tự. Thứ hai, các \emph{vết bệnh nhỏ và rải rác} dễ bị bỏ sót do bị thu nhỏ thêm khi resize ảnh về $384$. Thứ ba, đúng như dự đoán từ EDA, mô hình thỉnh thoảng nhầm giữa \texttt{BrownSpot} và \texttt{LeafBlast} trên lúa --- hai lớp có vết nâu tương đồng về màu --- và giữa \texttt{AlgalLeafSpot} với \texttt{Rust} trên cà phê khi ánh sáng kém làm mờ khác biệt màu sắc. So sánh giữa hai domain cho thấy Coffee dễ hơn Rice (mAP@50 $0{,}920$ so với $0{,}697$), nhiều khả năng do vùng bệnh trên lá cà phê có ranh giới rõ và tương phản với nền tốt hơn so với các vết bệnh mảnh, lan tỏa trên lá lúa.
 
 % ----------------------------------------
 \subsection{So sánh tổng hợp các mô hình}
