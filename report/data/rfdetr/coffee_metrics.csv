@@ -1,0 +1,2 @@
+domain,run,name,model_size,epochs,batch_size,grad_accum_steps,lr,lr_encoder,gradient_checkpointing,early_stopping,early_stopping_patience,mAP50_bbox,mAP50_95_bbox,mAP50_segm,mAP50_95_segm,mIoU,Dice,inference_ms_per_image,num_eval_images,checkpoint
+coffee,train_lr1e4,train_lr1e4,nano,8,4,4,0.0001,0.00015,True,True,5,0.8198165350503374,0.5979787450053913,0.8428347767573544,0.8250834673838836,0.8575045850168816,0.8717577103904526,70.30641340969308,576,/kaggle/working/rf_detr_artifacts/coffee/train_lr1e4/checkpoint_best_total.pth

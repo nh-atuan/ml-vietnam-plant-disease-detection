@@ -8,7 +8,7 @@
 
 \textit{Phần này do từng thành viên tự hoàn thiện theo mô hình mình phụ trách.
 Mỗi mô hình cần trình bày đầy đủ các mục con bên dưới.
-Xem thêm không gian tìm kiếm hyperparameter của Phase~4 tại Mục~\ref{subsec:tuning_results}.}
+Riêng RF-DETR chỉ mô tả phương pháp tinh chỉnh cấu hình fine-tune, không trình bày hyperparameter search tự động.}
 
 % ----------------------------------------
 \subsection{Mask R-CNN --- \textit{Lê Xuân Trí}}
@@ -47,16 +47,102 @@ Xem thêm không gian tìm kiếm hyperparameter của Phase~4 tại Mục~\ref{
 \label{subsec:config_rfdetr}
 
 \subsubsection{Tiền xử lý đầu vào đặc thù}
-\textit{[TODO --- Tống Thanh Phúc: Mô tả pipeline tiền xử lý riêng của RF-DETR (kích thước input, format annotation, chuẩn hóa, v.v.).]}
+RF-DETR được huấn luyện từ dữ liệu COCO segmentation. Notebook không dùng trực tiếp toàn bộ thư mục ảnh thô, mà trước hết xây dựng lại dataset theo format RF-DETR:
+
+\begin{itemize}
+    \item Đọc file \texttt{annotations.coco.json} của từng domain: \texttt{coffee\_leaf\_disease} và \texttt{rice\_leaf\_disease}.
+    \item Resolve đường dẫn ảnh thực tế trên Kaggle.
+    \item Loại bỏ ảnh không có annotation hợp lệ.
+    \item Loại bỏ nhãn invalid/background như \texttt{uit}, \texttt{none}, nhãn rỗng, \texttt{invalid}, \texttt{background}.
+    \item Remap nhãn coffee từ folder/category id số sang nhãn sạch: \texttt{LeafMiner}, \texttt{PowderyMildew}, \texttt{Rust}, \texttt{AlgalLeafSpot}.
+    \item Giữ nguyên multi-annotation, đặc biệt với rice vì một ảnh có thể chứa nhiều vùng bệnh.
+    \item Chia raw data thành train/valid/test theo tỷ lệ $70/15/15$.
+\end{itemize}
+
+Trong hai notebook \texttt{train-eva-coffee.ipynb} và \texttt{train-eva-rice.ipynb}, biến \texttt{USE\_PROCESSED\_EXTRA} đang được đặt bằng 0. Vì vậy lần chạy báo cáo hiện tại \textbf{không dùng thêm dữ liệu processed}; nguồn train/evaluate chính là raw COCO. Code vẫn có nhánh hỗ trợ processed extra nếu bật lại, nhưng nhánh đó chỉ tạo pseudo full-image annotation vì \texttt{processed/} không có lesion mask COCO thật.
+
+Dataset RF-DETR sau khi dựng được lưu tại:
+
+\begin{verbatim}
+/kaggle/working/rfdetr_datasets/coffee
+/kaggle/working/rfdetr_datasets/rice
+\end{verbatim}
+
+Các artifact đã export vào báo cáo được chuẩn hóa tên tại:
+
+\begin{verbatim}
+report/data/rfdetr/
+report/img/rfdetr/
+\end{verbatim}
 
 \subsubsection{Hàm mất mát}
-\textit{[TODO --- Tống Thanh Phúc: Nêu hàm mất mát (Hungarian matching loss: CE + GIoU + L1) và lý do.]}
+Notebook gọi trực tiếp hàm \texttt{model.train(...)} của thư viện \texttt{rfdetr}; phần loss nội bộ do RF-DETR quản lý. Về bản chất, RF-DETR thuộc họ DETR nên quá trình học dựa trên matching giữa prediction queries và ground truth, kết hợp các thành phần loss cho phân loại, định vị box và mask segmentation.
 
-\subsubsection{Thuật toán tối ưu \& Learning Rate}
-\textit{[TODO --- Tống Thanh Phúc: Optimizer (AdamW), LR, linear warmup + cosine scheduler và lý do.]}
+Trong báo cáo, nhóm mô tả loss ở mức hệ thống như sau:
+
+\begin{itemize}
+    \item Classification loss để học nhãn bệnh của từng prediction.
+    \item Box regression loss để học vị trí vùng bệnh.
+    \item Mask/segmentation loss để học vùng mask bệnh.
+    \item Matching loss theo tinh thần DETR để gán prediction với ground truth theo cách end-to-end.
+\end{itemize}
+
+Do nhóm dùng implementation RF-DETR có sẵn, các hệ số loss chi tiết không được chỉnh tay trong notebook.
+
+\subsubsection{Thuật toán tối ưu và Learning Rate}
+Các tham số tối ưu được truyền vào hàm train:
+
+\begin{verbatim}
+lr = 1e-4
+lr_encoder = 1.5e-4
+gradient_checkpointing = True
+early_stopping = True
+early_stopping_min_delta = 0.001
+\end{verbatim}
+
+RF-DETR tự cấu hình optimizer/scheduler tương ứng với implementation của thư viện. Nhóm không tự viết optimizer riêng trong notebook. Hai learning rate được tách riêng cho phần model chính và encoder để quá trình fine-tune ổn định hơn trên dataset có kích thước vừa.
+
+Khi evaluate test set, notebook dùng ngưỡng confidence \texttt{threshold=0.35}. Đây là ngưỡng được dùng để tạo metric tổng hợp, confusion matrix và các thống kê per-class trong artifact của báo cáo.
 
 \subsubsection{Siêu tham số}
-\textit{[TODO --- Tống Thanh Phúc: Batch size, epochs, frozen/unfrozen backbone layers, v.v.]}
+Cấu hình train duy nhất trong hai notebook là:
+
+\begin{table}[H]
+    \caption{Cấu hình huấn luyện RF-DETR trong notebook}
+    \centering
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Tham số} & \textbf{Giá trị} \\
+        \midrule
+        Model size & \texttt{nano} \\
+        Tên run & \texttt{train\_lr1e4} \\
+        Epochs & 8 \; (2 nếu \texttt{QUICK\_RUN=1}) \\
+        Batch size coffee & 4 \\
+        Batch size rice & 2 \\
+        Gradient accumulation & 4 \\
+        Learning rate & $1\times10^{-4}$ \\
+        Encoder learning rate & $1.5\times10^{-4}$ \\
+        Checkpoint interval & $\min(5,\ \text{epochs})$ \\
+        Early stopping patience & 5 \; (2 nếu \texttt{QUICK\_RUN=1}) \\
+        TensorBoard & Bật \\
+        WandB & Tắt \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:rfdetr_train_config}
+\end{table}
+
+\subsubsection{Tinh chỉnh tham số}
+Notebook hiện tại không chạy RayTune/ASHA hay grid search nhiều cấu hình. Thay vào đó, nhóm tinh chỉnh cấu hình theo hướng thủ công và an toàn tài nguyên. Phương pháp tinh chỉnh gồm:
+
+\begin{itemize}
+    \item Chọn \texttt{RFDETRSegNano} để vừa với GPU Kaggle và giảm thời gian huấn luyện.
+    \item Giữ số epoch là 8 để đủ quan sát hội tụ nhưng không vượt quá thời lượng notebook.
+    \item Dùng batch size khác nhau cho coffee và rice do rice có ảnh/annotation phức tạp hơn, dễ tốn VRAM hơn.
+    \item Dùng gradient accumulation để tăng batch hiệu dụng mà không cần tăng batch thật trên GPU.
+    \item Bật early stopping để tránh huấn luyện dư khi mAP validation không cải thiện.
+\end{itemize}
+
+Như vậy, phần tinh chỉnh trong báo cáo được hiểu là \textbf{phương pháp chọn cấu hình fine-tune của RF-DETR}, không phải một thí nghiệm hyperparameter tuning tự động hay một bảng kết quả before/after riêng.
 
 % ----------------------------------------
 \subsection{MobileSAM --- \textit{Đàm Tiến Đạt}}

@@ -10,20 +10,17 @@
 % ----------------------------------------
 \subsection{Hiện tượng Overfitting / Underfitting}
 
-\textit{[TODO --- Từng thành viên tự phân tích mô hình của mình dựa vào learning curves (Mục~\ref{sec:results}):
-\begin{itemize}
-    \item Overfitting: train mAP cao nhưng val mAP thấp hơn đáng kể ($>10\%$); loss val tăng khi loss train tiếp tục giảm.
-    \item Underfitting: cả train lẫn val đều thấp; loss không giảm hoặc giảm rất chậm.
-    \item Hội tụ tốt: cả hai loss giảm ổn định, gap train--val nhỏ.
-\end{itemize}
-Ghi rõ cách khắc phục đã áp dụng (Dropout, Early Stopping, tăng augmentation, giảm LR, v.v.).]}
+Đối với RF-DETR, learning curve trong Hình~\ref{fig:rfdetr_coffee_curve} và Hình~\ref{fig:rfdetr_rice_curve} cho thấy loss huấn luyện giảm dần qua các epoch. Coffee có xu hướng ổn định hơn: validation segmentation mAP@50 đạt khoảng $0.9207$ ở epoch cuối được log, trong khi kết quả test đạt mAP50:95 segmentation $0.825083$, mIoU $0.857505$ và Dice $0.871758$. Điều này cho thấy mô hình học được đặc trưng mask khá tốt trên tập coffee, chưa có dấu hiệu overfitting nghiêm trọng trong phạm vi 8 epoch.
+
+Với rice, đường cong dao động hơn và validation segmentation mAP@50 đạt khoảng $0.7592$, thấp hơn coffee. Kết quả test cũng thấp hơn coffee ở các chỉ số segmentation chính: mAP50:95 segmentation $0.687440$, mIoU $0.813240$ và Dice $0.830791$. Hiện tượng này không hẳn là underfitting, vì mIoU và Dice vẫn ở mức khá; nguyên nhân hợp lý hơn là tập rice có nhiều ảnh chứa nhiều vùng bệnh, nhiều annotation trên cùng ảnh và hình thái bệnh dễ nhầm hơn.
+
+Các biện pháp đã được dùng để giảm rủi ro overfitting và quá tải tài nguyên gồm: sử dụng biến thể \texttt{RFDETRSegNano}, bật early stopping, dùng best checkpoint để evaluate thay vì epoch cuối, đặt gradient accumulation bằng $4$ và giảm batch size của rice xuống $2$. Nhóm chưa chạy hyperparameter search tự động, nên phần nhận xét này chỉ phản ánh cấu hình fine-tune cuối cùng trong notebook.
 
 % ----------------------------------------
 \subsection{Phân tích các trường hợp dự đoán sai}
 \label{subsec:error_analysis}
 
-\textit{[TODO --- Từng thành viên: Lấy 2--3 ví dụ cụ thể ảnh mô hình của mình dự đoán sai.
-Với mỗi ví dụ: hiển thị ảnh gốc, ground truth mask, predicted mask; đưa ra giả thuyết tại sao sai.]}
+Do artifact hiện tại chưa có các ảnh minh họa dạng ảnh gốc--ground truth--prediction, phần phân tích lỗi của RF-DETR được thực hiện dựa trên confusion matrix và bảng precision/recall/F1 theo lớp ở Mục~\ref{subsec:res_rfdetr}. Cách phân tích này chưa cho thấy trực quan từng ảnh sai, nhưng đủ để xác định các nhóm lỗi chính theo lớp.
 
 \textbf{Lưu ý các cặp lớp dễ nhầm đã được xác định từ EDA (Phase 2):}
 \begin{itemize}
@@ -31,14 +28,19 @@ Với mỗi ví dụ: hiển thị ảnh gốc, ground truth mask, predicted mas
     \item \textbf{AlgalLeafSpot $\leftrightarrow$ Rust (cà phê):} Cả hai tạo đốm trên lá, màu sắc tương tự trong điều kiện ánh sáng kém.
 \end{itemize}
 
-\textit{[TODO --- Từng thành viên: Phân tích xem mô hình của mình có mắc các lỗi nhầm lẫn trên không,
-và đưa ra giả thuyết nguyên nhân (nhiễu nền, vết bệnh nhỏ, chồng lấp lá, mất cân bằng lớp...).]}
+Trên coffee, RF-DETR có F1 cao nhất ở \texttt{PowderyMildew} ($0.871$) và \texttt{AlgalLeafSpot} ($0.837$). Tuy nhiên, \texttt{LeafMiner} có precision thấp ($0.578$) dù recall cao ($0.879$), cho thấy mô hình phát hiện được nhiều vùng bệnh thật nhưng cũng sinh nhiều prediction dư. Confusion matrix cho thấy nhóm \texttt{\_\_background\_\_} dự đoán vào \texttt{LeafMiner} và \texttt{Rust} khá nhiều, lần lượt $116$ và $83$ trường hợp. Đây là dấu hiệu false positive trên nền lá hoặc vùng texture giống bệnh.
+
+Lỗi giữa \texttt{AlgalLeafSpot} và \texttt{Rust} có xuất hiện nhưng không phải nguồn lỗi lớn nhất trong lần chạy này: \texttt{Rust} bị dự đoán thành \texttt{AlgalLeafSpot} $1$ trường hợp, còn \texttt{AlgalLeafSpot} bị dự đoán thành \texttt{Rust} $2$ trường hợp. Như vậy giả thuyết từ EDA về hai lớp dễ nhầm là hợp lý về mặt thị giác, nhưng với RF-DETR lỗi nổi bật hơn lại là false positive từ nền sang các lớp bệnh.
+
+Trên rice, lớp \texttt{Healthy} có F1 cao nhất ($0.775$), còn \texttt{Hispa} thấp nhất ($0.660$). \texttt{Hispa} bị dự đoán thành \texttt{Healthy} $19$ trường hợp, cho thấy mô hình có thể bỏ qua hoặc đánh giá thấp các dấu hiệu bệnh nhỏ/khó thấy. \texttt{LeafBlast} có recall cao ($0.807$) nhưng precision chỉ $0.600$, chủ yếu do nhiều prediction dư từ \texttt{\_\_background\_\_} sang \texttt{LeafBlast} ($47$ trường hợp).
+
+Đối với cặp \texttt{BrownSpot} và \texttt{LeafBlast}, confusion matrix ghi nhận nhầm hai chiều: BrownSpot thành LeafBlast $4$ trường hợp và LeafBlast thành BrownSpot $5$ trường hợp. Mức nhầm này không quá lớn nhưng phù hợp với nhận xét EDA rằng hai lớp đều có vết nâu và dễ bị ảnh hưởng bởi hình dạng/vị trí vết bệnh. Nhìn chung, lỗi trên rice đến từ cả nhầm lớp giữa các biểu hiện bệnh gần nhau lẫn false positive trên nền.
 
 % ----------------------------------------
 \subsection{So sánh tổng hợp các mô hình}
 \label{subsec:model_comparison}
 
-\textit{[TODO --- Cả nhóm tổng hợp sau khi có đủ kết quả. Điền số liệu vào bảng và xếp hạng các mô hình theo 5 tiêu chí lựa chọn.]}
+Hiện tại báo cáo mới có đầy đủ kết quả RF-DETR cho cả rice và coffee; các mô hình còn lại vẫn chờ thành viên phụ trách bổ sung. Vì vậy bảng dưới đây chỉ điền phần RF-DETR và chưa xếp hạng cuối cùng giữa 5 mô hình.
 
 \begin{table}[H]
     \caption{Bảng so sánh đa tiêu chí giữa 5 mô hình (tổng hợp từ Phase 3)}
@@ -47,13 +49,13 @@ và đưa ra giả thuyết nguyên nhân (nhiễu nền, vết bệnh nhỏ, ch
         \toprule
         \textbf{Tiêu chí} & \textbf{Mask R-CNN} & \textbf{YOLO-seg} & \textbf{RF-DETR} & \textbf{MobileSAM} & \textbf{Mask2Former} \\
         \midrule
-        mAP@50:95       & --- & --- & --- & --- & --- \\
-        mIoU            & --- & --- & --- & --- & --- \\
-        Inference (ms)  & --- & --- & --- & --- & --- \\
-        Model size (MB) & --- & --- & --- & --- & --- \\
-        Train--Val gap  & --- & --- & --- & --- & --- \\
+        mAP@50:95       & --- & --- & 0.825 (coffee) / 0.687 (rice) & --- & --- \\
+        mIoU            & --- & --- & 0.858 (coffee) / 0.813 (rice) & --- & --- \\
+        Inference (ms)  & --- & --- & 70.306 (coffee) / 198.306 (rice) & --- & --- \\
+        Model size (MB) & --- & --- & 133 & --- & --- \\
+        Train--Val gap  & --- & --- & Chưa đủ log train/val trực tiếp & --- & --- \\
         \midrule
-        \textbf{Xếp hạng} & --- & --- & --- & --- & --- \\
+        \textbf{Xếp hạng} & --- & --- & Chưa kết luận chung & --- & --- \\
         \bottomrule
     \end{tabularx}
     \label{tab:model_comparison}
@@ -62,13 +64,14 @@ và đưa ra giả thuyết nguyên nhân (nhiễu nền, vết bệnh nhỏ, ch
 % ----------------------------------------
 \subsection{Mô hình được chọn cho Phase 4}
 
-\textit{[TODO --- Cả nhóm quyết định sau khi hoàn thành bảng so sánh trên.
-Điền tên model, dataset (Rice/Coffee) và lý do chọn theo 5 tiêu chí:
-mAP@50:95, mIoU, inference time ($< 500$ms/ảnh trên CPU), model size, độ ổn định train/val.]}
+Do chưa có đủ kết quả của cả 5 mô hình, nhóm chưa thể đưa ra quyết định cuối cùng cho toàn bộ hệ thống. Nếu chỉ xét phần RF-DETR đã hoàn thiện, cấu hình RF-DETR trên coffee đang là kết quả tốt hơn so với rice về mAP50:95 segmentation, mIoU, Dice và inference time.
 
-\textbf{Quyết định:} Mô hình \textbf{\textit{[TÊN MODEL]}} trên tập \textbf{\textit{[Rice / Coffee]}} được chọn để tinh chỉnh trong Phase 4, vì:
+\textbf{Quyết định tạm thời:} RF-DETR trên tập \textbf{coffee} là ứng viên mạnh trong các kết quả RF-DETR hiện có, vì:
 \begin{itemize}
-    \item \textit{[TODO: Lý do theo tiêu chí mAP@50:95]}
-    \item \textit{[TODO: Lý do theo tiêu chí inference time / khả năng deploy]}
-    \item \textit{[TODO: Lý do theo độ ổn định, gap train/val nhỏ]}
+    \item mAP50:95 segmentation đạt $0.825083$, cao hơn rice ($0.687440$).
+    \item mIoU đạt $0.857505$ và Dice đạt $0.871758$, cho thấy chất lượng mask ổn định.
+    \item Inference trung bình khoảng $70.306$ms/ảnh, thấp hơn ngưỡng $500$ms/ảnh và nhanh hơn đáng kể so với rice trong lần đo hiện tại.
+    \item Best checkpoint khoảng $133$MB, có thể tối ưu thêm bằng export hoặc quantization khi triển khai.
 \end{itemize}
+
+Kết luận này chỉ là lựa chọn tạm thời trong phạm vi RF-DETR. Sau khi Mask R-CNN, YOLO26-seg, MobileSAM và Mask2Former được bổ sung đầy đủ kết quả, nhóm cần cập nhật lại bảng so sánh và quyết định cuối cùng.
