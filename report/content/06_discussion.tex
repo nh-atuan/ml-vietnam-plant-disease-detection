@@ -25,7 +25,7 @@ Với rice, đường cong dao động hơn và validation segmentation mAP@50 �
 Các biện pháp đã được dùng để giảm rủi ro overfitting và quá tải tài nguyên gồm: sử dụng biến thể \texttt{RFDETRSegNano}, bật early stopping, dùng best checkpoint để evaluate thay vì epoch cuối, đặt gradient accumulation bằng $4$ và giảm batch size của rice xuống $2$.
 
 \subsubsection{Đánh giá đối với mô hình YOLO26-seg}
-Đối với YOLO26-seg, tập Rice cho thấy xu hướng hội tụ tốt hơn: train loss giảm đều, validation loss không tăng kéo dài ở cuối quá trình huấn luyện, và mask mAP@50:95 tăng ổn định đến khoảng 0,6910 ở epoch 50 trên validation. Khoảng cách train - validation chủ yếu thể hiện qua loss validation cao hơn loss train, nhưng chưa đủ mạnh để kết luận overfitting nghiêm trọng. Tập Coffee có dấu hiệu underfitting hoặc bão hòa sớm theo metric instance mAP, vì mask mAP@50:95 chỉ dao động quanh 0,13 ở cuối quá trình dù learning rate đã giảm dần. Cách xử lý phù hợp cho các lần huấn luyện sau là tăng dữ liệu/augmentation cho các lớp khó, kiểm tra lại chất lượng annotation polygon và thử tăng biến thể mô hình hoặc kéo dài số epoch có early stopping.
+Đối với YOLO26-seg, tập Rice cho thấy xu hướng hội tụ tốt hơn: train loss giảm đều, validation loss không tăng kéo dài ở cuối quá trình huấn luyện, và mask mAP@50:95 tăng ổn định đến khoảng 0,6910 ở epoch 50 trên validation. Khoảng cách train-validation chủ yếu thể hiện qua loss validation cao hơn loss train, nhưng chưa đủ mạnh để kết luận overfitting nghiêm trọng. Tập Coffee có dấu hiệu underfitting hoặc bão hòa sớm theo metric instance mAP, vì mask mAP@50:95 chỉ dao động quanh 0,13 ở cuối quá trình dù learning rate đã giảm dần. Cách xử lý phù hợp cho các lần huấn luyện sau là tăng dữ liệu/augmentation cho các lớp khó, kiểm tra lại chất lượng annotation polygon và thử tăng biến thể mô hình hoặc kéo dài số epoch có early stopping.
 
 \subsubsection{Đánh giá đối với mô hình MobileSAM}
 Đối với MobileSAM, quá trình huấn luyện chỉ tinh chỉnh duy nhất nhánh Mask Decoder và đóng băng các thành phần trích xuất đặc trưng (Image Encoder và Prompt Encoder). Sự kết hợp này mang lại đường học vô cùng mượt mà (Hình~\ref{fig:mobilesam_learning_curves}), với khoảng cách giữa train loss và validation loss tiệm cận về 0 sau epoch 15. Điều này cho thấy mô hình hoàn toàn tránh được hiện tượng overfitting do số lượng tham số cần tối ưu hóa rất nhỏ ($\approx 3,87$ triệu tham số) so với lượng tri thức khổng lồ được thừa hưởng từ pre-trained backbone. Mô hình cũng không bị underfitting vì đạt độ tương đồng pixel khá tốt trên tập kiểm thử (mIoU đạt $0,6671$ trên Coffee và $0,5440$ trên Rice), chứng tỏ khả năng học thích ứng nhanh với miền dữ liệu bệnh thực vật cụ thể.
@@ -82,14 +82,14 @@ Dưới đây là bảng so sánh tổng hợp đa tiêu chí giữa 5 mô hình
         \toprule
         \textbf{Tiêu chí} & \textbf{Mask R-CNN} & \textbf{YOLO26-seg} & \textbf{RF-DETR} & \textbf{MobileSAM} & \textbf{Mask2Former} \\
         \midrule
-        \multicolumn{6}{l}{\textbf{Tập dữ liệu Lúa (Rice)}} \\
+        \multicolumn{6}{l}{\textbf{Tập dữ liệu Lúa}} \\
         \quad mAP@50:95 & 0,5294 & \textbf{0,7506} & 0,6874 & 0,5141 & 0,6760 \\
         \quad mIoU & \textbf{0,8669} & 0,8210 & 0,8132 & 0,5440 & 0,6510 \\
         \quad Infer (ms) & 760,50 & \textbf{65,72} & 198,31 & 1487,54 & 96,81 \\
         \quad Model size (MB) & 503,44 & \textbf{6,23} & 133,00 & 41,30 & 181,07 \\
         \quad Overfitting gap & Trung bình & Rất nhỏ & Thấp & Không có & Rất nhỏ \\
         \midrule
-        \multicolumn{6}{l}{\textbf{Tập dữ liệu Cà phê (Coffee)}} \\
+        \multicolumn{6}{l}{\textbf{Tập dữ liệu Cà phê}} \\
         \quad mAP@50:95 & \textbf{0,9041} & 0,1235 & 0,8251 & 0,6591 & 0,9000 \\
         \quad mIoU & \textbf{0,9128} & 0,8763 & 0,8575 & 0,6671 & 0,8870 \\
         \quad Infer (ms) & 702,36 & \textbf{20,21} & 70,31 & 1616,84 & 62,88 \\
@@ -107,6 +107,6 @@ Dưới đây là bảng so sánh tổng hợp đa tiêu chí giữa 5 mô hình
 Dựa trên bảng so sánh đa tiêu chí ở Bảng~\ref{tab:model_comparison}, nhóm nghiên cứu đưa ra quyết định chọn mô hình tối ưu cho từng loại cây trồng để triển khai trên hệ thống chẩn đoán thực tế:
 
 \begin{enumerate}
-    \item Đối với bệnh trên cây Lúa (Rice):Nhóm lựa chọn mô hình \textbf{YOLO26-seg}. Mặc dù Mask R-CNN đạt mIoU cao nhất ($0,8669$), YOLO26-seg lại vượt trội hoàn toàn về chỉ số \texttt{mAP@50:95} ($0,7506$ so với $0,5294$). Quan trọng hơn, YOLO26-seg có tốc độ suy luận cực nhanh ($65,72$ ms) và kích thước siêu nhẹ ($6,23$ MB), hoàn toàn đáp ứng yêu cầu suy luận thời gian thực trên các thiết bị di động của nông dân và máy chủ web có tài nguyên hạn chế.
-    \item Đối với bệnh trên cây Cà phê (Coffee):Nhóm quyết định lựa chọn mô hình \textbf{Mask2Former}. Mặc dù Mask R-CNN đạt hiệu năng cao nhất về mặt lý thuyết (\texttt{mAP@50:95} = $0,9041$), mô hình này quá nặng ($501,73$ MB) và tốc độ suy luận quá chậm ($702,36$ ms), không khả thi cho triển khai ứng dụng web. Mask2Former (backbone Swin-T) là sự đánh đổi hoàn hảo khi đạt hiệu năng tiệm cận sát sao với Mask R-CNN (\texttt{mAP@50:95} = $0,9000$, chỉ kém $0,41\%$), nhưng lại có tốc độ suy luận nhanh hơn gấp 11 lần ($62,88$ ms) và dung lượng nhỏ hơn gần 3 lần ($181,07$ MB), đảm bảo tính thực tiễn cao khi đưa vào sử dụng.
+    \item Đối với bệnh trên cây Lúa:Nhóm lựa chọn mô hình \textbf{YOLO26-seg}. Mặc dù Mask R-CNN đạt mIoU cao nhất ($0,8669$), YOLO26-seg lại vượt trội hoàn toàn về chỉ số \texttt{mAP@50:95} ($0,7506$ so với $0,5294$). Quan trọng hơn, YOLO26-seg có tốc độ suy luận cực nhanh ($65,72$ ms) và kích thước siêu nhẹ ($6,23$ MB), hoàn toàn đáp ứng yêu cầu suy luận thời gian thực trên các thiết bị di động của nông dân và máy chủ web có tài nguyên hạn chế.
+    \item Đối với bệnh trên cây Cà phê:Nhóm quyết định lựa chọn mô hình \textbf{Mask2Former}. Mặc dù Mask R-CNN đạt hiệu năng cao nhất về mặt lý thuyết (\texttt{mAP@50:95} = $0,9041$), mô hình này quá nặng ($501,73$ MB) và tốc độ suy luận quá chậm ($702,36$ ms), không khả thi cho triển khai ứng dụng web. Mask2Former (backbone Swin-T) là sự đánh đổi hoàn hảo khi đạt hiệu năng tiệm cận sát sao với Mask R-CNN (\texttt{mAP@50:95} = $0,9000$, chỉ kém $0,41\%$), nhưng lại có tốc độ suy luận nhanh hơn gấp 11 lần ($62,88$ ms) và dung lượng nhỏ hơn gần 3 lần ($181,07$ MB), đảm bảo tính thực tiễn cao khi đưa vào sử dụng.
 \end{enumerate}

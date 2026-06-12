@@ -5,13 +5,13 @@
 \section{Kết luận}
 \label{sec:conclusion}
 
-Đồ án đã nghiên cứu và xây dựng thành công hệ thống phân vùng thực thể (Instance Segmentation) chẩn đoán bệnh trên lá lúa và lá cà phê dựa trên các mô hình học sâu hiện đại. Qua toàn bộ quá trình thực hiện từ tiền xử lý dữ liệu đến huấn luyện và đánh giá mô hình, nhóm nghiên cứu rút ra các kết luận sau:
+Đồ án đã nghiên cứu và xây dựng thành công hệ thống phân vùng thực thể chẩn đoán bệnh trên lá lúa và lá cà phê dựa trên các mô hình học sâu hiện đại. Qua toàn bộ quá trình thực hiện từ tiền xử lý dữ liệu đến huấn luyện và đánh giá mô hình, nhóm nghiên cứu rút ra các kết luận sau:
 
 \begin{enumerate}
     \item Tóm tắt quy trình:Nhóm đã xây dựng và làm sạch bộ dữ liệu thực địa gồm $7.149$ ảnh chất lượng cao phân bố trên 8 lớp nhãn bệnh của cây lúa và cà phê. Năm mô hình đại diện cho hai trường phái kiến trúc chính (CNN-based và Vision Transformer-based) bao gồm Mask R-CNN, YOLO26-seg, RF-DETR, MobileSAM và Mask2Former đã được huấn luyện, tinh chỉnh siêu tham số và đánh giá toàn diện bằng các chỉ số kiểm thử nghiêm ngặt (\texttt{mAP@50}, \texttt{mAP@50:95}, \texttt{mIoU}, \texttt{Dice Score}, tốc độ suy luận và kích thước mô hình).
     \item Kết quả nổi bật:\begin{itemize}
-              \item Trên tập dữ liệu Lúa (Rice), mô hình \textbf{YOLO26-seg} được lựa chọn triển khai thực tế nhờ hiệu năng vượt trội với \texttt{mAP@50:95} đạt $0,7506$, thời gian suy luận siêu nhanh ($65,72$ ms) và dung lượng cực kỳ gọn nhẹ ($6,23$ MB).
-              \item Trên tập dữ liệu Cà phê (Coffee), mô hình \textbf{Mask2Former} (backbone Swin-T) được lựa chọn nhờ sự kết hợp hài hòa giữa độ chính xác cao (\texttt{mAP@50:95} = $0,9000$) và hiệu năng vận hành thực tế tối ưu ($62,88$ ms, kích thước $181,07$ MB), so với bản baseline Mask R-CNN quá cồng kềnh.
+              \item Trên tập dữ liệu Lúa, mô hình \textbf{YOLO26-seg} được lựa chọn triển khai thực tế nhờ hiệu năng vượt trội với \texttt{mAP@50:95} đạt $0,7506$, thời gian suy luận siêu nhanh ($65,72$ ms) và dung lượng cực kỳ gọn nhẹ ($6,23$ MB).
+              \item Trên tập dữ liệu Cà phê, mô hình \textbf{Mask2Former} (backbone Swin-T) được lựa chọn nhờ sự kết hợp hài hòa giữa độ chính xác cao (\texttt{mAP@50:95} = $0,9000$) và hiệu năng vận hành thực tế tối ưu ($62,88$ ms, kích thước $181,07$ MB), so với bản baseline Mask R-CNN quá cồng kềnh.
           \end{itemize}
     \item Hạn chế của hệ thống:\begin{itemize}
               \item Mô hình vẫn gặp khó khăn khi phát hiện các vết bệnh ở giai đoạn đầu có kích thước siêu nhỏ (chỉ vài pixel) do sự tiêu biến thông tin không gian qua các tầng trích xuất đặc trưng sâu.
@@ -21,7 +21,7 @@
     \item Hướng phát triển tiếp theo:\begin{itemize}
               \item Tích hợp các mô hình được lựa chọn (YOLO26-seg và Mask2Former) thành một pipeline thống nhất, tự động nhận diện loại cây trồng trước khi chẩn đoán bệnh.
               \item Thực hiện đo đạc và đánh giá lại tốc độ suy luận của các mô hình trên môi trường CPU để phục vụ việc tích hợp trực tiếp lên ứng dụng web và triển khai thực tế.
-              \item Thực hiện tối ưu hóa mô hình sâu thông qua lượng tử hóa (quantization) và xuất sang định dạng ONNX/TensorRT để triển khai trên ứng dụng web thời gian thực và các thiết bị di động của nông dân với độ trễ thấp ($< 200$ ms).
+              \item Thực hiện tối ưu hóa mô hình sâu thông qua lượng tử hóa và xuất sang định dạng ONNX/TensorRT để triển khai trên ứng dụng web thời gian thực và các thiết bị di động của nông dân với độ trễ thấp ($< 200$ ms).
               \item Thu thập thêm mẫu dữ liệu của các lớp thiểu số như sâu vẽ bùa để nâng cao độ bền vững và khả năng chẩn đoán toàn diện của hệ thống ngoài thực địa.
           \end{itemize}
 \end{enumerate}

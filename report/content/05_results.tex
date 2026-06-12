@@ -1,6 +1,5 @@
 % ============================================================
-% PHẦN 5  -  KẾT QUẢ THỰC NGHIỆM
-% Người phụ trách: mỗi thành viên tự viết cho mô hình của mình
+% PHẦN 5 - KẾT QUẢ THỰC NGHIỆM
 % ============================================================
 
 \section{Kết quả thực nghiệm}
@@ -126,19 +125,19 @@ Trên tập Coffee, loss huấn luyện giảm chậm hơn và validation mask m
     \caption{Kết quả YOLO26-seg trên tập Test}
     \centering
     \resizebox{\textwidth}{!}{%
-    \begin{tabular}{lrrrrrr}
+    \begin{tabular}{lrrrrrrr}
         \toprule
-        \textbf{Dataset} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
+        \textbf{Dataset} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{F1-Score} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
         \midrule
-        Rice   & 0.761382 & 0.750642 & 0.820998 & 0.833742 & 65.72 & 6.23129 \\
-        Coffee & 0.127095 & 0.123509 & 0.876297 & 0.888267 & 20.21 & 6.227811 \\
+        Rice   & 0,7614 & 0,7506 & 0,8210 & 0,8337 & \textbf{0,7653} & 65,72 & 6,23 \\
+        Coffee & 0,1271 & 0,1235 & 0,8763 & 0,8883 & \textbf{0,2186} & 20,21 & 6,23 \\
         \bottomrule
     \end{tabular}%
     }
     \label{tab:yolo26_test_results}
 \end{table}
 
-Rice đạt kết quả tốt hơn theo các metric instance mAP, đặc biệt mAP@50:95 đạt 0.750642. Coffee có mAP thấp nhưng mIoU và Dice cao do phần đánh giá mask semantic-union vẫn khớp vùng bệnh tổng thể khá tốt; điều này cho thấy mô hình có thể tìm được vùng tổn thương nhưng phân tách instance/lớp theo chuẩn mAP còn hạn chế.
+Rice đạt kết quả tốt hơn theo các metric instance mAP, đặc biệt mAP@50:95 đạt 0,7506. Coffee có mAP thấp nhưng mIoU và Dice cao do phần đánh giá mask semantic-union vẫn khớp vùng bệnh tổng thể khá tốt; điều này cho thấy mô hình có thể tìm được vùng tổn thương nhưng phân tách instance/lớp theo chuẩn mAP còn hạn chế.
 
 \subsubsection{Confusion Matrix}
 \begin{figure}[H]

@@ -108,7 +108,7 @@ YOLO26-seg là phiên bản segmentation của họ YOLO \cite{ultralytics_yolo}
     \end{figure}
 
     \item Số lượng tham số\\
-          Biến thể được dùng trong thực nghiệm là \texttt{yolo26n-seg.pt}. Checkpoint tốt nhất của hai tập dữ liệu có kích thước xấp xỉ 6.23 MB, tương ứng biến thể nano nhằm ưu tiên tốc độ suy luận. Do môi trường lưu artifact hiện tại không kèm bảng phân rã tham số theo từng module, báo cáo chỉ ghi nhận tổng quy mô mô hình ở mức checkpoint thay vì tách riêng backbone, neck và head.
+          Biến thể được dùng trong thực nghiệm là \texttt{yolo26n-seg.pt} với tổng cộng \textbf{3.056.240 tham số} (khoảng 3,06 triệu tham số). Checkpoint tốt nhất của hai tập dữ liệu có kích thước xấp xỉ 6,23 MB. Việc lựa chọn cấu hình nano này nhằm ưu tiên tốc độ suy luận và tối ưu hóa tài nguyên phần cứng khi triển khai thực tế.
 
     \item Hàm kích hoạt\\
           Các khối tích chập trong backbone và neck của YOLO dùng activation phi tuyến kiểu SiLU/Swish để giữ gradient ổn định khi huấn luyện mô hình sâu. Ở đầu ra, các nhánh dự đoán sử dụng các phép biến đổi phù hợp với từng đại lượng: xác suất lớp và hệ số mask được ràng buộc về miền xác suất, còn tọa độ hộp và phân phối DFL được giải mã theo cơ chế của Ultralytics YOLO.
