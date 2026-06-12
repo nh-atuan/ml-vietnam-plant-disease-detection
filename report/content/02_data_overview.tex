@@ -16,8 +16,8 @@ Bộ dữ liệu được xây dựng từ nhiều nguồn công khai kết hợ
         \toprule
         \textbf{Loại cây} & \textbf{Nhãn bệnh} & \textbf{Số ảnh (gốc)} & \textbf{Số ảnh (sạch)} \\
         \midrule
-        Lúa & Healthy, BrownSpot, Hispa, LeafBlast, LeafMiner & 3.421 & \textit{[TODO]} \\
-        Cà phê & Healthy, PowderyMildew, Rust, AlgalLeafSpot & 3.879 & \textit{[TODO]} \\
+        Lúa & Healthy, BrownSpot, Hispa, LeafBlast & 3.421 & \textit{[TODO]} \\
+        Cà phê & LeafMiner, PowderyMildew, Rust, AlgalLeafSpot & 3.879 & \textit{[TODO]} \\
         \midrule
         \multicolumn{2}{l}{\textbf{Tổng cộng}} & \textbf{7.300} & \textbf{7.149} \\
         \bottomrule
@@ -55,7 +55,7 @@ Nhóm áp dụng tỷ lệ phân chia \textbf{70/15/15} (Train / Validation / Te
 \end{itemize}
 
 \subsubsection{Xử lý dữ liệu mất cân bằng}
-Một số lớp bệnh hiếm (ví dụ: \texttt{LeafMiner}) có số lượng ảnh thấp hơn đáng kể so với \texttt{Healthy}. Nhóm áp dụng \textbf{WeightedRandomSampler} trong DataLoader để đảm bảo mỗi batch huấn luyện có phân phối lớp cân bằng hơn.
+Một số lớp bệnh hiếm (ví dụ: \texttt{PowderyMildew}) có số lượng ảnh thấp hơn đáng kể so với các lớp còn lại. Nhóm áp dụng \textbf{WeightedRandomSampler} trong DataLoader để đảm bảo mỗi batch huấn luyện có phân phối lớp cân bằng hơn.
 
 \subsubsection{Tăng cường dữ liệu (Data Augmentation)}
 
