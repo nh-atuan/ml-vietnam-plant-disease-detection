@@ -7,8 +7,8 @@
 \label{sec:training_config}
 
 \textit{Phần này do từng thành viên tự hoàn thiện theo mô hình mình phụ trách.
-Mỗi mô hình cần trình bày đầy đủ các mục con bên dưới.
-Xem thêm không gian tìm kiếm hyperparameter của Phase~4 tại Mục~\ref{subsec:tuning_results}.}
+    Mỗi mô hình cần trình bày đầy đủ các mục con bên dưới.
+    Xem thêm không gian tìm kiếm hyperparameter của Phase~4 tại Mục~\ref{subsec:tuning_results}.}
 
 % ----------------------------------------
 \subsection{Mask R-CNN --- \textit{Lê Xuân Trí}}
@@ -73,16 +73,57 @@ Phương pháp tinh chỉnh tham số được thực hiện theo hướng thử
 \label{subsec:config_mobilesam}
 
 \subsubsection{Tiền xử lý đầu vào đặc thù}
-\textit{[TODO --- Đàm Tiến Đạt: Mô tả pipeline tiền xử lý riêng của MobileSAM (kích thước $1024\times1024$, image embedding, prompt format, v.v.).]}
+Pipeline tiền xử lý dữ liệu đặc thù của MobileSAM được thực hiện nghiêm ngặt qua các bước:
+\begin{itemize}
+    \item Hình ảnh gốc được chuẩn hóa kích thước cố định về khổ vuông $1024 \times 1024$ pixel theo tham số \texttt{image\_size} trong file cấu hình.
+    \item Thực hiện chuẩn hóa giá trị pixel bằng tập tham số \texttt{MEAN} và \texttt{STD} cố định của kiến trúc ViT nhằm đưa dải dữ liệu về phân phối chuẩn thích hợp.
+    \item \textbf{Prompt Formatting}: Trong quá trình huấn luyện thực tế, mô hình nhận tín hiệu gợi ý dạng Bounding Box (\texttt{bbox}) bao quanh vùng bệnh lá lúa làm điều kiện định hướng không gian. Để tăng cường độ mạnh mẽ (robustness) và mô phỏng sai số của con người hoặc hệ thống detector tự động, các tọa độ hộp được áp dụng cơ chế dịch chuyển ngẫu nhiên với biên độ dịch tối đa là \texttt{max\_bbox\_shift = 20} pixel.
+\end{itemize}
 
 \subsubsection{Hàm mất mát}
-\textit{[TODO --- Đàm Tiến Đạt: Nêu hàm mất mát (Focal Loss + Dice Loss) với công thức và lý do chọn Focal cho pixel imbalance.]}
+Hàm mất mát tổng hợp $\mathcal{L}_{\text{total}}$ dùng để huấn luyện MobileSAM là sự kết hợp tuyến tính có trọng số của ba thành phần mất mát, được định nghĩa theo công thức:
+\begin{equation}
+    \mathcal{L}_{\text{total}} = 20 \times \mathcal{L}_{\text{Focal}} + \mathcal{L}_{\text{Dice}} + \mathcal{L}_{\text{MSE}}
+\end{equation}
+Trong đó:
+\begin{itemize}
+    \item \textbf{Sigmoid Focal Loss ($\mathcal{L}_{\text{Focal}}$)}: Tính toán trung bình tổn thất pixel dựa trên hàm \texttt{sigmoid\_focal\_loss}. Lý do lựa chọn thành phần này nhằm giải quyết triệt để bài toán mất cân bằng lớp nghiêm trọng (pixel imbalance) giữa diện tích vùng tổn thương do bệnh lá cây chiếm tỷ lệ rất nhỏ so với vùng nền ảnh lá lành xung quanh. Hệ số nhân trừng phạt lớn (trọng số 20) giúp ép mô hình tập trung tối đa vào các pixel biên khó phân loại.
+    \item \textbf{Dice Loss ($\mathcal{L}_{\text{Dice}}$)}: Được cấu hình với thuộc tính \texttt{squared\_pred=True} thu được từ thư viện MONAI. Hàm này tối ưu hóa trực tiếp độ trùng khớp vùng phân vùng (Intersection over Union), ngăn chặn việc suy giảm gradient khi kích thước vùng bệnh phân tách quá bé.
+    \item \textbf{MSE Loss ($\mathcal{L}_{\text{MSE}}$)}: Đo lường lỗi bình phương trung bình giữa hệ số IoU dự đoán từ nhánh phụ của Mask Decoder (\texttt{pred\_IOU}) và chỉ số IoU thực tế tính trên batch (\texttt{iou}), giúp tinh chỉnh độ tin cậy nội bộ của mạng.
+\end{itemize}
 
 \subsubsection{Thuật toán tối ưu \& Learning Rate}
-\textit{[TODO --- Đàm Tiến Đạt: Optimizer (Adam), LR, ReduceLROnPlateau và lý do.]}
+\begin{itemize}
+    \item \textbf{Optimizer}: Mô hình sử dụng thuật toán tối ưu hóa \textbf{AdamW} thay vì Adam truyền thống, đi kèm với bộ lọc chỉ cập nhật các trọng số có \texttt{requires\_grad = True}. Lựa chọn AdamW giúp quản lý hiệu quả cơ chế phân rã trọng số (weight decay), hạn chế tối đa hiện tượng quá khớp (overfitting) thường xuất hiện trên cấu trúc mạng Transformer.
+    \item \textbf{Chiến lược điều khiển Learning Rate}: Tốc độ học ban đầu được thiết lập ở mức cực nhỏ $1 \times 10^{-5}$ (\texttt{learning\_rate: 1e-5}). Nhóm không áp dụng ReduceLROnPlateau như kế hoạch ban đầu, thay vào đó mã nguồn được hiện thực hóa tối ưu hơn bằng cơ chế suy giảm dựa trên hàm cosine (\textbf{CosineAnnealingLR}) mở rộng theo tổng số bước học tập (\texttt{T\_max = epochs * len(train\_loader)}).
+    \item \textbf{Warmup steps}: Đồng thời, bộ lập lịch \textbf{LinearWarmup} được tích hợp trong \texttt{250} bước khởi đầu (\texttt{warmup\_step: 250}) để tăng dần tốc độ học từ mức 0 lên mức chỉ định, giúp ổn định hóa các gradient trong giai đoạn đầu tiên của quá trình tối ưu.
+\end{itemize}
 
 \subsubsection{Siêu tham số}
-\textit{[TODO --- Đàm Tiến Đạt: Batch size, epochs, frozen encoder vs fine-tune toàn bộ, v.v.]}
+Các thông số thiết lập chi tiết phục vụ phiên huấn luyện tinh chỉnh mô hình được trình bày trong bảng dưới đây:
+
+\begin{table}[H]
+    \centering
+    \caption{Bảng siêu tham số cấu hình thực nghiệm mạng MobileSAM.}
+    \label{tab:mobilesam_hyperparams}
+    \begin{tabular}{ll}
+        \hline
+        \textbf{Siêu tham số}                                       & \textbf{Giá trị thiết lập}                 \\ \hline
+        Dataset                                                     & \texttt{rice\_leaf\_disease} (Bệnh lá lúa) \\
+        Kích thước ảnh vào                                          & $1024 \times 1024$                         \\
+        Số lượng Epochs tối đa                                      & $10000$                                    \\
+        Batch size                                                  & $4$                                        \\
+        Tốc độ học cơ sở (Learning Rate)                            & $1 \times 10^{-5}$                         \\
+        Số bước khởi động ấm (Warmup steps)                         & $250$                                      \\
+        Chu kỳ đánh giá validation (\texttt{val\_freq})             & Mỗi $5$ Epoch                              \\
+        Cơ chế dừng sớm (\texttt{patience})                         & $10$ chu kỳ không cải thiện                \\
+        Đóng băng Image Encoder (\texttt{freeze\_image\_encoder})   & \textbf{True}                              \\
+        Đóng băng Prompt Encoder (\texttt{freeze\_prompt\_encoder}) & \textbf{True}                              \\
+        Đóng băng Mask Decoder (\texttt{freeze\_mask\_decoder})     & \textbf{False}                             \\ \hline
+    \end{tabular}
+\end{table}
+
+\textit{Lý do thiết lập đóng băng}: Nhóm thực hiện đóng băng hoàn toàn bộ Image Encoder (TinyViT) và Prompt Encoder nhằm giữ nguyên khả năng trích xuất đặc trưng tổng quát (zero-shot foundation capabilities) đã được tiền huấn luyện trên tập dữ liệu hàng triệu ảnh SA-1B. Việc chỉ tinh chỉnh (\textit{fine-tune}) duy nhất khối \textbf{Mask Decoder} gọn nhẹ giúp mô hình nhanh chóng thích ứng tốt với cấu trúc hình thái tổn thương của bệnh học thực vật (domain-specific data) mà không tốn kém tài nguyên tính toán phần cứng.
 
 % ----------------------------------------
 \subsection{Mask2Former --- \textit{Dương Tuấn Anh}}
