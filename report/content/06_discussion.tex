@@ -16,6 +16,8 @@ Với rice, đường cong dao động hơn và validation segmentation mAP@50 �
 
 Các biện pháp đã được dùng để giảm rủi ro overfitting và quá tải tài nguyên gồm: sử dụng biến thể \texttt{RFDETRSegNano}, bật early stopping, dùng best checkpoint để evaluate thay vì epoch cuối, đặt gradient accumulation bằng $4$ và giảm batch size của rice xuống $2$. Nhóm chưa chạy hyperparameter search tự động, nên phần nhận xét này chỉ phản ánh cấu hình fine-tune cuối cùng trong notebook.
 
+Đối với YOLO26-seg, tập Rice cho thấy xu hướng hội tụ tốt hơn: train loss giảm đều, validation loss không tăng kéo dài ở cuối quá trình huấn luyện, và mask mAP@50:95 tăng ổn định đến khoảng 0.6910 ở epoch 50 trên validation. Khoảng cách train--validation chủ yếu thể hiện qua loss validation cao hơn loss train, nhưng chưa đủ mạnh để kết luận overfitting nghiêm trọng. Tập Coffee có dấu hiệu underfitting hoặc bão hòa sớm theo metric instance mAP, vì mask mAP@50:95 chỉ dao động quanh 0.13 ở cuối quá trình dù learning rate đã giảm dần. Cách xử lý phù hợp cho các lần huấn luyện sau là tăng dữ liệu/augmentation cho các lớp khó, kiểm tra lại chất lượng annotation polygon và thử tăng biến thể mô hình hoặc kéo dài số epoch có early stopping.
+
 % ----------------------------------------
 \subsection{Phân tích các trường hợp dự đoán sai}
 \label{subsec:error_analysis}
@@ -35,6 +37,8 @@ Lỗi giữa \texttt{AlgalLeafSpot} và \texttt{Rust} có xuất hiện nhưng k
 Trên rice, lớp \texttt{Healthy} có F1 cao nhất ($0.775$), còn \texttt{Hispa} thấp nhất ($0.660$). \texttt{Hispa} bị dự đoán thành \texttt{Healthy} $19$ trường hợp, cho thấy mô hình có thể bỏ qua hoặc đánh giá thấp các dấu hiệu bệnh nhỏ/khó thấy. \texttt{LeafBlast} có recall cao ($0.807$) nhưng precision chỉ $0.600$, chủ yếu do nhiều prediction dư từ \texttt{\_\_background\_\_} sang \texttt{LeafBlast} ($47$ trường hợp).
 
 Đối với cặp \texttt{BrownSpot} và \texttt{LeafBlast}, confusion matrix ghi nhận nhầm hai chiều: BrownSpot thành LeafBlast $4$ trường hợp và LeafBlast thành BrownSpot $5$ trường hợp. Mức nhầm này không quá lớn nhưng phù hợp với nhận xét EDA rằng hai lớp đều có vết nâu và dễ bị ảnh hưởng bởi hình dạng/vị trí vết bệnh. Nhìn chung, lỗi trên rice đến từ cả nhầm lớp giữa các biểu hiện bệnh gần nhau lẫn false positive trên nền.
+
+Với YOLO26-seg, confusion matrix và EDA cho thấy hai nhóm lỗi chính. Trên Rice, các lớp có vết nâu hoặc vùng cháy lá tương tự nhau, đặc biệt BrownSpot và LeafBlast, dễ bị nhầm khi vùng bệnh nhỏ hoặc biên vết bệnh không rõ. Trên Coffee, AlgalLeafSpot và Rust có màu sắc/texture gần nhau trong điều kiện ánh sáng kém, đồng thời vùng bệnh có thể nhỏ và rải rác trên nền lá, làm mô hình phát hiện được vùng tổn thương tổng thể nhưng phân tách instance/lớp chưa tốt theo mAP.
 
 % ----------------------------------------
 \subsection{So sánh tổng hợp các mô hình}
