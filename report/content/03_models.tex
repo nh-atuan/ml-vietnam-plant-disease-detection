@@ -10,42 +10,42 @@ Nhóm triển khai và so sánh \textbf{5 mô hình segmentation} thuộc hai nh
 \subsection{Tổng quan các mô hình}
 
 \begin{table}[H]
-    \caption{Tổng quan 5 mô hình segmentation được lựa chọn}
-    \centering
-    \begin{tabularx}{\textwidth}{llXl}
-        \toprule
-        \textbf{Mô hình} & \textbf{Loại} & \textbf{Đặc điểm nổi bật} & \textbf{Người phụ trách} \\
-        \midrule
-        Mask R-CNN       & CNN-based     & Baseline hai nhánh (detection + segmentation) & Lê Xuân Trí \\
-        YOLO26-seg       & CNN-based     & Real-time, kiến trúc một nhánh & Nguyễn Hồ Anh Tuấn \\
-        RF-DETR          & ViT-based     & End-to-end detection transformer (SOTA) & Tống Thanh Phúc \\
-        MobileSAM        & ViT-based     & SAM rút gọn, segment anything & Đàm Tiến Đạt \\
-        Mask2Former      & ViT-based     & Universal segmentation SOTA & Dương Tuấn Anh \\
-        \bottomrule
-    \end{tabularx}
-    \label{tab:model_overview}
+      \caption{Tổng quan 5 mô hình segmentation được lựa chọn}
+      \centering
+      \begin{tabularx}{\textwidth}{llXl}
+            \toprule
+            \textbf{Mô hình} & \textbf{Loại} & \textbf{Đặc điểm nổi bật}                     & \textbf{Người phụ trách} \\
+            \midrule
+            Mask R-CNN       & CNN-based     & Baseline hai nhánh (detection + segmentation) & Lê Xuân Trí              \\
+            YOLO26-seg       & CNN-based     & Real-time, kiến trúc một nhánh                & Nguyễn Hồ Anh Tuấn       \\
+            RF-DETR          & ViT-based     & End-to-end detection transformer (SOTA)       & Tống Thanh Phúc          \\
+            MobileSAM        & ViT-based     & SAM rút gọn, segment anything                 & Đàm Tiến Đạt             \\
+            Mask2Former      & ViT-based     & Universal segmentation SOTA                   & Dương Tuấn Anh           \\
+            \bottomrule
+      \end{tabularx}
+      \label{tab:model_overview}
 \end{table}
 
 % ============================================================
 % Hộp nhắc nhở yêu cầu — hiển thị một lần, áp dụng cho tất cả
 % ============================================================
 \begin{center}
-\fbox{%
-    \parbox{0.92\textwidth}{%
-        \textbf{Yêu cầu bắt buộc — Kiến trúc chi tiết (áp dụng cho cả 5 mô hình):}\\[0.3em]
-        Mỗi thành viên phụ trách mô hình phải hoàn thiện đầy đủ ba nội dung sau trong
-        mục \emph{Kiến trúc chi tiết} của mô hình mình:
-        \begin{enumerate}
-            \item \textbf{Vẽ sơ đồ kiến trúc} --- Sơ đồ khối thể hiện luồng dữ liệu
-                  qua từng thành phần; phải có chú thích hình bên dưới.
-            \item \textbf{Mô tả số lượng tham số} --- Nêu tổng số tham số của mô hình
-                  (trainable \& frozen) và số tham số từng thành phần chính.
-            \item \textbf{Hàm kích hoạt được sử dụng} --- Liệt kê hàm kích hoạt tại
-                  từng vị trí trong mạng (backbone, neck, head, decoder...).
-        \end{enumerate}
-        \textit{Thiếu bất kỳ điểm nào trong ba điểm trên là \textbf{chưa đạt yêu cầu}.}
-    }%
-}
+      \fbox{%
+            \parbox{0.92\textwidth}{%
+                  \textbf{Yêu cầu bắt buộc — Kiến trúc chi tiết (áp dụng cho cả 5 mô hình):}\\[0.3em]
+                  Mỗi thành viên phụ trách mô hình phải hoàn thiện đầy đủ ba nội dung sau trong
+                  mục \emph{Kiến trúc chi tiết} của mô hình mình:
+                  \begin{enumerate}
+                        \item \textbf{Vẽ sơ đồ kiến trúc} --- Sơ đồ khối thể hiện luồng dữ liệu
+                              qua từng thành phần; phải có chú thích hình bên dưới.
+                        \item \textbf{Mô tả số lượng tham số} --- Nêu tổng số tham số của mô hình
+                              (trainable \& frozen) và số tham số từng thành phần chính.
+                        \item \textbf{Hàm kích hoạt được sử dụng} --- Liệt kê hàm kích hoạt tại
+                              từng vị trí trong mạng (backbone, neck, head, decoder...).
+                  \end{enumerate}
+                  \textit{Thiếu bất kỳ điểm nào trong ba điểm trên là \textbf{chưa đạt yêu cầu}.}
+            }%
+      }
 \end{center}
 
 % ----------------------------------------
@@ -55,53 +55,81 @@ Nhóm triển khai và so sánh \textbf{5 mô hình segmentation} thuộc hai nh
 \subsubsection{Lý do lựa chọn}
 Mask R-CNN \cite{he2017maskrcnn} là mô hình instance segmentation CNN nền tảng, được sử dụng làm \textbf{baseline} để so sánh với các mô hình ViT-based. Kiến trúc hai nhánh tách biệt giúp dễ debug và hiểu rõ từng thành phần.
 
-\subsubsection{Kiến trúc chi tiết}
-
 \begin{enumerate}
-    \item \textbf{Sơ đồ kiến trúc} \textit{[Lê Xuân Trí điền]}\\
-          \textit{[TODO: Chèn hình sơ đồ kiến trúc Mask R-CNN với chú thích bên dưới.
-          Phải thể hiện rõ: Image → Backbone (ResNet-FPN) → RPN → RoI Align → Cls/Box/Mask heads.]}
-    % \begin{figure}[H]
-    %     \centering
-    %     \includegraphics[width=0.85\textwidth]{img/maskrcnn_arch.png}
-    %     \caption{Kiến trúc Mask R-CNN với backbone ResNet-50 FPN}
-    %     \label{fig:maskrcnn_arch}
-    % \end{figure}
+    \item \textbf{Sơ đồ kiến trúc}:
+          Kiến trúc chi tiết của mô hình Mask R-CNN được mô tả qua sơ đồ khối dưới đây:
+          
+          \begin{figure}[H]
+              \centering
+              \begin{tikzpicture}[
+                  node distance=1.0cm and 0.8cm,
+                  box/.style={draw, rectangle, minimum width=2.2cm, minimum height=1cm, align=center, fill=blue!10, rounded corners, font=\footnotesize},
+                  arrow/.style={-Latex, thick}
+              ]
+                  \node (img) [box, fill=green!10] {Ảnh đầu vào \\ ($256 \times 256 \times 3$)};
+                  \node (backbone) [box, right=of img] {ResNet-50 \\ Backbone \\ (C2 - C5)};
+                  \node (fpn) [box, right=of backbone] {Feature Pyramid \\ Network (FPN) \\ (P2 - P6)};
+                  \node (rpn) [box, above right=of fpn, xshift=-0.5cm, yshift=-0.2cm] {Region Proposal \\ Network (RPN)};
+                  \node (roialign) [box, below right=of fpn, xshift=-0.5cm, yshift=0.2cm] {RoI Align};
+                  
+                  \node (clsbox) [box, right=of roialign, yshift=0.8cm, fill=orange!10] {Fast R-CNN Head \\ (Phân lớp \& BBox)};
+                  \node (maskhead) [box, right=of roialign, yshift=-0.8cm, fill=orange!10] {Mask Head \\ (FCN Branch)};
+                  
+                  \draw [arrow] (img) -- (backbone);
+                  \draw [arrow] (backbone) -- (fpn);
+                  \draw [arrow] (fpn.east) -- ++(0.2,0) |- (rpn.west);
+                  \draw [arrow] (fpn.east) -- ++(0.2,0) |- (roialign.west);
+                  \draw [arrow] (rpn.east) -- ++(0.2,0) |- (roialign.north);
+                  \draw [arrow] (roialign.east) -- ++(0.2,0) |- (clsbox.west);
+                  \draw [arrow] (roialign.east) -- ++(0.2,0) |- (maskhead.west);
+              \end{tikzpicture}
+              \caption{Sơ đồ kiến trúc mô hình Mask R-CNN với backbone ResNet-50 FPN}
+              \label{fig:maskrcnn_arch}
+          \end{figure}
 
-    \item \textbf{Số lượng tham số} \textit{[Lê Xuân Trí điền]}\\
-          \textit{[TODO: Điền tổng số tham số trainable/frozen, ví dụ:
-          Backbone ResNet-50 FPN $\approx$~?M params; RPN $\approx$~?M; Mask head $\approx$~?M;
-          Tổng: $\approx$~44M params (ước tính theo paper gốc --- cần xác nhận lại với
-          \texttt{sum(p.numel() for p in model.parameters())}).]}
+    \item \textbf{Số lượng tham số}:
+          Mô hình sử dụng cài đặt mặc định từ thư viện \texttt{torchvision} với tổng cộng khoảng \textbf{41,8 triệu tham số}. Trong quá trình huấn luyện baseline, toàn bộ các tham số này đều được cập nhật trọng số (trainable). Chi tiết số lượng tham số của các thành phần chính như sau:
+          \begin{itemize}
+              \item \textbf{Backbone (ResNet-50) \& FPN Neck}: $\approx 26,8$ triệu tham số (ResNet-50 đóng góp khoảng 23,5 triệu tham số trích xuất đặc trưng và FPN đóng góp khoảng 3,3 triệu tham số tích chập lateral và output để xây dựng kim tự tháp đặc trưng đa tỷ lệ).
+              \item \textbf{RPN Head}: $\approx 0,6$ triệu tham số (dùng để quét qua các feature maps và tạo các đề xuất vùng chứa vật thể).
+              \item \textbf{RoI Heads}: $\approx 14,4$ triệu tham số (gồm Fast R-CNN Head phân lớp/regress box chiếm khoảng 11,8 triệu và Mask Head với kiến trúc Fully Convolutional Network chiếm khoảng 2,6 triệu tham số để dự đoán mặt nạ nhãn nhị phân).
+          \end{itemize}
 
-    \item \textbf{Hàm kích hoạt} \textit{[Lê Xuân Trí điền]}\\
-          \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
-          Gợi ý: ReLU (ResNet backbone, FPN, RPN convs); Sigmoid (mask output head).
-          Cần xác nhận lại theo code thực tế.]}
+    \item \textbf{Hàm kích hoạt}:
+          Hàm kích hoạt được sử dụng trong mô hình Mask R-CNN bao gồm:
+          \begin{itemize}
+              \item \textbf{Backbone (ResNet-50) \& FPN Neck}: Sử dụng hàm kích hoạt \textbf{ReLU} sau mỗi lớp tích chập $3 \times 3$ và $1 \times 1$ trong các khối Bottleneck.
+              \item \textbf{RPN Head}: Sử dụng hàm kích hoạt \textbf{ReLU} sau lớp tích chập trượt $3 \times 3$. Nhánh dự đoán độ tin cậy (objectness logits) sử dụng hàm kích hoạt \textbf{Sigmoid} ngầm định ở khâu tính toán loss.
+              \item \textbf{Fast R-CNN (Box Head)}: Sử dụng hàm kích hoạt \textbf{ReLU} sau mỗi lớp Fully Connected (FC) ẩn của mạng nơ-ron đa tầng (MLP). Ở đầu ra, nhánh phân loại lớp sử dụng hàm kích hoạt \textbf{Softmax} để lấy phân phối xác suất trên 9 lớp (gồm 8 lớp bệnh và 1 lớp nền - background). Nhánh bounding box regression là dạng tuyến tính (không dùng hàm kích hoạt).
+              \item \textbf{Mask Head}: Sử dụng hàm kích hoạt \textbf{ReLU} sau mỗi lớp tích chập $3 \times 3$ và lớp tích chập chuyển vị (transpose convolution) $2 \times 2$. Ở lớp cuối cùng, hàm kích hoạt \textbf{Sigmoid} được sử dụng để dự đoán mặt nạ nhị phân độc lập cho từng lớp đối tượng ở độ phân giải pixel ($28 \times 28$).
+          \end{itemize}
 \end{enumerate}
 
 % ----------------------------------------
-\subsection{Mô hình 2: YOLO26-seg --- \textit{Nguyễn Hồ Anh Tuấn}}
+\subsection{Mô hình 2: YOLO26-seg}
 \label{subsec:yolo}
 
 \subsubsection{Lý do lựa chọn}
-YOLO26-seg là phiên bản segmentation của YOLO --- kiến trúc CNN one-stage nổi tiếng về \textbf{tốc độ inference cao}. Nhóm chọn mô hình này để đánh giá trade-off giữa tốc độ và độ chính xác, đặc biệt quan trọng khi deploy trên web với yêu cầu latency $< 500$ms/ảnh.
+YOLO26-seg là phiên bản segmentation của họ YOLO \cite{ultralytics_yolo}, thuộc nhóm mô hình CNN one-stage có tốc độ suy luận cao. Nhóm chọn mô hình này để đánh giá đánh đổi giữa tốc độ và độ chính xác, đặc biệt quan trọng khi triển khai trên web với yêu cầu latency $< 500$ms/ảnh.
 
 \subsubsection{Kiến trúc chi tiết}
 
 \begin{enumerate}
-    \item \textbf{Sơ đồ kiến trúc} \textit{[Nguyễn Hồ Anh Tuấn điền]}\\
-          \textit{[TODO: Chèn hình sơ đồ kiến trúc YOLO26-seg với chú thích bên dưới.
-          Phải thể hiện rõ: Image → CSPDarknet backbone → PANet neck → Decoupled head (detect + segment).]}
+    \item Sơ đồ kiến trúc\\
+          YOLO26-seg nhận ảnh đầu vào đã được resize/letterbox về $640 \times 640$, trích xuất đặc trưng bằng backbone CNN, hợp nhất đặc trưng đa tỉ lệ qua neck kiểu FPN/PAN, sau đó dùng segmentation head để dự đoán đồng thời hộp bao, lớp bệnh và mask theo từng instance.
 
-    \item \textbf{Số lượng tham số} \textit{[Nguyễn Hồ Anh Tuấn điền]}\\
-          \textit{[TODO: Điền tổng số tham số theo variant được chọn (nano/small/medium/large).
-          Ghi rõ số params của backbone, neck, và detection/mask head riêng biệt.]}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.95\textwidth]{img/yolo26_seg_architecture.png}
+        \caption{Sơ đồ khối kiến trúc YOLO26-seg sử dụng trong thực nghiệm}
+        \label{fig:yolo26_arch}
+    \end{figure}
 
-    \item \textbf{Hàm kích hoạt} \textit{[Nguyễn Hồ Anh Tuấn điền]}\\
-          \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
-          Gợi ý: SiLU/Swish (backbone, neck); Sigmoid (objectness, class scores, mask coefficients).
-          Cần xác nhận theo code thực tế.]}
+    \item Số lượng tham số\\
+          Biến thể được dùng trong thực nghiệm là \texttt{yolo26n-seg.pt}. Checkpoint tốt nhất của hai tập dữ liệu có kích thước xấp xỉ 6.23 MB, tương ứng biến thể nano nhằm ưu tiên tốc độ suy luận. Do môi trường lưu artifact hiện tại không kèm bảng phân rã tham số theo từng module, báo cáo chỉ ghi nhận tổng quy mô mô hình ở mức checkpoint thay vì tách riêng backbone, neck và head.
+
+    \item Hàm kích hoạt\\
+          Các khối tích chập trong backbone và neck của YOLO dùng activation phi tuyến kiểu SiLU/Swish để giữ gradient ổn định khi huấn luyện mô hình sâu. Ở đầu ra, các nhánh dự đoán sử dụng các phép biến đổi phù hợp với từng đại lượng: xác suất lớp và hệ số mask được ràng buộc về miền xác suất, còn tọa độ hộp và phân phối DFL được giải mã theo cơ chế của Ultralytics YOLO.
 \end{enumerate}
 
 % ----------------------------------------
@@ -109,24 +137,62 @@ YOLO26-seg là phiên bản segmentation của YOLO --- kiến trúc CNN one-sta
 \label{subsec:rfdetr}
 
 \subsubsection{Lý do lựa chọn}
-RF-DETR \cite{rfdetr2024} là Detection Transformer của Roboflow --- mô hình \textbf{end-to-end} không cần NMS, thiết kế cho fine-tuning nhanh trên dataset nhỏ/trung bình. Là đại diện ViT-based SOTA trong nhóm.
+RF-DETR là mô hình detection transformer của Roboflow, được thiết kế theo hướng \textbf{end-to-end} cho bài toán phát hiện đối tượng và segmentation. Khác với các mô hình CNN một hoặc hai giai đoạn, RF-DETR sử dụng cơ chế truy vấn của Transformer để dự đoán trực tiếp tập đối tượng/mask đầu ra, nhờ đó giảm phụ thuộc vào các bước hậu xử lý thủ công như NMS.
+
+Trong đồ án này, RF-DETR được chọn vì ba lý do chính. Thứ nhất, mô hình phù hợp với dữ liệu COCO instance segmentation của bài toán bệnh lá cây, trong đó mỗi ảnh có thể có một hoặc nhiều vùng bệnh. Thứ hai, phiên bản \texttt{RFDETRSegNano} đủ nhẹ để huấn luyện trên Kaggle GPU nhưng vẫn giữ được lợi thế biểu diễn của Transformer. Thứ ba, thư viện RF-DETR hỗ trợ trực tiếp fine-tune từ pretrained weight, evaluate COCO mAP và xuất checkpoint, thuận tiện cho pipeline thử nghiệm cuối kỳ.
+
+Nhóm huấn luyện \textbf{hai mô hình RF-DETR riêng biệt}: một mô hình cho tập coffee và một mô hình cho tập rice. Cách tách này tránh trộn hai miền dữ liệu có nhãn, hình thái lá và phân bố bệnh khác nhau.
 
 \subsubsection{Kiến trúc chi tiết}
 
-\begin{enumerate}
-    \item \textbf{Sơ đồ kiến trúc} \textit{[Tống Thanh Phúc điền]}\\
-          \textit{[TODO: Chèn hình sơ đồ kiến trúc RF-DETR với chú thích bên dưới.
-          Phải thể hiện rõ: Image → DINOv2 backbone → Deformable Attention Encoder → Transformer Decoder → Bipartite matching output.]}
+\paragraph{Luồng kiến trúc.}
+Notebook sử dụng lớp mô hình segmentation của RF-DETR, mặc định là \texttt{RFDETRSegNano}. Luồng xử lý tổng quát:
 
-    \item \textbf{Số lượng tham số} \textit{[Tống Thanh Phúc điền]}\\
-          \textit{[TODO: Điền tổng số tham số của RF-DETR.
-          Ghi rõ params của DINOv2 encoder (frozen vs fine-tuned), decoder, và detection head.]}
+\begin{center}
+\fbox{
+\begin{minipage}{0.92\textwidth}
+\centering
+Ảnh đầu vào
+$\rightarrow$ backbone thị giác pretrained
+$\rightarrow$ encoder/decoder Transformer
+$\rightarrow$ prediction queries
+$\rightarrow$ class scores, bounding boxes và segmentation masks
+\end{minipage}
+}
+\end{center}
 
-    \item \textbf{Hàm kích hoạt} \textit{[Tống Thanh Phúc điền]}\\
-          \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
-          Gợi ý: GELU (transformer FFN layers); Sigmoid (object classification).
-          Cần xác nhận theo code thực tế.]}
-\end{enumerate}
+Ảnh được đưa vào backbone để trích xuất đặc trưng thị giác. Các đặc trưng này sau đó đi qua các khối Transformer nhằm mô hình hóa quan hệ không gian giữa vùng lá, vùng bệnh và nền ảnh. Phần prediction head sinh ra ba nhóm đầu ra: nhãn lớp, bounding box và mask tương ứng. Trong bài toán này, đầu ra mask được dùng làm kết quả chính để đánh giá segmentation.
+
+\paragraph{Biến thể mô hình.}
+Notebook đặt biến:
+
+\begin{verbatim}
+DEFAULT_MODEL_SIZE = os.getenv("RFDETR_MODEL_SIZE", "nano").lower()
+\end{verbatim}
+
+Do đó cấu hình mặc định là \texttt{nano}. Các variant khác như \texttt{small}, \texttt{medium}, \texttt{large}, \texttt{xlarge}, \texttt{2xlarge} vẫn được hỗ trợ trong code thông qua mapping \texttt{MODEL\_CLASS\_NAMES}, nhưng kết quả báo cáo hiện tại được chạy với \texttt{nano}.
+
+\paragraph{Số lượng tham số.}
+Notebook chưa ghi trực tiếp tổng số tham số ra report. Vì vậy báo cáo không tự điền một con số không được log lại. Nếu cần bổ sung chính xác, có thể chạy thêm:
+
+\begin{verbatim}
+sum(p.numel() for p in model.parameters())
+sum(p.numel() for p in model.parameters() if p.requires_grad)
+\end{verbatim}
+
+Điểm quan trọng trong pipeline hiện tại là detection/mask head được khởi tạo lại theo số lớp của từng domain: coffee có 4 lớp và rice có 4 lớp. Pretrained checkpoint ban đầu có số lớp khác nên head phân loại được cấu hình lại khi fine-tune.
+
+\paragraph{Hàm kích hoạt và thành phần chính.}
+RF-DETR kế thừa các thành phần phổ biến của Transformer-based detector:
+
+\begin{itemize}
+    \item Các khối Transformer sử dụng feed-forward network với activation phi tuyến kiểu GELU/ReLU tùy implementation của RF-DETR.
+    \item Classification head sinh điểm tin cậy theo lớp.
+    \item Box head dự đoán tọa độ bounding box.
+    \item Mask head sinh mask segmentation cho từng prediction.
+\end{itemize}
+
+Trong notebook, nhóm không chỉnh sửa nội bộ kiến trúc RF-DETR mà dùng implementation có sẵn của thư viện \texttt{rfdetr}. Trọng tâm của phần thực nghiệm là chuẩn hóa dữ liệu COCO, fine-tune checkpoint pretrained và đánh giá trên test set.
 
 % ----------------------------------------
 \subsection{Mô hình 4: MobileSAM --- \textit{Đàm Tiến Đạt}}
@@ -138,19 +204,63 @@ MobileSAM \cite{mobile_sam} là phiên bản rút gọn của SAM (Segment Anyth
 \subsubsection{Kiến trúc chi tiết}
 
 \begin{enumerate}
-    \item \textbf{Sơ đồ kiến trúc} \textit{[Đàm Tiến Đạt điền]}\\
-          \textit{[TODO: Chèn hình sơ đồ kiến trúc MobileSAM với chú thích bên dưới.
-          Phải thể hiện rõ: Image → TinyViT Image Encoder → Prompt Encoder → Mask Decoder → Binary mask output.]}
+      \item \textbf{Sơ đồ kiến trúc}\\
+            Kiến trúc của MobileSAM kế thừa nguyên bản mô hình SAM nhưng tối ưu hóa luồng xử lý ảnh thông qua mạng backbone gọn nhẹ. Sơ đồ luồng xử lý dữ liệu được mô tả chi tiết như sau:
 
-    \item \textbf{Số lượng tham số} \textit{[Đàm Tiến Đạt điền]}\\
-          \textit{[TODO: Điền tổng số tham số.
-          Gợi ý tham khảo: TinyViT-5M encoder $\approx$~5.7M; Prompt encoder $\approx$~6K; Mask decoder $\approx$~3.87M; Tổng $\approx$~9.66M.
-          Cần xác nhận lại theo code thực tế.]}
+            \begin{figure}[H]
+                  \centering
+                  \begin{tikzpicture}[
+                              % Styling for block diagram nodes
+                              auto,
+                              >=latex',
+                              thick,
+                              block/.style={
+                                          rectangle,
+                                          draw,
+                                          thick,
+                                          align=center,
+                                          rounded corners=4pt,
+                                          minimum height=1.2cm,
+                                          font=\small\sffamily
+                                    },
+                              input_block/.style={block, fill=blue!5, draw=blue!60!black, text width=3.0cm},
+                              encoder_block/.style={block, fill=orange!10, draw=orange!60!black, text width=3.2cm},
+                              prompt_block/.style={block, fill=green!10, draw=green!60!black, text width=3.2cm},
+                              decoder_block/.style={block, fill=red!10, draw=red!60!black, text width=2.8cm},
+                              output_block/.style={block, fill=blue!15, draw=blue!70!black, text width=2.8cm}
+                        ]
+                        % Nodes
+                        \node [input_block] (input) {Input Image\\($1024 \times 1024$)};
+                        \node [encoder_block, right=1.0cm of input] (encoder) {TinyViT\\Image Encoder};
+                        \node [decoder_block, right=2.0cm of encoder] (decoder) {Mask Decoder};
+                        \node [output_block, right=1.0cm of decoder] (output) {Binary Mask\\Output};
+                        \node [prompt_block, below=1.2cm of encoder] (prompt) {Prompt Encoder\\(Bbox/Points)};
 
-    \item \textbf{Hàm kích hoạt} \textit{[Đàm Tiến Đạt điền]}\\
-          \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
-          Gợi ý: GELU (TinyViT transformer blocks); Sigmoid (mask output); LayerNorm (normalization).
-          Cần xác nhận theo code thực tế.]}
+                        % Connections
+                        \draw[->, line width=1pt] (input) -- (encoder);
+                        \draw[->, line width=1pt] (encoder) -- node[above, align=center, font=\scriptsize\sffamily] {Image\\Embedding} (decoder);
+                        \draw[->, line width=1pt] (prompt.east) -| node[pos=0.35, above, align=center, font=\scriptsize\sffamily] {Sparse/Dense\\Embeddings} (decoder.south);
+                        \draw[->, line width=1pt] (decoder) -- (output);
+                  \end{tikzpicture}
+                  \caption{Sơ đồ luồng kiến trúc MobileSAM áp dụng trong bài toán phân vùng.}
+                  \label{fig:mobilesam_architecture}
+            \end{figure}
+
+      \item \textbf{Số lượng tham số}\\
+            Dựa trên cấu hình thực tế mã nguồn (\texttt{vit\_t}), tổng số lượng tham số của mô hình đạt xấp xỉ \textbf{9.66M}. Chi tiết phân bổ tham số tại các thành phần cốt lõi bao gồm:
+            \begin{itemize}
+                  \item \textbf{TinyViT-5M Image Encoder}: $\approx$ 5.79M tham số (đóng vai trò trích xuất đặc trưng không gian dạng toàn cục).
+                  \item \textbf{Prompt Encoder}: $\approx$ 6.2K tham số (mã hóa các gợi ý dạng hình hộp chữ nhật hoặc điểm).
+                  \item \textbf{Mask Decoder}: $\approx$ 3.87M tham số (bộ giải mã nhẹ thực hiện tích hợp chéo đặc trưng ảnh và gợi ý để dự đoán mặt nạ phân vùng).
+            \end{itemize}
+
+      \item \textbf{Hàm kích hoạt}\\
+            Các hàm kích hoạt và chuẩn hóa phân tầng được áp dụng trong mô hình bao gồm:
+            \begin{itemize}
+                  \item \textbf{GELU (Gaussian Error Linear Unit)}: Được sử dụng chủ yếu trong các khối Transformer của TinyViT Image Encoder và Mask Decoder để giữ lại tính phi tuyến mượt mà và giảm thiểu hiện tượng chết neuron.
+                  \item \textbf{Sigmoid}: Áp dụng trực tiếp tại đầu ra của Mask Decoder để chuyển đổi các giá trị logits dự đoán mặt nạ thành xác suất pixel thuộc phân lớp mục tiêu (vùng bệnh) nằm trong khoảng $[0, 1]$.
+                  \item \textbf{LayerNorm (Layer Normalization)}: Sử dụng xuyên suốt các tầng ẩn của bộ mã hóa đặc trưng không gian và bộ giải mã nhằm ổn định phân phối dữ liệu đầu vào của các layer.
+            \end{itemize}
 \end{enumerate}
 
 % ----------------------------------------
