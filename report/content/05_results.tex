@@ -528,33 +528,3 @@ Sau khi cả 5 thành viên hoàn thành thực nghiệm độc lập cho từng
     }
     \label{tab:results_coffee}
 \end{table}
-
-%  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Kết quả tinh chỉnh siêu tham số}
-\label{subsec:tuning_results}
-
-Nhóm tiến hành tinh chỉnh siêu tham số để tối ưu hóa hiệu năng mô hình. Đối với mô hình \textbf{Mask R-CNN}, nhóm đã thực hiện tìm kiếm tự động trên không gian siêu tham số sử dụng thư viện RayTune với thuật toán ASHA. Đối với các mô hình còn lại (YOLO26-seg, RF-DETR, MobileSAM, Mask2Former), việc tinh chỉnh được thực hiện thủ công thông qua việc điều chỉnh các tham số cấu hình như tốc độ học, kích thước ảnh đầu vào, độ sâu backbone và tăng cường dữ liệu do giới hạn về tài nguyên tính toán trên môi trường Kaggle GPU.
-
-Bảng~\ref{tab:tuning_comparison} trình bày so sánh kết quả đánh giá trên tập Test của mô hình Mask R-CNN trước và sau khi thực hiện tối ưu hóa tự động bằng RayTune ASHA.
-
-\begin{table}[H]
-    \caption{So sánh hiệu năng Mask R-CNN trước và sau tinh chỉnh bằng RayTune ASHA}
-    \centering
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{llrrrr}
-        \toprule
-        \textbf{Tập dữ liệu} & \textbf{Cấu hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} \\
-        \midrule
-        Lúa & Baseline & 0,5966 & 0,5294 & 0,8669 & 0,8935 \\
-            & Tuned    & 0,5404 & 0,4805 & 0,8708 & 0,8999 \\
-            & \textbf{Cải thiện ($\Delta$)} & \textbf{-0,0562} & \textbf{-0,0489} & \textbf{+0,0039} & \textbf{+0,0064} \\
-        \midrule
-        Cà phê & Baseline & 0,9480 & 0,9041 & 0,9128 & 0,9356 \\
-               & Tuned    & 0,9195 & 0,8600 & 0,8973 & 0,9225 \\
-               & \textbf{Cải thiện ($\Delta$)} & \textbf{-0,0285} & \textbf{-0,0441} & \textbf{-0,0155} & \textbf{-0,0131} \\
-        \bottomrule
-    \end{tabular}%
-    }
-    \label{tab:tuning_comparison}
-\end{table}
-
