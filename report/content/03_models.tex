@@ -112,24 +112,62 @@ YOLO26-seg là phiên bản segmentation của họ YOLO \cite{ultralytics_yolo}
 \label{subsec:rfdetr}
 
 \subsubsection{Lý do lựa chọn}
-RF-DETR \cite{rfdetr2024} là Detection Transformer của Roboflow --- mô hình \textbf{end-to-end} không cần NMS, thiết kế cho fine-tuning nhanh trên dataset nhỏ/trung bình. Là đại diện ViT-based SOTA trong nhóm.
+RF-DETR là mô hình detection transformer của Roboflow, được thiết kế theo hướng \textbf{end-to-end} cho bài toán phát hiện đối tượng và segmentation. Khác với các mô hình CNN một hoặc hai giai đoạn, RF-DETR sử dụng cơ chế truy vấn của Transformer để dự đoán trực tiếp tập đối tượng/mask đầu ra, nhờ đó giảm phụ thuộc vào các bước hậu xử lý thủ công như NMS.
+
+Trong đồ án này, RF-DETR được chọn vì ba lý do chính. Thứ nhất, mô hình phù hợp với dữ liệu COCO instance segmentation của bài toán bệnh lá cây, trong đó mỗi ảnh có thể có một hoặc nhiều vùng bệnh. Thứ hai, phiên bản \texttt{RFDETRSegNano} đủ nhẹ để huấn luyện trên Kaggle GPU nhưng vẫn giữ được lợi thế biểu diễn của Transformer. Thứ ba, thư viện RF-DETR hỗ trợ trực tiếp fine-tune từ pretrained weight, evaluate COCO mAP và xuất checkpoint, thuận tiện cho pipeline thử nghiệm cuối kỳ.
+
+Nhóm huấn luyện \textbf{hai mô hình RF-DETR riêng biệt}: một mô hình cho tập coffee và một mô hình cho tập rice. Cách tách này tránh trộn hai miền dữ liệu có nhãn, hình thái lá và phân bố bệnh khác nhau.
 
 \subsubsection{Kiến trúc chi tiết}
 
-\begin{enumerate}
-      \item \textbf{Sơ đồ kiến trúc} \textit{[Tống Thanh Phúc điền]}\\
-            \textit{[TODO: Chèn hình sơ đồ kiến trúc RF-DETR với chú thích bên dưới.
-                              Phải thể hiện rõ: Image → DINOv2 backbone → Deformable Attention Encoder → Transformer Decoder → Bipartite matching output.]}
+\paragraph{Luồng kiến trúc.}
+Notebook sử dụng lớp mô hình segmentation của RF-DETR, mặc định là \texttt{RFDETRSegNano}. Luồng xử lý tổng quát:
 
-      \item \textbf{Số lượng tham số} \textit{[Tống Thanh Phúc điền]}\\
-            \textit{[TODO: Điền tổng số tham số của RF-DETR.
-                              Ghi rõ params của DINOv2 encoder (frozen vs fine-tuned), decoder, và detection head.]}
+\begin{center}
+\fbox{
+\begin{minipage}{0.92\textwidth}
+\centering
+Ảnh đầu vào
+$\rightarrow$ backbone thị giác pretrained
+$\rightarrow$ encoder/decoder Transformer
+$\rightarrow$ prediction queries
+$\rightarrow$ class scores, bounding boxes và segmentation masks
+\end{minipage}
+}
+\end{center}
 
-      \item \textbf{Hàm kích hoạt} \textit{[Tống Thanh Phúc điền]}\\
-            \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
-                              Gợi ý: GELU (transformer FFN layers); Sigmoid (object classification).
-                              Cần xác nhận theo code thực tế.]}
-\end{enumerate}
+Ảnh được đưa vào backbone để trích xuất đặc trưng thị giác. Các đặc trưng này sau đó đi qua các khối Transformer nhằm mô hình hóa quan hệ không gian giữa vùng lá, vùng bệnh và nền ảnh. Phần prediction head sinh ra ba nhóm đầu ra: nhãn lớp, bounding box và mask tương ứng. Trong bài toán này, đầu ra mask được dùng làm kết quả chính để đánh giá segmentation.
+
+\paragraph{Biến thể mô hình.}
+Notebook đặt biến:
+
+\begin{verbatim}
+DEFAULT_MODEL_SIZE = os.getenv("RFDETR_MODEL_SIZE", "nano").lower()
+\end{verbatim}
+
+Do đó cấu hình mặc định là \texttt{nano}. Các variant khác như \texttt{small}, \texttt{medium}, \texttt{large}, \texttt{xlarge}, \texttt{2xlarge} vẫn được hỗ trợ trong code thông qua mapping \texttt{MODEL\_CLASS\_NAMES}, nhưng kết quả báo cáo hiện tại được chạy với \texttt{nano}.
+
+\paragraph{Số lượng tham số.}
+Notebook chưa ghi trực tiếp tổng số tham số ra report. Vì vậy báo cáo không tự điền một con số không được log lại. Nếu cần bổ sung chính xác, có thể chạy thêm:
+
+\begin{verbatim}
+sum(p.numel() for p in model.parameters())
+sum(p.numel() for p in model.parameters() if p.requires_grad)
+\end{verbatim}
+
+Điểm quan trọng trong pipeline hiện tại là detection/mask head được khởi tạo lại theo số lớp của từng domain: coffee có 4 lớp và rice có 4 lớp. Pretrained checkpoint ban đầu có số lớp khác nên head phân loại được cấu hình lại khi fine-tune.
+
+\paragraph{Hàm kích hoạt và thành phần chính.}
+RF-DETR kế thừa các thành phần phổ biến của Transformer-based detector:
+
+\begin{itemize}
+    \item Các khối Transformer sử dụng feed-forward network với activation phi tuyến kiểu GELU/ReLU tùy implementation của RF-DETR.
+    \item Classification head sinh điểm tin cậy theo lớp.
+    \item Box head dự đoán tọa độ bounding box.
+    \item Mask head sinh mask segmentation cho từng prediction.
+\end{itemize}
+
+Trong notebook, nhóm không chỉnh sửa nội bộ kiến trúc RF-DETR mà dùng implementation có sẵn của thư viện \texttt{rfdetr}. Trọng tâm của phần thực nghiệm là chuẩn hóa dữ liệu COCO, fine-tune checkpoint pretrained và đánh giá trên test set.
 
 % ----------------------------------------
 \subsection{Mô hình 4: MobileSAM --- \textit{Đàm Tiến Đạt}}
