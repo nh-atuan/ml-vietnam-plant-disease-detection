@@ -24,17 +24,61 @@
 \textit{[TODO --- Lê Xuân Trí: Chèn confusion matrix per-class của Mask R-CNN trên tập Test (Rice và Coffee). Nhận xét lớp nào bị nhầm nhiều nhất.]}
 
 % ----------------------------------------
-\subsection{YOLO26-seg --- \textit{Nguyễn Hồ Anh Tuấn}}
+\subsection{YOLO26-seg}
 \label{subsec:res_yolo}
 
 \subsubsection{Biểu đồ quá trình học (Learning Curves)}
-\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Chèn biểu đồ Loss và mAP@50 trên Train/Val theo epoch cho cả Rice và Coffee. Nhận xét hội tụ.]}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/yolo26_seg_rice_learning_curves.png}
+    \caption{Learning curves của YOLO26-seg trên tập Rice, vẽ lại từ \texttt{results.csv}}
+    \label{fig:yolo26_rice_learning}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/yolo26_seg_coffee_learning_curves.png}
+    \caption{Learning curves của YOLO26-seg trên tập Coffee, vẽ lại từ \texttt{results.csv}}
+    \label{fig:yolo26_coffee_learning}
+\end{figure}
+
+Trên tập Rice, tổng loss huấn luyện giảm rõ từ các epoch đầu và ổn định dần về cuối, trong khi mask mAP@50:95 tăng từ 0.1987 ở epoch 1 lên khoảng 0.6910 ở epoch 50. Validation loss vẫn cao hơn train loss nhưng không tăng liên tục ở cuối quá trình học, cho thấy mô hình hội tụ tương đối ổn định và chưa có dấu hiệu overfitting mạnh.
+
+Trên tập Coffee, loss huấn luyện giảm chậm hơn và validation mask mAP duy trì ở mức thấp, mAP@50:95 cuối quá trình chỉ đạt khoảng 0.1304. Đường cong ít dao động mạnh ở cuối nhưng bị bão hòa sớm, cho thấy bài toán Coffee khó hơn đối với YOLO26-seg theo tiêu chí instance mAP; nguyên nhân có thể đến từ số lớp ít hơn, vùng bệnh nhỏ/chồng lấp và phân bố instance không thuận lợi cho metric mAP.
 
 \subsubsection{Đánh giá trên tập Test}
-\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Điền bảng kết quả đầy đủ.]}
+\begin{table}[H]
+    \caption{Kết quả YOLO26-seg trên tập Test}
+    \centering
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        \textbf{Dataset} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
+        \midrule
+        Rice   & 0.761382 & 0.750642 & 0.820998 & 0.833742 & 65.72 & 6.23129 \\
+        Coffee & 0.127095 & 0.123509 & 0.876297 & 0.888267 & 20.21 & 6.227811 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:yolo26_test_results}
+\end{table}
+
+Rice đạt kết quả tốt hơn theo các metric instance mAP, đặc biệt mAP@50:95 đạt 0.750642. Coffee có mAP thấp nhưng mIoU và Dice cao do phần đánh giá mask semantic-union vẫn khớp vùng bệnh tổng thể khá tốt; điều này cho thấy mô hình có thể tìm được vùng tổn thương nhưng phân tách instance/lớp theo chuẩn mAP còn hạn chế.
 
 \subsubsection{Confusion Matrix}
-\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Chèn confusion matrix và nhận xét.]}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.78\textwidth]{img/yolo26_seg_rice_confusion_matrix.png}
+    \caption{Confusion matrix của YOLO26-seg trên tập Rice}
+    \label{fig:yolo26_rice_confusion}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.78\textwidth]{img/yolo26_seg_coffee_confusion_matrix.png}
+    \caption{Confusion matrix của YOLO26-seg trên tập Coffee}
+    \label{fig:yolo26_coffee_confusion}
+\end{figure}
+
+Confusion matrix của Rice cho thấy mô hình nhận diện tương đối tốt các lớp có đặc trưng hình thái rõ, nhưng vẫn có nhầm lẫn giữa các bệnh có vết đốm hoặc vùng tổn thương tương tự nhau như BrownSpot và LeafBlast. Với Coffee, các lớp bệnh có màu sắc và texture gần nhau làm tăng nhầm lẫn giữa AlgalLeafSpot, Rust và các vùng nền; đây cũng là nguyên nhân khiến mAP theo instance thấp hơn đáng kể so với Rice.
 
 % ----------------------------------------
 \subsection{RF-DETR --- \textit{Tống Thanh Phúc}}
@@ -200,11 +244,11 @@ Quá trình huấn luyện mô hình MobileSAM trên hai tập dữ liệu Rice 
         \toprule
         \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
         \midrule
-        Mask R-CNN       & ---             & ---                & ---           & ---           & ---                 & ---                \\
-        YOLO26-seg       & ---             & ---                & ---           & ---           & ---                 & ---                \\
-        RF-DETR          & ---             & ---                & ---           & ---           & ---                 & ---                \\
-        MobileSAM        & ---             & ---                & ---           & ---           & ---                 & ---                \\
-        Mask2Former      & ---             & ---                & ---           & ---           & ---                 & ---                \\
+        Mask R-CNN    & --- & --- & --- & --- & --- & --- \\
+        YOLO26-seg    & 0.761382 & 0.750642 & 0.820998 & 0.833742 & 65.72 & 6.23129 \\
+        RF-DETR       & --- & --- & --- & --- & --- & --- \\
+        MobileSAM     & --- & --- & --- & --- & --- & --- \\
+        Mask2Former   & --- & --- & --- & --- & --- & --- \\
         \bottomrule
     \end{tabular}
     \label{tab:results_rice}
@@ -217,11 +261,11 @@ Quá trình huấn luyện mô hình MobileSAM trên hai tập dữ liệu Rice 
         \toprule
         \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
         \midrule
-        Mask R-CNN       & ---             & ---                & ---           & ---           & ---                 & ---                \\
-        YOLO26-seg       & ---             & ---                & ---           & ---           & ---                 & ---                \\
-        RF-DETR          & ---             & ---                & ---           & ---           & ---                 & ---                \\
-        MobileSAM        & ---             & ---                & ---           & ---           & ---                 & ---                \\
-        Mask2Former      & ---             & ---                & ---           & ---           & ---                 & ---                \\
+        Mask R-CNN    & --- & --- & --- & --- & --- & --- \\
+        YOLO26-seg    & 0.127095 & 0.123509 & 0.876297 & 0.888267 & 20.21 & 6.227811 \\
+        RF-DETR       & --- & --- & --- & --- & --- & --- \\
+        MobileSAM     & --- & --- & --- & --- & --- & --- \\
+        Mask2Former   & --- & --- & --- & --- & --- & --- \\
         \bottomrule
     \end{tabular}
     \label{tab:results_coffee}

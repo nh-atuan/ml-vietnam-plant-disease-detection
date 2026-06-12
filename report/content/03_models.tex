@@ -81,27 +81,30 @@ Mask R-CNN \cite{he2017maskrcnn} là mô hình instance segmentation CNN nền t
 \end{enumerate}
 
 % ----------------------------------------
-\subsection{Mô hình 2: YOLO26-seg --- \textit{Nguyễn Hồ Anh Tuấn}}
+\subsection{Mô hình 2: YOLO26-seg}
 \label{subsec:yolo}
 
 \subsubsection{Lý do lựa chọn}
-YOLO26-seg là phiên bản segmentation của YOLO --- kiến trúc CNN one-stage nổi tiếng về \textbf{tốc độ inference cao}. Nhóm chọn mô hình này để đánh giá trade-off giữa tốc độ và độ chính xác, đặc biệt quan trọng khi deploy trên web với yêu cầu latency $< 500$ms/ảnh.
+YOLO26-seg là phiên bản segmentation của họ YOLO \cite{ultralytics_yolo}, thuộc nhóm mô hình CNN one-stage có tốc độ suy luận cao. Nhóm chọn mô hình này để đánh giá đánh đổi giữa tốc độ và độ chính xác, đặc biệt quan trọng khi triển khai trên web với yêu cầu latency $< 500$ms/ảnh.
 
 \subsubsection{Kiến trúc chi tiết}
 
 \begin{enumerate}
-      \item \textbf{Sơ đồ kiến trúc} \textit{[Nguyễn Hồ Anh Tuấn điền]}\\
-            \textit{[TODO: Chèn hình sơ đồ kiến trúc YOLO26-seg với chú thích bên dưới.
-                              Phải thể hiện rõ: Image → CSPDarknet backbone → PANet neck → Decoupled head (detect + segment).]}
+    \item Sơ đồ kiến trúc\\
+          YOLO26-seg nhận ảnh đầu vào đã được resize/letterbox về $640 \times 640$, trích xuất đặc trưng bằng backbone CNN, hợp nhất đặc trưng đa tỉ lệ qua neck kiểu FPN/PAN, sau đó dùng segmentation head để dự đoán đồng thời hộp bao, lớp bệnh và mask theo từng instance.
 
-      \item \textbf{Số lượng tham số} \textit{[Nguyễn Hồ Anh Tuấn điền]}\\
-            \textit{[TODO: Điền tổng số tham số theo variant được chọn (nano/small/medium/large).
-                              Ghi rõ số params của backbone, neck, và detection/mask head riêng biệt.]}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.95\textwidth]{img/yolo26_seg_architecture.png}
+        \caption{Sơ đồ khối kiến trúc YOLO26-seg sử dụng trong thực nghiệm}
+        \label{fig:yolo26_arch}
+    \end{figure}
 
-      \item \textbf{Hàm kích hoạt} \textit{[Nguyễn Hồ Anh Tuấn điền]}\\
-            \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
-                              Gợi ý: SiLU/Swish (backbone, neck); Sigmoid (objectness, class scores, mask coefficients).
-                              Cần xác nhận theo code thực tế.]}
+    \item Số lượng tham số\\
+          Biến thể được dùng trong thực nghiệm là \texttt{yolo26n-seg.pt}. Checkpoint tốt nhất của hai tập dữ liệu có kích thước xấp xỉ 6.23 MB, tương ứng biến thể nano nhằm ưu tiên tốc độ suy luận. Do môi trường lưu artifact hiện tại không kèm bảng phân rã tham số theo từng module, báo cáo chỉ ghi nhận tổng quy mô mô hình ở mức checkpoint thay vì tách riêng backbone, neck và head.
+
+    \item Hàm kích hoạt\\
+          Các khối tích chập trong backbone và neck của YOLO dùng activation phi tuyến kiểu SiLU/Swish để giữ gradient ổn định khi huấn luyện mô hình sâu. Ở đầu ra, các nhánh dự đoán sử dụng các phép biến đổi phù hợp với từng đại lượng: xác suất lớp và hệ số mask được ràng buộc về miền xác suất, còn tọa độ hộp và phân phối DFL được giải mã theo cơ chế của Ultralytics YOLO.
 \end{enumerate}
 
 % ----------------------------------------
