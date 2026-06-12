@@ -12,15 +12,15 @@ Nhóm triển khai và so sánh \textbf{5 mô hình segmentation} thuộc hai nh
 \begin{table}[H]
       \caption{Tổng quan 5 mô hình segmentation được lựa chọn}
       \centering
-      \begin{tabularx}{\textwidth}{llXl}
+      \begin{tabularx}{\textwidth}{llX}
             \toprule
-            \textbf{Mô hình} & \textbf{Loại} & \textbf{Đặc điểm nổi bật}                     & \textbf{Người phụ trách} \\
+            \textbf{Mô hình} & \textbf{Loại} & \textbf{Đặc điểm nổi bật}                     \\
             \midrule
-            Mask R-CNN       & CNN-based     & Baseline hai nhánh (detection + segmentation) & Lê Xuân Trí              \\
-            YOLO26-seg       & CNN-based     & Real-time, kiến trúc một nhánh                & Nguyễn Hồ Anh Tuấn       \\
-            RF-DETR          & ViT-based     & End-to-end detection transformer (SOTA)       & Tống Thanh Phúc          \\
-            MobileSAM        & ViT-based     & SAM rút gọn, segment anything                 & Đàm Tiến Đạt             \\
-            Mask2Former      & ViT-based     & Universal segmentation SOTA                   & Dương Tuấn Anh           \\
+            Mask R-CNN       & CNN-based     & Baseline hai nhánh (detection + segmentation) \\
+            YOLO26-seg       & CNN-based     & Real-time, kiến trúc một nhánh                \\
+            RF-DETR          & ViT-based     & End-to-end detection transformer (SOTA)       \\
+            MobileSAM        & ViT-based     & SAM rút gọn, segment anything                 \\
+            Mask2Former      & ViT-based     & Universal segmentation SOTA                   \\
             \bottomrule
       \end{tabularx}
       \label{tab:model_overview}
@@ -29,27 +29,9 @@ Nhóm triển khai và so sánh \textbf{5 mô hình segmentation} thuộc hai nh
 % ============================================================
 % Hộp nhắc nhở yêu cầu  -  hiển thị một lần, áp dụng cho tất cả
 % ============================================================
-\begin{center}
-      \fbox{%
-            \parbox{0.92\textwidth}{%
-                  \textbf{Yêu cầu bắt buộc  -  Kiến trúc chi tiết (áp dụng cho cả 5 mô hình):}\\[0.3em]
-                  Mỗi thành viên phụ trách mô hình phải hoàn thiện đầy đủ ba nội dung sau trong
-                  mục \emph{Kiến trúc chi tiết} của mô hình mình:
-                  \begin{enumerate}
-                        \item Vẽ sơ đồ kiến trúc:-  Sơ đồ khối thể hiện luồng dữ liệu
-                              qua từng thành phần; phải có chú thích hình bên dưới.
-                        \item Mô tả số lượng tham số:-  Nêu tổng số tham số của mô hình
-                              (trainable \& frozen) và số tham số từng thành phần chính.
-                        \item Hàm kích hoạt được sử dụng:-  Liệt kê hàm kích hoạt tại
-                              từng vị trí trong mạng (backbone, neck, head, decoder...).
-                  \end{enumerate}
-                  \textit{Thiếu bất kỳ điểm nào trong ba điểm trên là \textbf{chưa đạt yêu cầu}.}
-            }%
-      }
-\end{center}
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Mô hình 1: Mask R-CNN  -  \textit{Lê Xuân Trí}}
+\subsection{Mô hình 1: Mask R-CNN}
 \label{subsec:maskrcnn}
 
 \subsubsection{Lý do lựa chọn}
@@ -133,7 +115,7 @@ YOLO26-seg là phiên bản segmentation của họ YOLO \cite{ultralytics_yolo}
 \end{enumerate}
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Mô hình 3: RF-DETR  -  \textit{Tống Thanh Phúc}}
+\subsection{Mô hình 3: RF-DETR}
 \label{subsec:rfdetr}
 
 \subsubsection{Lý do lựa chọn}
@@ -195,7 +177,7 @@ RF-DETR kế thừa các thành phần phổ biến của Transformer-based dete
 Trong notebook, nhóm không chỉnh sửa nội bộ kiến trúc RF-DETR mà dùng implementation có sẵn của thư viện \texttt{rfdetr}. Trọng tâm của phần thực nghiệm là chuẩn hóa dữ liệu COCO, fine-tune checkpoint pretrained và đánh giá trên test set.
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Mô hình 4: MobileSAM  -  \textit{Đàm Tiến Đạt}}
+\subsection{Mô hình 4: MobileSAM}
 \label{subsec:mobilesam}
 
 \subsubsection{Lý do lựa chọn}

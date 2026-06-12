@@ -6,12 +6,10 @@
 \section{Cấu hình huấn luyện}
 \label{sec:training_config}
 
-\textit{Phần này do từng thành viên tự hoàn thiện theo mô hình mình phụ trách.
-    Mỗi mô hình cần trình bày đầy đủ các mục con bên dưới.
-    Xem thêm không gian tìm kiếm hyperparameter của Phase~4 tại Mục~\ref{subsec:tuning_results}.}
+
 
 % ----------------------------------------
-\subsection{Mask R-CNN --- \textit{Lê Xuân Trí}}
+\subsection{Mask R-CNN}
 \label{subsec:config_maskrcnn}
 
 \subsubsection{Tiền xử lý đầu vào đặc thù}
@@ -57,7 +55,7 @@ Các siêu tham số chính thiết lập trong quá trình huấn luyện bao g
         Kích thước lô (Batch size) & $2$ ảnh / GPU \\
         Số epoch tối đa (Max epochs) & $30$ epochs \\
         Cơ chế dừng sớm (Early stopping) & Dừng nếu validation \texttt{mAP@50:95} không cải thiện sau $5$ epoch \\
-        Trọng số tiền huấn luyện (Pretrained weights) & \texttt{MaskRCNN\_ResNet50\_FPN\_Weights.COCO\_V1} \\
+        Trọng số tiền huấn luyện (Pretrained weights) & \texttt{MaskRCNN\_\allowbreak ResNet50\_\allowbreak FPN\_\allowbreak Weights.\allowbreak COCO\_V1} \\
         Số lượng vùng đề xuất RPN huấn luyện & 1000 vùng (sau NMS) \\
         Ngưỡng tin cậy kiểm thử (Score threshold) & 0,5 \\
         Kích thước RoI Align & $7 \times 7$ (nhánh Box) và $14 \times 14$ (nhánh Mask) \\
@@ -90,10 +88,10 @@ Thực nghiệm sử dụng cấu hình huấn luyện mặc định của Ultra
 \subsubsection{Siêu tham số}
 Các siêu tham số chính của thực nghiệm YOLO26-seg được giữ nhất quán trên hai tập Rice và Coffee để so sánh công bằng: biến thể \texttt{yolo26n-seg.pt}, số epoch là 50, kích thước ảnh là 640, trọng số khởi tạo từ pretrained checkpoint của Ultralytics, và dữ liệu được chia theo train/validation/test manifest cố định của dự án. Batch size được để theo cấu hình notebook/Kaggle sao cho phù hợp bộ nhớ GPU T4/P100.
 
-Phương pháp tinh chỉnh tham số được thực hiện theo hướng thử nghiệm thủ công có kiểm soát thay vì Grid Search hoặc Random Search toàn diện. Lý do là mỗi lượt huấn luyện YOLO segmentation trên hai bộ dữ liệu tốn nhiều thời gian GPU, trong khi mục tiêu Phase 3 là tạo baseline ổn định để so sánh với các mô hình khác. Nhóm cố định các tham số có ảnh hưởng lớn đến tính tái lập như pretrained checkpoint, số epoch và kích thước ảnh, sau đó theo dõi loss, mask mAP@50 và mask mAP@50:95 trên validation để đánh giá hội tụ. Các cấu hình được ưu tiên là cấu hình cho đường cong validation ổn định, không tăng loss kéo dài ở cuối quá trình huấn luyện và đạt mAP@50:95 tốt hơn trên tập validation/test.
+Phương pháp tinh chỉnh tham số được thực hiện theo hướng thử nghiệm thủ công có kiểm soát thay vì Grid Search hoặc Random Search toàn diện. Lý do là mỗi lượt huấn luyện YOLO segmentation trên hai bộ dữ liệu tốn nhiều thời gian GPU, trong khi mục tiêu chính là tạo baseline ổn định để so sánh với các mô hình khác. Nhóm cố định các tham số có ảnh hưởng lớn đến tính tái lập như pretrained checkpoint, số epoch và kích thước ảnh, sau đó theo dõi loss, mask mAP@50 và mask mAP@50:95 trên validation để đánh giá hội tụ. Các cấu hình được ưu tiên là cấu hình cho đường cong validation ổn định, không tăng loss kéo dài ở cuối quá trình huấn luyện và đạt mAP@50:95 tốt hơn trên tập validation/test.
 
 % ----------------------------------------
-\subsection{RF-DETR --- \textit{Tống Thanh Phúc}}
+\subsection{RF-DETR}
 \label{subsec:config_rfdetr}
 
 \subsubsection{Tiền xử lý đầu vào đặc thù}
@@ -195,7 +193,7 @@ Notebook hiện tại không chạy RayTune/ASHA hay grid search nhiều cấu h
 Như vậy, phần tinh chỉnh trong báo cáo được hiểu là \textbf{phương pháp chọn cấu hình fine-tune của RF-DETR}, không phải một thí nghiệm hyperparameter tuning tự động hay một bảng kết quả before/after riêng.
 
 % ----------------------------------------
-\subsection{MobileSAM --- \textit{Đàm Tiến Đạt}}
+\subsection{MobileSAM}
 \label{subsec:config_mobilesam}
 
 \subsubsection{Tiền xử lý đầu vào đặc thù}

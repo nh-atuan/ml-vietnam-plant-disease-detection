@@ -6,12 +6,10 @@
 \section{Kết quả thực nghiệm}
 \label{sec:results}
 
-\textit{Phần này do từng thành viên tự hoàn thiện cho mô hình của mình (Mục~\ref{subsec:res_maskrcnn}
-    đến \ref{subsec:res_mask2former}), sau đó cả nhóm tổng hợp bảng so sánh chung
-    (Mục~\ref{subsec:comparison}) và kết quả sau tinh chỉnh Phase~4 (Mục~\ref{subsec:tuning_results}).}
+
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Mask R-CNN  -  \textit{Lê Xuân Trí}}
+\subsection{Mask R-CNN}
 \label{subsec:res_maskrcnn}
 
 \subsubsection{Biểu đồ quá trình học (Learning Curves)}
@@ -43,12 +41,13 @@ Quá trình huấn luyện mô hình Mask R-CNN được ghi nhận qua các bi�
 \end{itemize}
 
 \subsubsection{Đánh giá trên tập Test}
-Sau khi chọn checkpoint tốt nhất trên tập Validation, mô hình được đánh giá trên tập Test bị khóa (locked Test set). Kết quả chi tiết của mô hình ở cả hai cấu hình Baseline (Phase 3) và Tuned (ASHA Tuning - Phase 4) được thể hiện ở bảng dưới đây:
+Sau khi chọn checkpoint tốt nhất trên tập Validation, mô hình được đánh giá trên tập Test bị khóa (locked Test set). Kết quả chi tiết của mô hình ở cả hai cấu hình Baseline và Tuned (ASHA Tuning) được thể hiện ở bảng dưới đây:
 
 \begin{table}[H]
     \caption{Kết quả đánh giá mô hình Mask R-CNN trên tập Test}
     \centering
-    \begin{tabularx}{\textwidth}{llccccccr}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{llccccccr}
         \toprule
         \textbf{Cây trồng} & \textbf{Cấu hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{F1-Macro} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
         \midrule
@@ -58,7 +57,8 @@ Sau khi chọn checkpoint tốt nhất trên tập Validation, mô hình đượ
         Cà phê & Baseline & 0,9480 & 0,9041 & 0,9128 & 0,9356 & 0,5694 & 702,36 & 501,73 \\
                & Tuned    & 0,9195 & 0,8600 & 0,8973 & 0,9225 & 0,3978 & 702,36 & 501,73 \\
         \bottomrule
-    \end{tabularx}
+    \end{tabular}%
+    }
     \label{tab:maskrcnn_test_results}
 \end{table}
 
@@ -125,6 +125,7 @@ Trên tập Coffee, loss huấn luyện giảm chậm hơn và validation mask m
 \begin{table}[H]
     \caption{Kết quả YOLO26-seg trên tập Test}
     \centering
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{lrrrrrr}
         \toprule
         \textbf{Dataset} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
@@ -132,7 +133,8 @@ Trên tập Coffee, loss huấn luyện giảm chậm hơn và validation mask m
         Rice   & 0.761382 & 0.750642 & 0.820998 & 0.833742 & 65.72 & 6.23129 \\
         Coffee & 0.127095 & 0.123509 & 0.876297 & 0.888267 & 20.21 & 6.227811 \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
     \label{tab:yolo26_test_results}
 \end{table}
 
@@ -156,7 +158,7 @@ Rice đạt kết quả tốt hơn theo các metric instance mAP, đặc biệt 
 Confusion matrix của Rice cho thấy mô hình nhận diện tương đối tốt các lớp có đặc trưng hình thái rõ, nhưng vẫn có nhầm lẫn giữa các bệnh có vết đốm hoặc vùng tổn thương tương tự nhau như BrownSpot và LeafBlast. Với Coffee, các lớp bệnh có màu sắc và texture gần nhau làm tăng nhầm lẫn giữa AlgalLeafSpot, Rust và các vùng nền; đây cũng là nguyên nhân khiến mAP theo instance thấp hơn đáng kể so với Rice.
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{RF-DETR  -  \textit{Tống Thanh Phúc}}
+\subsection{RF-DETR}
 \label{subsec:res_rfdetr}
 
 \subsubsection{Biểu đồ quá trình học (Learning Curves)}
@@ -193,14 +195,16 @@ Kết quả dưới đây được lấy từ output đã lưu trong hai noteboo
 \begin{table}[H]
     \caption{Kết quả RF-DETR trên tập Test}
     \centering
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{lrrrrrrr}
         \toprule
         \textbf{Domain} & \textbf{Test images} & \textbf{mAP50 bbox} & \textbf{mAP50:95 bbox} & \textbf{mAP50 segm} & \textbf{mAP50:95 segm} & \textbf{mIoU} & \textbf{Dice} \\
         \midrule
-        Coffee & 576 & 0.820 & 0.598 & 0.842835 & 0.825083 & 0.857505 & 0.871758 \\
-        Rice   & 514 & 0.736 & 0.718 & 0.703828 & 0.687440 & 0.813240 & 0.830791 \\
+        Coffee & 576 & 0.820 & 0.598 & 0.8428 & 0.8251 & 0.8575 & 0.8718 \\
+        Rice   & 514 & 0.736 & 0.718 & 0.7038 & 0.6874 & 0.8132 & 0.8308 \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
     \label{tab:rfdetr_test_results}
 \end{table}
 
@@ -247,6 +251,7 @@ Bảng dưới đây tóm tắt precision, recall và F1 theo lớp từ các fi
 \begin{table}[H]
     \caption{Kết quả phân loại theo lớp của RF-DETR trên test set}
     \centering
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{llrrrrrr}
         \toprule
         \textbf{Domain} & \textbf{Lớp} & \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
@@ -260,7 +265,8 @@ Bảng dưới đây tóm tắt precision, recall và F1 theo lớp từ các fi
         Rice   & Hispa          & 62  & 31  & 33 & 0.667 & 0.653 & 0.660 \\
         Rice   & LeafBlast      & 96  & 64  & 23 & 0.600 & 0.807 & 0.688 \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
     \label{tab:rfdetr_class_metrics}
 \end{table}
 
@@ -269,7 +275,7 @@ Với coffee, RF-DETR nhận diện tốt nhất các lớp \texttt{PowderyMilde
 Với rice, lớp \texttt{Healthy} có F1 cao nhất ($0.775$), còn \texttt{Hispa} thấp nhất ($0.660$). Confusion matrix cho thấy \texttt{Hispa} dễ bị nhầm sang \texttt{Healthy}, trong khi \texttt{LeafBlast} có recall tốt nhưng precision thấp hơn do nhiều prediction dư. Như vậy phần còn yếu của RF-DETR trên rice không chỉ nằm ở bỏ sót đối tượng mà còn ở false positive trên nền và nhầm giữa các lớp có biểu hiện thị giác gần nhau.
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{MobileSAM  -  \textit{Đàm Tiến Đạt}}
+\subsection{MobileSAM}
 \label{subsec:res_mobilesam}
 
 \subsubsection{Biểu đồ quá trình học (Learning Curves)}
@@ -323,6 +329,7 @@ Quá trình huấn luyện mô hình MobileSAM trên hai tập dữ liệu Rice 
     \small
     \caption{Kết quả đánh giá mô hình MobileSAM trên tập Test}
     \label{tab:mobilesam_results}
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{lrrrrrr}
         \toprule
         \textbf{Mô hình}     & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
@@ -337,7 +344,8 @@ Quá trình huấn luyện mô hình MobileSAM trên hai tập dữ liệu Rice 
         \quad ONNX           & 0.6923          & 0.6591             & 0.6671        & 0.6848        & 1605.21             & 17.1               \\
         \quad ONNX Quantized & 0.6923          & 0.6559             & 0.6639        & 0.6820        & 1270.50             & 8.96               \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
 \end{table}
 
 \textbf{Nhận xét kết quả thực nghiệm (Bảng~\ref{tab:mobilesam_results}):}
@@ -438,6 +446,7 @@ Bảng~\ref{tab:m2f_test} tổng hợp kết quả của hai cấu hình trên t
 \begin{table}[H]
     \caption{Kết quả Mask2Former trên tập Test theo từng cấu hình và domain}
     \centering
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{llrrrrrr}
         \toprule
         \textbf{Domain} & \textbf{Cấu hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
@@ -450,7 +459,8 @@ Bảng~\ref{tab:m2f_test} tổng hợp kết quả của hai cấu hình trên t
             & baseline (Swin-T) & \textbf{0,920} & \textbf{0,900} & \textbf{0,887} & \textbf{0,900} & 62,88  & 181,07 \\
             & tuned (Swin-S)    & 0,126 & 0,122 & 0,737 & 0,751 & 107,76 & 262,48 \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
     \label{tab:m2f_test}
 \end{table}
 
@@ -462,27 +472,31 @@ Hình~\ref{fig:m2f_viz_rice} và~\ref{fig:m2f_viz_coffee} đối chiếu ảnh g
 
 \begin{figure}[H]
     \centering
-    \includegraphics[height=0.62\textheight]{img/m2f_rice_viz.png}
-    \caption{Mask2Former (baseline) trên tập \textbf{Rice}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
-    \label{fig:m2f_viz_rice}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[height=0.62\textheight]{img/m2f_coffee_viz.png}
-    \caption{Mask2Former (baseline) trên tập \textbf{Coffee}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
-    \label{fig:m2f_viz_coffee}
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/m2f_rice_viz.png}
+        \caption{Mask2Former (baseline) trên tập \textbf{Rice}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
+        \label{fig:m2f_viz_rice}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/m2f_coffee_viz.png}
+        \caption{Mask2Former (baseline) trên tập \textbf{Coffee}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
+        \label{fig:m2f_viz_coffee}
+    \end{minipage}
 \end{figure}
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Bảng so sánh tổng hợp (Phase 3)}
+\subsection{Bảng so sánh tổng hợp}
 \label{subsec:comparison}
 
-Sau khi cả 5 thành viên hoàn thành thực nghiệm độc lập cho từng mô hình ở Phase 3, nhóm đã tổng hợp kết quả đánh giá đa tiêu chí trên tập kiểm thử Test độc lập. Bảng~\ref{tab:results_rice} và Bảng~\ref{tab:results_coffee} trình bày chi tiết hiệu năng chẩn đoán bệnh trên hai tập dữ liệu Lúa và Cà phê.
+Sau khi cả 5 thành viên hoàn thành thực nghiệm độc lập cho từng mô hình, nhóm đã tổng hợp kết quả đánh giá đa tiêu chí trên tập kiểm thử Test độc lập. Bảng~\ref{tab:results_rice} và Bảng~\ref{tab:results_coffee} trình bày chi tiết hiệu năng chẩn đoán bệnh trên hai tập dữ liệu Lúa và Cà phê.
 
 \begin{table}[H]
     \caption{Kết quả đánh giá 5 mô hình trên tập Test - Rice dataset}
     \centering
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{lrrrrrr}
         \toprule
         \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
@@ -493,13 +507,15 @@ Sau khi cả 5 thành viên hoàn thành thực nghiệm độc lập cho từng
         MobileSAM     & 0,5637 & 0,5141 & 0,5440 & 0,5712 & 1487,54 & 41,30 \\
         Mask2Former   & 0,6970 & 0,6760 & 0,6510 & 0,6620 & 96,81 & 181,07 \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
     \label{tab:results_rice}
 \end{table}
  
 \begin{table}[H]
     \caption{Kết quả đánh giá 5 mô hình trên tập Test - Coffee dataset}
     \centering
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{lrrrrrr}
         \toprule
         \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
@@ -510,34 +526,37 @@ Sau khi cả 5 thành viên hoàn thành thực nghiệm độc lập cho từng
         MobileSAM     & 0,6923 & 0,6591 & 0,6671 & 0,6848 & 1616,84 & 41,30 \\
         \textbf{Mask2Former} & \textbf{0,9200} & \textbf{0,9000} & \textbf{0,8870} & \textbf{0,9000} & \textbf{62,88} & \textbf{181,07} \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
     \label{tab:results_coffee}
 \end{table}
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Kết quả tinh chỉnh siêu tham số (Phase 4)}
+\subsection{Kết quả tinh chỉnh siêu tham số}
 \label{subsec:tuning_results}
 
-Trong Phase 4, nhóm tiến hành tinh chỉnh siêu tham số để tối ưu hóa hiệu năng mô hình. Đối với mô hình \textbf{Mask R-CNN}, nhóm đã thực hiện tìm kiếm tự động trên không gian siêu tham số sử dụng thư viện RayTune với thuật toán ASHA. Đối với các mô hình còn lại (YOLO26-seg, RF-DETR, MobileSAM, Mask2Former), việc tinh chỉnh được thực hiện thủ công thông qua việc điều chỉnh các tham số cấu hình như tốc độ học, kích thước ảnh đầu vào, độ sâu backbone và tăng cường dữ liệu do giới hạn về tài nguyên tính toán trên môi trường Kaggle GPU.
+Nhóm tiến hành tinh chỉnh siêu tham số để tối ưu hóa hiệu năng mô hình. Đối với mô hình \textbf{Mask R-CNN}, nhóm đã thực hiện tìm kiếm tự động trên không gian siêu tham số sử dụng thư viện RayTune với thuật toán ASHA. Đối với các mô hình còn lại (YOLO26-seg, RF-DETR, MobileSAM, Mask2Former), việc tinh chỉnh được thực hiện thủ công thông qua việc điều chỉnh các tham số cấu hình như tốc độ học, kích thước ảnh đầu vào, độ sâu backbone và tăng cường dữ liệu do giới hạn về tài nguyên tính toán trên môi trường Kaggle GPU.
 
 Bảng~\ref{tab:tuning_comparison} trình bày so sánh kết quả đánh giá trên tập Test của mô hình Mask R-CNN trước và sau khi thực hiện tối ưu hóa tự động bằng RayTune ASHA.
 
 \begin{table}[H]
     \caption{So sánh hiệu năng Mask R-CNN trước và sau tinh chỉnh bằng RayTune ASHA}
     \centering
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{llrrrr}
         \toprule
         \textbf{Tập dữ liệu} & \textbf{Cấu hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} \\
         \midrule
-        Lúa & Baseline (Phase 3) & 0,5966 & 0,5294 & 0,8669 & 0,8935 \\
-            & Tuned (Phase 4)    & 0,5404 & 0,4805 & 0,8708 & 0,8999 \\
+        Lúa & Baseline & 0,5966 & 0,5294 & 0,8669 & 0,8935 \\
+            & Tuned    & 0,5404 & 0,4805 & 0,8708 & 0,8999 \\
             & \textbf{Cải thiện ($\Delta$)} & \textbf{-0,0562} & \textbf{-0,0489} & \textbf{+0,0039} & \textbf{+0,0064} \\
         \midrule
-        Cà phê & Baseline (Phase 3) & 0,9480 & 0,9041 & 0,9128 & 0,9356 \\
-               & Tuned (Phase 4)    & 0,9195 & 0,8600 & 0,8973 & 0,9225 \\
+        Cà phê & Baseline & 0,9480 & 0,9041 & 0,9128 & 0,9356 \\
+               & Tuned    & 0,9195 & 0,8600 & 0,8973 & 0,9225 \\
                & \textbf{Cải thiện ($\Delta$)} & \textbf{-0,0285} & \textbf{-0,0441} & \textbf{-0,0155} & \textbf{-0,0131} \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
     \label{tab:tuning_comparison}
 \end{table}
 
