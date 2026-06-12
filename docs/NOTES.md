@@ -7,3 +7,4 @@
 - Dấu gạch ngang phải là dấu gạch ngang ngắn - chứ không phải dấu gạch ngang dài.
 - Không in đậm/in nghiêng ở các chỗ không cần thiết, đặc biệt là không in đậm ở các từ trước dấu hai chấm của các bullet points.
 - Caption của bảng phải nằm ở trên bảng và caption phải nằm phía dưới hình.
+- Các bảng không được có đường kẻ dọc, với hàng tiêu đề (header) được in đậm.
