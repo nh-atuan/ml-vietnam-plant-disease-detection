@@ -67,7 +67,7 @@ Sau khi chọn checkpoint tốt nhất trên tập Validation, mô hình đượ
     \item Trên tập Cà phê, Mask R-CNN cho kết quả cực kỳ ấn tượng với \texttt{mAP@50} đạt 0,9480 và \texttt{mAP@50:95} đạt 0,9041, cùng độ tương đồng pixel cao (\texttt{mIoU} = 0,9128, \texttt{Dice} = 0,9356). Kết quả này cho thấy mô hình rất hiệu quả trong việc khoanh vùng các vết bệnh đốm lá tảo (Algal Leaf Spot) hay gỉ sắt (Rust) trên lá cà phê.
     \item Trên tập Lúa, hiệu năng mô hình thấp hơn đáng kể (\texttt{mAP@50:95} = 0,5294). Nguyên nhân chính là do kích thước ảnh đầu vào nhỏ ($256 \times 256$) trong khi các vết bệnh của lúa (như BrownSpot, LeafBlast) có kích thước rất nhỏ và mảnh, gây khó khăn cho nhánh RPN trong việc đề xuất vùng chứa và nhánh RoI Align bị mất mát thông tin không gian.
     \item Đặc điểm thú vị: Trên cả hai tập dữ liệu, cấu hình \textbf{Baseline} đều đạt độ chính xác (\texttt{mAP}) cao hơn so với cấu hình \textbf{Tuned} tốt nhất tìm được bởi ASHA. Điều này có thể lý giải do các thử nghiệm tinh chỉnh (như áp dụng CutMix hay đóng băng backbone một số epoch) đã làm thay đổi sự phân bố đặc trưng nhãn pixel hoặc giảm độ nhạy của nhánh Mask Head đối với các vết bệnh nhỏ, dẫn đến việc suy giảm nhẹ mAP trên tập Test, dù mIoU và Dice của các pixel dự đoán đúng có tăng nhẹ (ở tập Lúa, mIoU tăng từ 0,8669 lên 0,8708).
-    \item Tốc độ inference của mô hình khá chậm ($\approx 700 - 760$ ms trên CPU), và dung lượng mô hình lớn ($\approx 500$ MB), gây thách thức lớn cho việc triển khai ứng dụng thời gian thực.
+    \item Tốc độ inference của mô hình khá chậm ($\approx 700 - 760$ ms trên GPU), và dung lượng mô hình lớn ($\approx 500$ MB), gây thách thức lớn cho việc triển khai ứng dụng thời gian thực.
 \end{itemize}
 
 \subsubsection{Confusion Matrix}
@@ -472,19 +472,16 @@ Hình~\ref{fig:m2f_viz_rice} và~\ref{fig:m2f_viz_coffee} đối chiếu ảnh g
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}[t]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/m2f_rice_viz.png}
-        \caption{Mask2Former (baseline) trên tập \textbf{Rice}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
-        \label{fig:m2f_viz_rice}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/m2f_coffee_viz.png}
-        \caption{Mask2Former (baseline) trên tập \textbf{Coffee}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
-        \label{fig:m2f_viz_coffee}
-    \end{minipage}
+    \includegraphics[width=0.85\textwidth,height=0.75\textheight,keepaspectratio]{img/m2f_rice_viz.png}
+    \caption{Mask2Former (baseline) trên tập \textbf{Rice}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
+    \label{fig:m2f_viz_rice}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth,height=0.75\textheight,keepaspectratio]{img/m2f_coffee_viz.png}
+    \caption{Mask2Former (baseline) trên tập \textbf{Coffee}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
+    \label{fig:m2f_viz_coffee}
 \end{figure}
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
@@ -492,6 +489,8 @@ Hình~\ref{fig:m2f_viz_rice} và~\ref{fig:m2f_viz_coffee} đối chiếu ảnh g
 \label{subsec:comparison}
 
 Sau khi cả 5 thành viên hoàn thành thực nghiệm độc lập cho từng mô hình, nhóm đã tổng hợp kết quả đánh giá đa tiêu chí trên tập kiểm thử Test độc lập. Bảng~\ref{tab:results_rice} và Bảng~\ref{tab:results_coffee} trình bày chi tiết hiệu năng chẩn đoán bệnh trên hai tập dữ liệu Lúa và Cà phê.
+
+\textit{Lưu ý: Thời gian suy luận (Infer) trong các bảng được đo trên GPU (ngoại trừ MobileSAM được thực nghiệm trên CPU để phục vụ đo đạc ONNX).}
 
 \begin{table}[H]
     \caption{Kết quả đánh giá 5 mô hình trên tập Test - Rice dataset}

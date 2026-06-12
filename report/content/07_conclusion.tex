@@ -20,6 +20,7 @@
           \end{itemize}
     \item Hướng phát triển tiếp theo:\begin{itemize}
               \item Tích hợp các mô hình được lựa chọn (YOLO26-seg và Mask2Former) thành một pipeline thống nhất, tự động nhận diện loại cây trồng trước khi chẩn đoán bệnh.
+              \item Thực hiện đo đạc và đánh giá lại tốc độ suy luận của các mô hình trên môi trường CPU để phục vụ việc tích hợp trực tiếp lên ứng dụng web và triển khai thực tế.
               \item Thực hiện tối ưu hóa mô hình sâu thông qua lượng tử hóa (quantization) và xuất sang định dạng ONNX/TensorRT để triển khai trên ứng dụng web thời gian thực và các thiết bị di động của nông dân với độ trễ thấp ($< 200$ ms).
               \item Thu thập thêm mẫu dữ liệu của các lớp thiểu số như sâu vẽ bùa để nâng cao độ bền vững và khả năng chẩn đoán toàn diện của hệ thống ngoài thực địa.
           \end{itemize}
