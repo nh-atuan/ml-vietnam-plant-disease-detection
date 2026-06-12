@@ -1,123 +1,112 @@
 % ============================================================
-% PHẦN 6 — THẢO LUẬN & PHÂN TÍCH LỖI
-% Người phụ trách: mỗi thành viên tự viết cho mô hình của mình;
-%                  phần so sánh và lựa chọn best model do cả nhóm.
+% PHẦN 6 - THẢO LUẬN & PHÂN TÍCH LỖI
 % ============================================================
 
 \section{Thảo luận và phân tích lỗi}
 \label{sec:discussion}
 
-% ----------------------------------------
+%  -  -  -  -  -  -  -  -  -  -  -  -  - -
 \subsection{Hiện tượng Overfitting / Underfitting}
 
-\textit{[TODO --- Từng thành viên tự phân tích mô hình của mình dựa vào learning curves (Mục~\ref{sec:results})]}
+Dựa trên biểu đồ quá trình học (Mục~\ref{sec:results}), nhóm nghiên cứu phân tích chi tiết sự hội tụ và khả năng tổng quát hóa của từng mô hình:
 
 \subsubsection{Đánh giá đối với mô hình Mask R-CNN}
 Dựa trên biểu đồ quá trình học (Mục~\ref{subsec:res_maskrcnn}):
 \begin{itemize}
-    \item \textbf{Tập dữ liệu Lúa (Rice)}: Mô hình có hiện tượng quá khớp (overfitting) nhẹ từ sau epoch 15. Giá trị loss huấn luyện tiếp tục giảm ổn định xuống mức 0,38 nhưng loss kiểm thử (validation loss) bắt đầu có xu hướng đi ngang và tăng nhẹ trở lại ở khoảng $0,45 - 0,55$. Chỉ số validation mAP đạt giá trị tốt nhất là 0,5226 ở epoch 24 và giảm nhẹ sau đó. Để khắc phục hiện tượng này, nhóm đã áp dụng cơ chế lưu checkpoint tốt nhất dựa trên validation mAP và Early Stopping để dừng quá trình huấn luyện sớm, giúp giữ lại trọng số tối ưu nhất và ngăn mô hình học thêm nhiễu từ tập train.
-    \item \textbf{Tập dữ liệu Cà phê (Coffee)}: Mô hình đạt trạng thái hội tụ rất tốt và gần như không xuất hiện overfitting. Đường loss huấn luyện và validation giảm song hành rất mượt mà. Validation mAP đạt mức ổn định và duy trì quanh ngưỡng 0,88. Điều này cho thấy các đặc trưng hình học và màu sắc của bệnh đốm lá và gỉ sắt trên lá cà phê rất đặc trưng và dễ học, đồng thời quy mô tập dữ liệu đủ tốt giúp mô hình tổng quát hóa vượt trội mà không cần áp dụng các biện pháp chế tài quá khớp mạnh.
+    \item Tập dữ liệu Lúa (Rice): Mô hình có hiện tượng quá khớp (overfitting) nhẹ từ sau epoch 15. Giá trị loss huấn luyện tiếp tục giảm ổn định xuống mức 0,38 nhưng loss kiểm thử (validation loss) bắt đầu có xu hướng đi ngang và tăng nhẹ trở lại ở khoảng $0,45 - 0,55$. Chỉ số validation mAP đạt giá trị tốt nhất là 0,5226 ở epoch 24 và giảm nhẹ sau đó. Để khắc phục hiện tượng này, nhóm đã áp dụng cơ chế lưu checkpoint tốt nhất dựa trên validation mAP và Early Stopping để dừng quá trình huấn luyện sớm, giúp giữ lại trọng số tối ưu nhất và ngăn mô hình học thêm nhiễu từ tập train.
+    \item Tập dữ liệu Cà phê (Coffee): Mô hình đạt trạng thái hội tụ rất tốt và gần như không xuất hiện overfitting. Đường loss huấn luyện và validation giảm song hành rất mượt mà. Validation mAP đạt mức ổn định và duy trì quanh ngưỡng 0,88. Điều này cho thấy các đặc trưng hình học và màu sắc của bệnh đốm lá và gỉ sắt trên lá cà phê rất đặc trưng và dễ học, đồng thời quy mô tập dữ liệu đủ tốt giúp mô hình tổng quát hóa vượt trội mà không cần áp dụng các biện pháp chế tài quá khớp mạnh.
 \end{itemize}
-Đối với RF-DETR, learning curve trong Hình~\ref{fig:rfdetr_coffee_curve} và Hình~\ref{fig:rfdetr_rice_curve} cho thấy loss huấn luyện giảm dần qua các epoch. Coffee có xu hướng ổn định hơn: validation segmentation mAP@50 đạt khoảng $0.9207$ ở epoch cuối được log, trong khi kết quả test đạt mAP50:95 segmentation $0.825083$, mIoU $0.857505$ và Dice $0.871758$. Điều này cho thấy mô hình học được đặc trưng mask khá tốt trên tập coffee, chưa có dấu hiệu overfitting nghiêm trọng trong phạm vi 8 epoch.
 
-Với rice, đường cong dao động hơn và validation segmentation mAP@50 đạt khoảng $0.7592$, thấp hơn coffee. Kết quả test cũng thấp hơn coffee ở các chỉ số segmentation chính: mAP50:95 segmentation $0.687440$, mIoU $0.813240$ và Dice $0.830791$. Hiện tượng này không hẳn là underfitting, vì mIoU và Dice vẫn ở mức khá; nguyên nhân hợp lý hơn là tập rice có nhiều ảnh chứa nhiều vùng bệnh, nhiều annotation trên cùng ảnh và hình thái bệnh dễ nhầm hơn.
+\subsubsection{Đánh giá đối với mô hình RF-DETR}
+Đối với RF-DETR, learning curve trong Hình~\ref{fig:rfdetr_coffee_curve} và Hình~\ref{fig:rfdetr_rice_curve} cho thấy loss huấn luyện giảm dần qua các epoch. Coffee có xu hướng ổn định hơn: validation segmentation mAP@50 đạt khoảng $0,9207$ ở epoch cuối được log, trong khi kết quả test đạt mAP50:95 segmentation $0,8251$, mIoU $0,8575$ và Dice $0,8718$. Điều này cho thấy mô hình học được đặc trưng mask khá tốt trên tập coffee, chưa có dấu hiệu overfitting nghiêm trọng trong phạm vi 8 epoch.
 
-Các biện pháp đã được dùng để giảm rủi ro overfitting và quá tải tài nguyên gồm: sử dụng biến thể \texttt{RFDETRSegNano}, bật early stopping, dùng best checkpoint để evaluate thay vì epoch cuối, đặt gradient accumulation bằng $4$ và giảm batch size của rice xuống $2$. Nhóm chưa chạy hyperparameter search tự động, nên phần nhận xét này chỉ phản ánh cấu hình fine-tune cuối cùng trong notebook.
+Với rice, đường cong dao động hơn và validation segmentation mAP@50 đạt khoảng $0,7592$, thấp hơn coffee. Kết quả test cũng thấp hơn coffee ở các chỉ số segmentation chính: mAP50:95 segmentation $0,6874$, mIoU $0,8132$ và Dice $0,8308$. Hiện tượng này không hẳn là underfitting, vì mIoU và Dice vẫn ở mức khá; nguyên nhân hợp lý hơn là tập rice có nhiều ảnh chứa nhiều vùng bệnh, nhiều annotation trên cùng ảnh và hình thái bệnh dễ nhầm hơn.
 
-Đối với YOLO26-seg, tập Rice cho thấy xu hướng hội tụ tốt hơn: train loss giảm đều, validation loss không tăng kéo dài ở cuối quá trình huấn luyện, và mask mAP@50:95 tăng ổn định đến khoảng 0.6910 ở epoch 50 trên validation. Khoảng cách train--validation chủ yếu thể hiện qua loss validation cao hơn loss train, nhưng chưa đủ mạnh để kết luận overfitting nghiêm trọng. Tập Coffee có dấu hiệu underfitting hoặc bão hòa sớm theo metric instance mAP, vì mask mAP@50:95 chỉ dao động quanh 0.13 ở cuối quá trình dù learning rate đã giảm dần. Cách xử lý phù hợp cho các lần huấn luyện sau là tăng dữ liệu/augmentation cho các lớp khó, kiểm tra lại chất lượng annotation polygon và thử tăng biến thể mô hình hoặc kéo dài số epoch có early stopping.
+Các biện pháp đã được dùng để giảm rủi ro overfitting và quá tải tài nguyên gồm: sử dụng biến thể \texttt{RFDETRSegNano}, bật early stopping, dùng best checkpoint để evaluate thay vì epoch cuối, đặt gradient accumulation bằng $4$ và giảm batch size của rice xuống $2$.
 
-\paragraph{Mask2Former.}
-Cấu hình baseline (Swin-T) hội tụ tốt trên cả hai domain: loss train và val cùng giảm ổn định và bám sát nhau (Hình~\ref{fig:m2f_loss_rice}, \ref{fig:m2f_loss_coffee}), gap train--val nhỏ, mAP test cao --- không có dấu hiệu overfit. Cấu hình tuned (Swin-S) lại rơi vào trạng thái \emph{underfitting bất ổn}: loss train không giảm bền vững và loss val dao động mạnh quanh mức cao, kéo theo mAP test sụp đổ. Nguyên nhân không nằm ở dung lượng mô hình mà ở tương tác giữa các siêu tham số được đẩy lên đồng thời: backbone lớn hơn (Swin-S), độ phân giải $512$ và augmentation \texttt{strong} làm bài toán khó hơn, trong khi batch size chỉ còn $2$ khiến ước lượng gradient nhiễu và batch statistics kém tin cậy; learning rate $1\times10^{-4}$ trở nên quá lớn trong điều kiện đó, đẩy quá trình huấn luyện ra khỏi vùng ổn định. Hệ quả là $30$ epoch không đủ để mô hình hội tụ. Hướng khắc phục hợp lý là cô lập từng thay đổi (tăng batch bằng gradient accumulation, hạ learning rate, giảm cường độ augmentation hoặc kéo dài lịch huấn luyện) thay vì thay đổi tất cả cùng lúc; trong phạm vi đồ án, nhóm chọn baseline làm cấu hình đại diện.
+\subsubsection{Đánh giá đối với mô hình YOLO26-seg}
+Đối với YOLO26-seg, tập Rice cho thấy xu hướng hội tụ tốt hơn: train loss giảm đều, validation loss không tăng kéo dài ở cuối quá trình huấn luyện, và mask mAP@50:95 tăng ổn định đến khoảng 0,6910 ở epoch 50 trên validation. Khoảng cách train - validation chủ yếu thể hiện qua loss validation cao hơn loss train, nhưng chưa đủ mạnh để kết luận overfitting nghiêm trọng. Tập Coffee có dấu hiệu underfitting hoặc bão hòa sớm theo metric instance mAP, vì mask mAP@50:95 chỉ dao động quanh 0,13 ở cuối quá trình dù learning rate đã giảm dần. Cách xử lý phù hợp cho các lần huấn luyện sau là tăng dữ liệu/augmentation cho các lớp khó, kiểm tra lại chất lượng annotation polygon và thử tăng biến thể mô hình hoặc kéo dài số epoch có early stopping.
 
-% ----------------------------------------
+\subsubsection{Đánh giá đối với mô hình MobileSAM}
+Đối với MobileSAM, quá trình huấn luyện chỉ tinh chỉnh duy nhất nhánh Mask Decoder và đóng băng các thành phần trích xuất đặc trưng (Image Encoder và Prompt Encoder). Sự kết hợp này mang lại đường học vô cùng mượt mà (Hình~\ref{fig:mobilesam_learning_curves}), với khoảng cách giữa train loss và validation loss tiệm cận về 0 sau epoch 15. Điều này cho thấy mô hình hoàn toàn tránh được hiện tượng overfitting do số lượng tham số cần tối ưu hóa rất nhỏ ($\approx 3,87$ triệu tham số) so với lượng tri thức khổng lồ được thừa hưởng từ pre-trained backbone. Mô hình cũng không bị underfitting vì đạt độ tương đồng pixel khá tốt trên tập kiểm thử (mIoU đạt $0,6671$ trên Coffee và $0,5440$ trên Rice), chứng tỏ khả năng học thích ứng nhanh với miền dữ liệu bệnh thực vật cụ thể.
+
+\subsubsection{Đánh giá đối với mô hình Mask2Former}
+Cấu hình baseline (Swin-T) hội tụ tốt trên cả hai domain: loss train và val cùng giảm ổn định và bám sát nhau (Hình~\ref{fig:m2f_loss_rice}, \ref{fig:m2f_loss_coffee}), gap train - val nhỏ, mAP test cao - không có dấu hiệu overfit. Cấu hình tuned (Swin-S) lại rơi vào trạng thái \emph{underfitting bất ổn}: loss train không giảm bền vững và loss val dao động mạnh quanh mức cao, kéo theo mAP test sụp đổ. Nguyên nhân không nằm ở dung lượng mô hình mà ở tương tác giữa các siêu tham số được đẩy lên đồng thời: backbone lớn hơn (Swin-S), độ phân giải $512$ và augmentation \texttt{strong} làm bài toán khó hơn, trong khi batch size chỉ còn $2$ khiến ước lượng gradient nhiễu và batch statistics kém tin cậy; learning rate $1\times10^{-4}$ trở nên quá lớn trong điều kiện đó, đẩy quá trình huấn luyện ra khỏi vùng ổn định. Hệ quả là $30$ epoch không đủ để mô hình hội tụ. Hướng khắc phục hợp lý là cô lập từng thay đổi (tăng batch bằng gradient accumulation, hạ learning rate, giảm cường độ augmentation hoặc kéo dài lịch huấn luyện) thay vì thay đổi tất cả cùng lúc.
+
+%  -  -  -  -  -  -  -  -  -  -  -  -  - -
 \subsection{Phân tích các trường hợp dự đoán sai}
 \label{subsec:error_analysis}
 
-Do artifact hiện tại chưa có các ảnh minh họa dạng ảnh gốc--ground truth--prediction, phần phân tích lỗi của RF-DETR được thực hiện dựa trên confusion matrix và bảng precision/recall/F1 theo lớp ở Mục~\ref{subsec:res_rfdetr}. Cách phân tích này chưa cho thấy trực quan từng ảnh sai, nhưng đủ để xác định các nhóm lỗi chính theo lớp.
-
-\subsubsection{Phân tích lỗi đối với mô hình Mask R-CNN}
-Hình~\ref{fig:maskrcnn_visual_rice} và Hình~\ref{fig:maskrcnn_visual_coffee} thể hiện kết quả dự đoán thực tế của Mask R-CNN trên tập Test đối với hai tập dữ liệu Lúa và Cà phê:
+Qua phân tích các kết quả dự đoán sai trên tập Test của các mô hình, đặc biệt là các ví dụ trực quan hóa của Mask R-CNN (Hình~\ref{fig:maskrcnn_visual_rice}, \ref{fig:maskrcnn_visual_coffee}) và Mask2Former (Hình~\ref{fig:m2f_viz_rice}, \ref{fig:m2f_viz_coffee}), nhóm nghiên cứu tổng hợp thành ba nhóm lỗi chính như sau:
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.32\textwidth]{img/mask-rcnn/rice/image.png}
-    \caption{Một số kết quả dự đoán thực tế của Mask R-CNN trên tập Test Lúa}
-    \label{fig:maskrcnn_visual_rice}
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/mask-rcnn/rice/image.png}
+        \caption{Ví dụ trên tập Lúa}
+        \label{fig:maskrcnn_visual_rice}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/mask-rcnn/coffee/image.png}
+        \caption{Ví dụ trên tập Cà phê}
+        \label{fig:maskrcnn_visual_coffee}
+    \end{subfigure}
+    \caption{Một số kết quả dự đoán thực tế của Mask R-CNN trên tập Test.}
+    \label{fig:maskrcnn_visual}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.32\textwidth]{img/mask-rcnn/coffee/image.png}
-    \caption{Một số kết quả dự đoán thực tế của Mask R-CNN trên tập Test Cà phê}
-    \label{fig:maskrcnn_visual_coffee}
-\end{figure}
-
-Qua phân tích các kết quả dự đoán sai trên tập Test, mô hình Mask R-CNN gặp các lỗi phân loại và phân vùng cụ thể sau:
 \begin{enumerate}
-    \item \textbf{Nhầm lẫn do tương đồng trực quan (Visual Similarity)}:
+    \item Nhầm lẫn do tương đồng trực quan (Visual Similarity):
           \begin{itemize}
               \item \emph{Lúa}: Cặp lớp \texttt{BrownSpot} (Đốm nâu) và \texttt{LeafBlast} (Đạo ôn) bị nhầm lẫn nhiều nhất. Cả hai bệnh này đều biểu hiện thành các vết đốm màu nâu trên bề mặt lá lúa. Vết đạo ôn thường có hình thoi thon dài ở hai đầu, trong khi đốm nâu tròn trịa hơn. Tuy nhiên, khi vết bệnh mới hình thành (giai đoạn đầu), hình dạng của chúng chưa định hình rõ rệt, dẫn đến việc mô hình phân loại sai nhãn lớp mặc dù khoanh vùng bounding box vẫn chính xác.
-              \item \emph{Cà phê}: Xảy ra sự nhầm lẫn giữa \texttt{AlgalLeafSpot} (Đốm lá tảo) và \texttt{Rust} (Gỉ sắt). Do cả hai đều tạo ra các chấm nhỏ màu cam/nâu vàng trên lá cà phê, trong các ảnh chụp thiếu sáng hoặc ảnh chụp từ xa, nhánh phân loại của Mask R-CNN không đủ độ nhạy sắc thái màu sắc mịn để phân biệt, dẫn đến phân loại nhầm lẫn.
+              \item \emph{Cà phê}: Xảy ra sự nhầm lẫn giữa \texttt{AlgalLeafSpot} (Đốm lá tảo) và \texttt{Rust} (Gỉ sắt). Do cả hai đều tạo ra các chấm nhỏ màu cam/nâu vàng trên lá cà phê, trong các ảnh chụp thiếu sáng hoặc ảnh chụp từ xa, các nhánh phân loại của mô hình không đủ độ nhạy sắc thái màu sắc mịn để phân biệt, dẫn đến phân loại nhầm lẫn.
           \end{itemize}
-    \item \textbf{Vết bệnh kích thước quá nhỏ (Small Objects)}: Do đặc trưng của vết bệnh lúa giai đoạn đầu thường chỉ có đường kính một vài pixel, sau khi qua các tầng tích chập sâu của ResNet-50 và giảm độ phân giải xuống 1/16 hoặc 1/32, các chi tiết không gian bị biến mất. Mặc dù FPN đã hỗ trợ lấy đặc trưng đa tỷ lệ, cơ chế RoI Align ở độ phân giải $7 \times 7$ hoặc $14 \times 14$ vẫn gặp khó khăn lớn trong việc tái tạo thông tin chi tiết của các đốm bệnh siêu nhỏ, dẫn đến bỏ sót vết bệnh (False Negatives).
-    \item \textbf{Nhiễu nền và chồng lấp lá (Complex Background / Occlusion)}: Ở một số ảnh thực địa có nền đất hoặc các lá lúa đè lên nhau, nhánh RPN thỉnh thoảng đề xuất nhầm các khe hở giữa các lá hoặc các vết bùn đất trên lá thành vết bệnh (False Positives).
+    \item Vết bệnh kích thước quá nhỏ (Small Objects): Do đặc trưng của vết bệnh lúa giai đoạn đầu thường chỉ có đường kính một vài pixel, sau khi qua các tầng tích chập sâu hoặc các phép thu nhỏ feature map, các chi tiết không gian bị biến mất. Mặc dù các mạng có hỗ trợ lấy đặc trưng đa tỷ lệ, việc tái tạo thông tin chi tiết của các đốm bệnh siêu nhỏ vẫn gặp khó khăn lớn, dẫn đến bỏ sót vết bệnh (False Negatives).
+    \item Nhiễu nền và chồng lấp lá (Complex Background / Occlusion): Ở một số ảnh thực địa có nền đất hoặc các lá lúa đè lên nhau, các mô hình thỉnh thoảng đề xuất nhầm các khe hở giữa các lá hoặc các vết bùn đất trên lá thành vết bệnh (False Positives). Lỗi từ nền sang các lớp bệnh cũng xảy ra nhiều ở RF-DETR với các dự đoán dư (False Positive) thuộc lớp \texttt{LeafMiner} và \texttt{Rust}.
 \end{enumerate}
-Trên coffee, RF-DETR có F1 cao nhất ở \texttt{PowderyMildew} ($0.871$) và \texttt{AlgalLeafSpot} ($0.837$). Tuy nhiên, \texttt{LeafMiner} có precision thấp ($0.578$) dù recall cao ($0.879$), cho thấy mô hình phát hiện được nhiều vùng bệnh thật nhưng cũng sinh nhiều prediction dư. Confusion matrix cho thấy nhóm \texttt{\_\_background\_\_} dự đoán vào \texttt{LeafMiner} và \texttt{Rust} khá nhiều, lần lượt $116$ và $83$ trường hợp. Đây là dấu hiệu false positive trên nền lá hoặc vùng texture giống bệnh.
 
-Lỗi giữa \texttt{AlgalLeafSpot} và \texttt{Rust} có xuất hiện nhưng không phải nguồn lỗi lớn nhất trong lần chạy này: \texttt{Rust} bị dự đoán thành \texttt{AlgalLeafSpot} $1$ trường hợp, còn \texttt{AlgalLeafSpot} bị dự đoán thành \texttt{Rust} $2$ trường hợp. Như vậy giả thuyết từ EDA về hai lớp dễ nhầm là hợp lý về mặt thị giác, nhưng với RF-DETR lỗi nổi bật hơn lại là false positive từ nền sang các lớp bệnh.
-
-Trên rice, lớp \texttt{Healthy} có F1 cao nhất ($0.775$), còn \texttt{Hispa} thấp nhất ($0.660$). \texttt{Hispa} bị dự đoán thành \texttt{Healthy} $19$ trường hợp, cho thấy mô hình có thể bỏ qua hoặc đánh giá thấp các dấu hiệu bệnh nhỏ/khó thấy. \texttt{LeafBlast} có recall cao ($0.807$) nhưng precision chỉ $0.600$, chủ yếu do nhiều prediction dư từ \texttt{\_\_background\_\_} sang \texttt{LeafBlast} ($47$ trường hợp).
-
-Đối với cặp \texttt{BrownSpot} và \texttt{LeafBlast}, confusion matrix ghi nhận nhầm hai chiều: BrownSpot thành LeafBlast $4$ trường hợp và LeafBlast thành BrownSpot $5$ trường hợp. Mức nhầm này không quá lớn nhưng phù hợp với nhận xét EDA rằng hai lớp đều có vết nâu và dễ bị ảnh hưởng bởi hình dạng/vị trí vết bệnh. Nhìn chung, lỗi trên rice đến từ cả nhầm lớp giữa các biểu hiện bệnh gần nhau lẫn false positive trên nền.
-
-Với YOLO26-seg, confusion matrix và EDA cho thấy hai nhóm lỗi chính. Trên Rice, các lớp có vết nâu hoặc vùng cháy lá tương tự nhau, đặc biệt BrownSpot và LeafBlast, dễ bị nhầm khi vùng bệnh nhỏ hoặc biên vết bệnh không rõ. Trên Coffee, AlgalLeafSpot và Rust có màu sắc/texture gần nhau trong điều kiện ánh sáng kém, đồng thời vùng bệnh có thể nhỏ và rải rác trên nền lá, làm mô hình phát hiện được vùng tổn thương tổng thể nhưng phân tách instance/lớp chưa tốt theo mAP.
-
-\paragraph{Mask2Former.}
-Trên các ảnh trực quan hóa (Hình~\ref{fig:m2f_viz_rice}, \ref{fig:m2f_viz_coffee}), mô hình baseline khoanh đúng vùng bệnh ở phần lớn ảnh có nền sạch và lá nằm rõ trong khung hình. Các lỗi tập trung ở ba nhóm tình huống. Thứ nhất, ảnh chụp thực địa có \emph{nền phức tạp} (đất, lá khác, ánh sáng loang) khiến mask bị tràn ra ngoài vùng bệnh hoặc bắt nhầm vùng nền có màu tương tự. Thứ hai, các \emph{vết bệnh nhỏ và rải rác} dễ bị bỏ sót do bị thu nhỏ thêm khi resize ảnh về $384$. Thứ ba, đúng như dự đoán từ EDA, mô hình thỉnh thoảng nhầm giữa \texttt{BrownSpot} và \texttt{LeafBlast} trên lúa --- hai lớp có vết nâu tương đồng về màu --- và giữa \texttt{AlgalLeafSpot} với \texttt{Rust} trên cà phê khi ánh sáng kém làm mờ khác biệt màu sắc. So sánh giữa hai domain cho thấy Coffee dễ hơn Rice (mAP@50 $0{,}920$ so với $0{,}697$), nhiều khả năng do vùng bệnh trên lá cà phê có ranh giới rõ và tương phản với nền tốt hơn so với các vết bệnh mảnh, lan tỏa trên lá lúa.
-
-% ----------------------------------------
+%  -  -  -  -  -  -  -  -  -  -  -  -  - -
 \subsection{So sánh tổng hợp các mô hình}
 \label{subsec:model_comparison}
 
-Hiện tại báo cáo mới có đầy đủ kết quả RF-DETR cho cả rice và coffee; các mô hình còn lại vẫn chờ thành viên phụ trách bổ sung. Vì vậy bảng dưới đây chỉ điền phần RF-DETR và chưa xếp hạng cuối cùng giữa 5 mô hình.
+Dưới đây là bảng so sánh tổng hợp đa tiêu chí giữa 5 mô hình trên cả hai tập dữ liệu Lúa và Cà phê để làm cơ sở chọn lựa mô hình tốt nhất phục vụ bài toán thực tế.
 
 \begin{table}[H]
-    \caption{Bảng so sánh đa tiêu chí giữa 5 mô hình (tổng hợp từ Phase 3)}
+    \caption{Bảng so sánh đa tiêu chí giữa 5 mô hình phân vùng thực thể}
     \centering
-    \begin{tabularx}{\textwidth}{lXXXXX}
+    \small
+    \begin{tabular}{lccccc}
         \toprule
-        \textbf{Tiêu chí} & \textbf{Mask R-CNN} & \textbf{YOLO-seg} & \textbf{RF-DETR} & \textbf{MobileSAM} & \textbf{Mask2Former} \\
+        \textbf{Tiêu chí} & \textbf{Mask R-CNN} & \textbf{YOLO26-seg} & \textbf{RF-DETR} & \textbf{MobileSAM} & \textbf{Mask2Former} \\
         \midrule
-        mAP@50:95       & 0,5294 (Lúa) / 0,9041 (Cà phê) & --- & --- & --- & --- \\
-        mIoU            & 0,8669 (Lúa) / 0,9128 (Cà phê) & --- & --- & --- & --- \\
-        Inference (ms)  & 760,50 ms / 702,36 ms & --- & --- & --- & --- \\
-        Model size (MB) & 503,44 MB / 501,73 MB & --- & --- & --- & --- \\
-        Train--Val gap  & Trung bình (Lúa) / Rất nhỏ (Cà phê) & --- & --- & --- & --- \\
+        \multicolumn{6}{l}{\textbf{Tập dữ liệu Lúa (Rice)}} \\
+        \quad mAP@50:95 & 0,5294 & \textbf{0,7506} & 0,6874 & 0,5141 & 0,6760 \\
+        \quad mIoU & \textbf{0,8669} & 0,8210 & 0,8132 & 0,5440 & 0,6510 \\
+        \quad Infer (ms) & 760,50 & \textbf{65,72} & 198,31 & 1487,54 & 96,81 \\
+        \quad Model size (MB) & 503,44 & \textbf{6,23} & 133,00 & 41,30 & 181,07 \\
+        \quad Overfitting gap & Trung bình & Rất nhỏ & Thấp & Không có & Rất nhỏ \\
         \midrule
-        \textbf{Xếp hạng} & Baseline (Lúa) / Tốt nhất (Cà phê) & --- & --- & --- & --- \\
-        mAP@50:95       & --- & --- & 0.825 (coffee) / 0.687 (rice) & --- & --- \\
-        mIoU            & --- & --- & 0.858 (coffee) / 0.813 (rice) & --- & --- \\
-        Inference (ms)  & --- & --- & 70.306 (coffee) / 198.306 (rice) & --- & --- \\
-        Model size (MB) & --- & --- & 133 & --- & --- \\
-        Train--Val gap  & --- & --- & Chưa đủ log train/val trực tiếp & --- & --- \\
-        \midrule
-        \textbf{Xếp hạng} & --- & --- & Chưa kết luận chung & --- & --- \\
+        \multicolumn{6}{l}{\textbf{Tập dữ liệu Cà phê (Coffee)}} \\
+        \quad mAP@50:95 & \textbf{0,9041} & 0,1235 & 0,8251 & 0,6591 & 0,9000 \\
+        \quad mIoU & \textbf{0,9128} & 0,8763 & 0,8575 & 0,6671 & 0,8870 \\
+        \quad Infer (ms) & 702,36 & \textbf{20,21} & 70,31 & 1616,84 & 62,88 \\
+        \quad Model size (MB) & 501,73 & \textbf{6,23} & 133,00 & 41,30 & 181,07 \\
+        \quad Overfitting gap & Rất nhỏ & Không có & Thấp & Không có & Rất nhỏ \\
         \bottomrule
-    \end{tabularx}
+    \end{tabular}
     \label{tab:model_comparison}
 \end{table}
 
-% ----------------------------------------
-\subsection{Mô hình được chọn cho Phase 4}
+%  -  -  -  -  -  -  -  -  -  -  -  -  - -
+\subsection{Mô hình được chọn triển khai thực tế}
+\label{subsec:selected_model}
 
-Do chưa có đủ kết quả của cả 5 mô hình, nhóm chưa thể đưa ra quyết định cuối cùng cho toàn bộ hệ thống. Nếu chỉ xét phần RF-DETR đã hoàn thiện, cấu hình RF-DETR trên coffee đang là kết quả tốt hơn so với rice về mAP50:95 segmentation, mIoU, Dice và inference time.
+Dựa trên bảng so sánh đa tiêu chí ở Bảng~\ref{tab:model_comparison}, nhóm nghiên cứu đưa ra quyết định chọn mô hình tối ưu cho từng loại cây trồng để triển khai trên hệ thống chẩn đoán thực tế:
 
-\textbf{Quyết định tạm thời:} RF-DETR trên tập \textbf{coffee} là ứng viên mạnh trong các kết quả RF-DETR hiện có, vì:
-\begin{itemize}
-    \item mAP50:95 segmentation đạt $0.825083$, cao hơn rice ($0.687440$).
-    \item mIoU đạt $0.857505$ và Dice đạt $0.871758$, cho thấy chất lượng mask ổn định.
-    \item Inference trung bình khoảng $70.306$ms/ảnh, thấp hơn ngưỡng $500$ms/ảnh và nhanh hơn đáng kể so với rice trong lần đo hiện tại.
-    \item Best checkpoint khoảng $133$MB, có thể tối ưu thêm bằng export hoặc quantization khi triển khai.
-\end{itemize}
-
-Kết luận này chỉ là lựa chọn tạm thời trong phạm vi RF-DETR. Sau khi Mask R-CNN, YOLO26-seg, MobileSAM và Mask2Former được bổ sung đầy đủ kết quả, nhóm cần cập nhật lại bảng so sánh và quyết định cuối cùng.
+\begin{enumerate}
+    \item Đối với bệnh trên cây Lúa (Rice):Nhóm lựa chọn mô hình \textbf{YOLO26-seg}. Mặc dù Mask R-CNN đạt mIoU cao nhất ($0,8669$), YOLO26-seg lại vượt trội hoàn toàn về chỉ số \texttt{mAP@50:95} ($0,7506$ so với $0,5294$). Quan trọng hơn, YOLO26-seg có tốc độ suy luận cực nhanh ($65,72$ ms) và kích thước siêu nhẹ ($6,23$ MB), hoàn toàn đáp ứng yêu cầu suy luận thời gian thực trên các thiết bị di động của nông dân và máy chủ web có tài nguyên hạn chế.
+    \item Đối với bệnh trên cây Cà phê (Coffee):Nhóm quyết định lựa chọn mô hình \textbf{Mask2Former}. Mặc dù Mask R-CNN đạt hiệu năng cao nhất về mặt lý thuyết (\texttt{mAP@50:95} = $0,9041$), mô hình này quá nặng ($501,73$ MB) và tốc độ suy luận quá chậm ($702,36$ ms), không khả thi cho triển khai ứng dụng web. Mask2Former (backbone Swin-T) là sự đánh đổi hoàn hảo khi đạt hiệu năng tiệm cận sát sao với Mask R-CNN (\texttt{mAP@50:95} = $0,9000$, chỉ kém $0,41\%$), nhưng lại có tốc độ suy luận nhanh hơn gấp 11 lần ($62,88$ ms) và dung lượng nhỏ hơn gần 3 lần ($181,07$ MB), đảm bảo tính thực tiễn cao khi đưa vào sử dụng.
+\end{enumerate}

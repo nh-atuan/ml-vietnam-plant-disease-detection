@@ -17,10 +17,10 @@
 \subsubsection{Tiền xử lý đầu vào đặc thù}
 Ảnh đầu vào và các nhãn thực thể (instance annotations) được xử lý qua các bước đặc thù của Mask R-CNN từ thư viện \texttt{torchvision}:
 \begin{itemize}
-    \item \textbf{Định dạng nhãn}: Dữ liệu gốc dạng COCO JSON chứa nhãn đa giác (polygons) được tự động chuyển đổi thành các mặt nạ nhị phân (binary mask) dạng tensor \texttt{UInt8Tensor[N, H, W]} với $N$ là số thực thể trong ảnh và kích thước mặt nạ là $256 \times 256$ pixel.
-    \item \textbf{Bounding Boxes}: Các hộp bao quanh đối tượng được chuyển đổi từ định dạng COCO \texttt{[x, y, width, height]} sang dạng tọa độ tuyệt đối \texttt{[x1, y1, x2, y2]} để đưa vào mô hình. Các nhãn category ID (0-7 trong dự án) được dịch chuyển tăng thêm 1 đơn vị để dành nhãn \texttt{0} làm nhãn nền (background) theo quy định của Mask R-CNN.
-    \item \textbf{Chuẩn hóa ảnh}: Giá trị cường độ điểm ảnh được chuyển về khoảng $[0, 1]$, sau đó được z-score chuẩn hóa sử dụng các giá trị trung bình (mean) và độ lệch chuẩn (std) tính từ tập huấn luyện (Train split): $\mu = [0.485, 0.456, 0.406]$, $\sigma = [0.229, 0.224, 0.225]$.
-    \item \textbf{Lọc mẫu lỗi}: Các bounding boxes có chiều rộng hoặc chiều cao $\leq 0$, hoặc các mặt nạ bị rỗng hoặc có diện tích hiển thị bằng 0 sau quá trình rasterization được lọc bỏ để tránh lỗi trong quá trình tối ưu.
+    \item Định dạng nhãn: Dữ liệu gốc dạng COCO JSON chứa nhãn đa giác (polygons) được tự động chuyển đổi thành các mặt nạ nhị phân (binary mask) dạng tensor \texttt{UInt8Tensor[N, H, W]} với $N$ là số thực thể trong ảnh và kích thước mặt nạ là $256 \times 256$ pixel.
+    \item Bounding Boxes: Các hộp bao quanh đối tượng được chuyển đổi từ định dạng COCO \texttt{[x, y, width, height]} sang dạng tọa độ tuyệt đối \texttt{[x1, y1, x2, y2]} để đưa vào mô hình. Các nhãn category ID (0-7 trong dự án) được dịch chuyển tăng thêm 1 đơn vị để dành nhãn \texttt{0} làm nhãn nền (background) theo quy định của Mask R-CNN.
+    \item Chuẩn hóa ảnh: Giá trị cường độ điểm ảnh được chuyển về khoảng $[0, 1]$, sau đó được z-score chuẩn hóa sử dụng các giá trị trung bình (mean) và độ lệch chuẩn (std) tính từ tập huấn luyện (Train split): $\mu = [0.485, 0.456, 0.406]$, $\sigma = [0.229, 0.224, 0.225]$.
+    \item Lọc mẫu lỗi: Các bounding boxes có chiều rộng hoặc chiều cao $\leq 0$, hoặc các mặt nạ bị rỗng hoặc có diện tích hiển thị bằng 0 sau quá trình rasterization được lọc bỏ để tránh lỗi trong quá trình tối ưu.
 \end{itemize}
 
 \subsubsection{Hàm mất mát}
@@ -39,9 +39,9 @@ Trong đó:
 
 \subsubsection{Thuật toán tối ưu \& Learning Rate}
 \begin{itemize}
-    \item \textbf{Optimizer}: Thuật toán tối ưu hóa được sử dụng là \textbf{AdamW} với hệ số suy giảm trọng số (weight decay) được thiết lập ở mức $10^{-4}$ để hạn chế hiện tượng overfitting. Lựa chọn AdamW giúp quá trình học hội tụ nhanh chóng và ổn định hơn so với SGD cổ điển đối với các mô hình hai giai đoạn có độ phức tạp cao trên tập dữ liệu kích thước nhỏ.
-    \item \textbf{Learning Rate (LR)}: Tốc độ học cơ sở (Base Learning Rate) được thiết lập ở mức $10^{-4}$.
-    \item \textbf{LR Scheduler}: Sử dụng bộ điều chỉnh \textbf{ReduceLROnPlateau} để tự động giảm tốc độ học. Metric giám sát là giá trị validation \texttt{mAP@50:95}. Nếu metric này không cải thiện sau $3$ epoch liên tiếp, tốc độ học sẽ được giảm với hệ số thu nhỏ là $0,1$ (giảm đi 10 lần).
+    \item Optimizer: Thuật toán tối ưu hóa được sử dụng là \textbf{AdamW} với hệ số suy giảm trọng số (weight decay) được thiết lập ở mức $10^{-4}$ để hạn chế hiện tượng overfitting. Lựa chọn AdamW giúp quá trình học hội tụ nhanh chóng và ổn định hơn so với SGD cổ điển đối với các mô hình hai giai đoạn có độ phức tạp cao trên tập dữ liệu kích thước nhỏ.
+    \item Learning Rate (LR): Tốc độ học cơ sở (Base Learning Rate) được thiết lập ở mức $10^{-4}$.
+    \item LR Scheduler: Sử dụng bộ điều chỉnh \textbf{ReduceLROnPlateau} để tự động giảm tốc độ học. Metric giám sát là giá trị validation \texttt{mAP@50:95}. Nếu metric này không cải thiện sau $3$ epoch liên tiếp, tốc độ học sẽ được giảm với hệ số thu nhỏ là $0,1$ (giảm đi 10 lần).
 \end{itemize}
 
 \subsubsection{Siêu tham số}
@@ -203,7 +203,7 @@ Pipeline tiền xử lý dữ liệu đặc thù của MobileSAM được thực
 \begin{itemize}
     \item Hình ảnh gốc được chuẩn hóa kích thước cố định về khổ vuông $1024 \times 1024$ pixel theo tham số \texttt{image\_size} trong file cấu hình.
     \item Thực hiện chuẩn hóa giá trị pixel bằng tập tham số \texttt{MEAN} và \texttt{STD} cố định của kiến trúc ViT nhằm đưa dải dữ liệu về phân phối chuẩn thích hợp.
-    \item \textbf{Prompt Formatting}: Trong quá trình huấn luyện thực tế, mô hình nhận tín hiệu gợi ý dạng Bounding Box (\texttt{bbox}) bao quanh vùng bệnh lá lúa làm điều kiện định hướng không gian. Để tăng cường độ mạnh mẽ (robustness) và mô phỏng sai số của con người hoặc hệ thống detector tự động, các tọa độ hộp được áp dụng cơ chế dịch chuyển ngẫu nhiên với biên độ dịch tối đa là \texttt{max\_bbox\_shift = 20} pixel.
+    \item Prompt Formatting: Trong quá trình huấn luyện thực tế, mô hình nhận tín hiệu gợi ý dạng Bounding Box (\texttt{bbox}) bao quanh vùng bệnh lá lúa làm điều kiện định hướng không gian. Để tăng cường độ mạnh mẽ (robustness) và mô phỏng sai số của con người hoặc hệ thống detector tự động, các tọa độ hộp được áp dụng cơ chế dịch chuyển ngẫu nhiên với biên độ dịch tối đa là \texttt{max\_bbox\_shift = 20} pixel.
 \end{itemize}
 
 \subsubsection{Hàm mất mát}
@@ -213,16 +213,16 @@ Hàm mất mát tổng hợp $\mathcal{L}_{\text{total}}$ dùng để huấn luy
 \end{equation}
 Trong đó:
 \begin{itemize}
-    \item \textbf{Sigmoid Focal Loss ($\mathcal{L}_{\text{Focal}}$)}: Tính toán trung bình tổn thất pixel dựa trên hàm \texttt{sigmoid\_focal\_loss}. Lý do lựa chọn thành phần này nhằm giải quyết triệt để bài toán mất cân bằng lớp nghiêm trọng (pixel imbalance) giữa diện tích vùng tổn thương do bệnh lá cây chiếm tỷ lệ rất nhỏ so với vùng nền ảnh lá lành xung quanh. Hệ số nhân trừng phạt lớn (trọng số 20) giúp ép mô hình tập trung tối đa vào các pixel biên khó phân loại.
-    \item \textbf{Dice Loss ($\mathcal{L}_{\text{Dice}}$)}: Được cấu hình với thuộc tính \texttt{squared\_pred=True} thu được từ thư viện MONAI. Hàm này tối ưu hóa trực tiếp độ trùng khớp vùng phân vùng (Intersection over Union), ngăn chặn việc suy giảm gradient khi kích thước vùng bệnh phân tách quá bé.
-    \item \textbf{MSE Loss ($\mathcal{L}_{\text{MSE}}$)}: Đo lường lỗi bình phương trung bình giữa hệ số IoU dự đoán từ nhánh phụ của Mask Decoder (\texttt{pred\_IOU}) và chỉ số IoU thực tế tính trên batch (\texttt{iou}), giúp tinh chỉnh độ tin cậy nội bộ của mạng.
+    \item Sigmoid Focal Loss ($\mathcal{L}_{\text{Focal}}$): Tính toán trung bình tổn thất pixel dựa trên hàm \texttt{sigmoid\_focal\_loss}. Lý do lựa chọn thành phần này nhằm giải quyết triệt để bài toán mất cân bằng lớp nghiêm trọng (pixel imbalance) giữa diện tích vùng tổn thương do bệnh lá cây chiếm tỷ lệ rất nhỏ so với vùng nền ảnh lá lành xung quanh. Hệ số nhân trừng phạt lớn (trọng số 20) giúp ép mô hình tập trung tối đa vào các pixel biên khó phân loại.
+    \item Dice Loss ($\mathcal{L}_{\text{Dice}}$): Được cấu hình với thuộc tính \texttt{squared\_pred=True} thu được từ thư viện MONAI. Hàm này tối ưu hóa trực tiếp độ trùng khớp vùng phân vùng (Intersection over Union), ngăn chặn việc suy giảm gradient khi kích thước vùng bệnh phân tách quá bé.
+    \item MSE Loss ($\mathcal{L}_{\text{MSE}}$): Đo lường lỗi bình phương trung bình giữa hệ số IoU dự đoán từ nhánh phụ của Mask Decoder (\texttt{pred\_IOU}) và chỉ số IoU thực tế tính trên batch (\texttt{iou}), giúp tinh chỉnh độ tin cậy nội bộ của mạng.
 \end{itemize}
 
 \subsubsection{Thuật toán tối ưu \& Learning Rate}
 \begin{itemize}
-    \item \textbf{Optimizer}: Mô hình sử dụng thuật toán tối ưu hóa \textbf{AdamW} thay vì Adam truyền thống, đi kèm với bộ lọc chỉ cập nhật các trọng số có \texttt{requires\_grad = True}. Lựa chọn AdamW giúp quản lý hiệu quả cơ chế phân rã trọng số (weight decay), hạn chế tối đa hiện tượng quá khớp (overfitting) thường xuất hiện trên cấu trúc mạng Transformer.
-    \item \textbf{Chiến lược điều khiển Learning Rate}: Tốc độ học ban đầu được thiết lập ở mức cực nhỏ $1 \times 10^{-5}$ (\texttt{learning\_rate: 1e-5}). Nhóm không áp dụng ReduceLROnPlateau như kế hoạch ban đầu, thay vào đó mã nguồn được hiện thực hóa tối ưu hơn bằng cơ chế suy giảm dựa trên hàm cosine (\textbf{CosineAnnealingLR}) mở rộng theo tổng số bước học tập (\texttt{T\_max = epochs * len(train\_loader)}).
-    \item \textbf{Warmup steps}: Đồng thời, bộ lập lịch \textbf{LinearWarmup} được tích hợp trong \texttt{250} bước khởi đầu (\texttt{warmup\_step: 250}) để tăng dần tốc độ học từ mức 0 lên mức chỉ định, giúp ổn định hóa các gradient trong giai đoạn đầu tiên của quá trình tối ưu.
+    \item Optimizer: Mô hình sử dụng thuật toán tối ưu hóa \textbf{AdamW} thay vì Adam truyền thống, đi kèm với bộ lọc chỉ cập nhật các trọng số có \texttt{requires\_grad = True}. Lựa chọn AdamW giúp quản lý hiệu quả cơ chế phân rã trọng số (weight decay), hạn chế tối đa hiện tượng quá khớp (overfitting) thường xuất hiện trên cấu trúc mạng Transformer.
+    \item Chiến lược điều khiển Learning Rate: Tốc độ học ban đầu được thiết lập ở mức cực nhỏ $1 \times 10^{-5}$ (\texttt{learning\_rate: 1e-5}). Nhóm không áp dụng ReduceLROnPlateau như kế hoạch ban đầu, thay vào đó mã nguồn được hiện thực hóa tối ưu hơn bằng cơ chế suy giảm dựa trên hàm cosine (\textbf{CosineAnnealingLR}) mở rộng theo tổng số bước học tập (\texttt{T\_max = epochs * len(train\_loader)}).
+    \item Warmup steps: Đồng thời, bộ lập lịch \textbf{LinearWarmup} được tích hợp trong \texttt{250} bước khởi đầu (\texttt{warmup\_step: 250}) để tăng dần tốc độ học từ mức 0 lên mức chỉ định, giúp ổn định hóa các gradient trong giai đoạn đầu tiên của quá trình tối ưu.
 \end{itemize}
 
 \subsubsection{Siêu tham số}

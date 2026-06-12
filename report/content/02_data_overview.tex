@@ -1,5 +1,5 @@
 % ============================================================
-% PHẦN 2 — TỔNG QUAN DỮ LIỆU ĐẦU VÀO
+% PHẦN 2  -  TỔNG QUAN DỮ LIỆU ĐẦU VÀO
 % ============================================================
 
 \section{Tổng quan dữ liệu đầu vào}
@@ -16,8 +16,8 @@ Bộ dữ liệu được xây dựng từ nhiều nguồn công khai kết hợ
         \toprule
         \textbf{Loại cây} & \textbf{Nhãn bệnh} & \textbf{Số ảnh (gốc)} & \textbf{Số ảnh (sạch)} \\
         \midrule
-        Lúa & Healthy, BrownSpot, Hispa, LeafBlast, LeafMiner & 3.421 & \textit{[TODO]} \\
-        Cà phê & Healthy, PowderyMildew, Rust, AlgalLeafSpot & 3.879 & \textit{[TODO]} \\
+        Lúa & Healthy, BrownSpot, Hispa, LeafBlast & 3.421 & 3.351 \\
+        Cà phê & AlgalLeafSpot, LeafMiner, PowderyMildew, Rust & 3.879 & 3.798 \\
         \midrule
         \multicolumn{2}{l}{\textbf{Tổng cộng}} & \textbf{7.300} & \textbf{7.149} \\
         \bottomrule
@@ -36,9 +36,9 @@ Nhóm áp dụng tỷ lệ phân chia \textbf{70/15/15} (Train / Validation / Te
         \toprule
         \textbf{Tập} & \textbf{Tỷ lệ} & \textbf{Số ảnh (ước tính)} \\
         \midrule
-        Train      & 70\%  & $\approx$ 5.004 \\
-        Validation & 15\%  & $\approx$ 1.072 \\
-        Test       & 15\%  & $\approx$ 1.072 \\
+        Train      & 70\%  & 5.004 \\
+        Validation & 15\%  & 1.072 \\
+        Test       & 15\%  & 1.073 \\
         \bottomrule
     \end{tabular}
     \label{tab:split}
@@ -50,8 +50,8 @@ Nhóm áp dụng tỷ lệ phân chia \textbf{70/15/15} (Train / Validation / Te
 
 \subsubsection{Chuẩn hóa kích thước}
 \begin{itemize}
-    \item \textbf{Resize:} Tất cả ảnh được resize về canvas $256 \times 256$ pixel, sử dụng \emph{letterbox padding} (padding trắng giữ tỷ lệ khung hình gốc) để tránh biến dạng hình học.
-    \item \textbf{Normalize:} Chuẩn hóa giá trị pixel về $[0, 1]$ rồi chuẩn hóa z-score theo thống kê tập Train: $\mu = \textit{[TODO]}$, $\sigma = \textit{[TODO]}$ (xem \texttt{normalization\_stats.json}).
+    \item Resize:Tất cả ảnh được resize về canvas $256 \times 256$ pixel, sử dụng \emph{letterbox padding} (padding trắng giữ tỷ lệ khung hình gốc) để tránh biến dạng hình học.
+    \item Normalize:Chuẩn hóa giá trị pixel về $[0, 1]$ rồi chuẩn hóa z-score theo thống kê tập Train: $\mu = [0,5458; \, 0,5713; \, 0,5405]$, $\sigma = [0,3226; \, 0,3161; \, 0,3575]$ (xem \texttt{normalization\_stats.json}).
 \end{itemize}
 
 \subsubsection{Xử lý dữ liệu mất cân bằng}
