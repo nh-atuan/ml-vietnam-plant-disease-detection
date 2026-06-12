@@ -102,7 +102,34 @@ YOLO26-seg là phiên bản segmentation của họ YOLO \cite{ultralytics_yolo}
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=0.95\textwidth]{img/yolo26_seg_architecture.png}
+        \begin{tikzpicture}[
+            node distance=0.5cm and 0.6cm,
+            box/.style={
+                draw,
+                thick,
+                align=center,
+                rounded corners=4pt,
+                minimum height=1.3cm,
+                font=\footnotesize
+            },
+            input_box/.style={box, fill=blue!5, draw=blue!60!black, text width=2.4cm},
+            backbone_box/.style={box, fill=orange!10, draw=orange!60!black, text width=2.8cm},
+            neck_box/.style={box, fill=yellow!10, draw=yellow!60!black, text width=2.6cm},
+            head_box/.style={box, fill=purple!10, draw=purple!60!black, text width=3.0cm},
+            output_box/.style={box, fill=green!10, draw=green!60!black, text width=2.4cm},
+            arrow/.style={-{Latex[length=2.5mm]}, thick}
+        ]
+            \node (input) [input_box] {\textbf{Input} \\ Ảnh $640 \times 640$ \\ letterbox + chuẩn hóa};
+            \node (backbone) [backbone_box, right=of input] {\textbf{Backbone} \\ CNN/C2f blocks \\ trích xuất đặc trưng \\ đa tỷ lệ};
+            \node (neck) [neck_box, right=of backbone] {\textbf{Neck} \\ FPN/PAN \\ hợp nhất đặc trưng};
+            \node (head) [head_box, right=of neck] {\textbf{Segment head} \\ Box + class + mask coeff. \\ prototype masks};
+            \node (output) [output_box, right=of head] {\textbf{Output} \\ Bounding boxes \\ instance masks};
+            
+            \draw [arrow] (input) -- (backbone);
+            \draw [arrow] (backbone) -- (neck);
+            \draw [arrow] (neck) -- (head);
+            \draw [arrow] (head) -- (output);
+        \end{tikzpicture}
         \caption{Sơ đồ khối kiến trúc YOLO26-seg sử dụng trong thực nghiệm}
         \label{fig:yolo26_arch}
     \end{figure}
