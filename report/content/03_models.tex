@@ -117,21 +117,25 @@ Nhóm huấn luyện \textbf{hai mô hình RF-DETR riêng biệt}: một mô hì
 
 \subsubsection{Kiến trúc chi tiết}
 
-\paragraph{Luồng kiến trúc.}
+\noindent\textbf{Luồng kiến trúc.}
+
 Notebook sử dụng lớp mô hình segmentation của RF-DETR, mặc định là \texttt{RFDETRSegNano}. Luồng xử lý tổng quát:
 
-\begin{center}
-\fbox{
-\begin{minipage}{0.92\textwidth}
-\centering
-Ảnh đầu vào
-$\rightarrow$ backbone thị giác pretrained
-$\rightarrow$ encoder/decoder Transformer
-$\rightarrow$ prediction queries
-$\rightarrow$ class scores, bounding boxes và segmentation masks
-\end{minipage}
-}
-\end{center}
+\begin{figure}[H]
+    \centering
+    \fbox{%
+    \begin{minipage}{0.94\textwidth}
+        \centering
+        Ảnh đầu vào
+        $\rightarrow$ backbone thị giác pretrained
+        $\rightarrow$ encoder/decoder Transformer
+        $\rightarrow$ object queries
+        $\rightarrow$ classification head, box head, mask head
+        $\rightarrow$ nhãn lớp, bounding box và segmentation mask
+    \end{minipage}}
+    \caption{Sơ đồ luồng kiến trúc RF-DETR segmentation dùng trong notebook}
+    \label{fig:rfdetr_arch}
+\end{figure}
 
 Ảnh được đưa vào backbone để trích xuất đặc trưng thị giác. Các đặc trưng này sau đó đi qua các khối Transformer nhằm mô hình hóa quan hệ không gian giữa vùng lá, vùng bệnh và nền ảnh. Phần prediction head sinh ra ba nhóm đầu ra: nhãn lớp, bounding box và mask tương ứng. Trong bài toán này, đầu ra mask được dùng làm kết quả chính để đánh giá segmentation.
 
@@ -142,10 +146,29 @@ Notebook đặt biến:
 DEFAULT_MODEL_SIZE = os.getenv("RFDETR_MODEL_SIZE", "nano").lower()
 \end{verbatim}
 
-Do đó cấu hình mặc định là \texttt{nano}. Các variant khác như \texttt{small}, \texttt{medium}, \texttt{large}, \texttt{xlarge}, \texttt{2xlarge} vẫn được hỗ trợ trong code thông qua mapping \texttt{MODEL\_CLASS\_NAMES}, nhưng kết quả báo cáo hiện tại được chạy với \texttt{nano}.
+Do đó cấu hình mặc định là \texttt{nano}. Các variant khác như \texttt{small}, \texttt{medium}, \texttt{large}, \texttt{xlarge}, \texttt{2xlarge} vẫn được hỗ trợ trong code thông qua mapping \texttt{MODEL\_CLASS\_NAMES}, nhưng kết quả báo cáo hiện tại được chạy với \texttt{nano}. Các thông tin đã xác nhận từ notebook và artifact được tóm tắt trong Bảng~\ref{tab:rfdetr_arch_config}.
+
+\begin{table}[H]
+    \caption{Thông tin kiến trúc và cấu hình đã xác nhận của RF-DETR}
+    \centering
+    \begin{tabularx}{\textwidth}{lX}
+        \toprule
+        \textbf{Mục} & \textbf{Giá trị trong báo cáo} \\
+        \midrule
+        Variant & \texttt{RFDETRSegNano} / model size \texttt{nano} \\
+        Kiểu bài toán & Instance segmentation trên dữ liệu COCO \\
+        Số mô hình & 2 mô hình riêng: coffee và rice \\
+        Số lớp coffee & 4 lớp: \texttt{LeafMiner}, \texttt{PowderyMildew}, \texttt{Rust}, \texttt{AlgalLeafSpot} \\
+        Số lớp rice & 4 lớp: \texttt{Healthy}, \texttt{BrownSpot}, \texttt{Hispa}, \texttt{LeafBlast} \\
+        Kích thước best checkpoint & 133 MB cho coffee và 133 MB cho rice \\
+        Thành phần đầu ra & Class scores, bounding boxes, segmentation masks \\
+        \bottomrule
+    \end{tabularx}
+    \label{tab:rfdetr_arch_config}
+\end{table}
 
 \paragraph{Số lượng tham số.}
-Notebook chưa ghi trực tiếp tổng số tham số ra report. Vì vậy báo cáo không tự điền một con số không được log lại. Nếu cần bổ sung chính xác, có thể chạy thêm:
+Notebook chưa ghi trực tiếp tổng số tham số ra report. Vì vậy báo cáo không tự điền một con số không được log lại. Kích thước checkpoint tốt nhất đã xác nhận là 133 MB cho cả hai domain; tuy nhiên đây là kích thước file \texttt{best.pt}, không thay thế cho tổng số tham số trainable/frozen của mô hình. Nếu cần bổ sung chính xác, có thể chạy thêm:
 
 \begin{verbatim}
 sum(p.numel() for p in model.parameters())
@@ -155,14 +178,25 @@ sum(p.numel() for p in model.parameters() if p.requires_grad)
 Điểm quan trọng trong pipeline hiện tại là detection/mask head được khởi tạo lại theo số lớp của từng domain: coffee có 4 lớp và rice có 4 lớp. Pretrained checkpoint ban đầu có số lớp khác nên head phân loại được cấu hình lại khi fine-tune.
 
 \paragraph{Hàm kích hoạt và thành phần chính.}
-RF-DETR kế thừa các thành phần phổ biến của Transformer-based detector:
+Notebook không override hàm kích hoạt nội bộ mà dùng nguyên implementation của thư viện \texttt{rfdetr}. Vì vậy báo cáo ghi nhận ở mức thành phần kiến trúc như Bảng~\ref{tab:rfdetr_activations}; nếu giảng viên yêu cầu tuyệt đối theo từng layer, cần xuất thêm model summary hoặc source của phiên bản thư viện đã cài trên Kaggle.
 
-\begin{itemize}
-    \item Các khối Transformer sử dụng feed-forward network với activation phi tuyến kiểu GELU/ReLU tùy implementation của RF-DETR.
-    \item Classification head sinh điểm tin cậy theo lớp.
-    \item Box head dự đoán tọa độ bounding box.
-    \item Mask head sinh mask segmentation cho từng prediction.
-\end{itemize}
+\begin{table}[H]
+    \caption{Các hàm kích hoạt/thành phần phi tuyến chính của RF-DETR}
+    \centering
+    \begin{tabularx}{\textwidth}{lX}
+        \toprule
+        \textbf{Thành phần} & \textbf{Hàm kích hoạt / xử lý đầu ra} \\
+        \midrule
+        Backbone thị giác & Dùng activation mặc định của backbone pretrained trong RF-DETR; notebook không thay đổi. \\
+        Transformer feed-forward network & Activation phi tuyến mặc định của implementation RF-DETR, thường là GELU/ReLU trong các detector họ Transformer. \\
+        Attention & Softmax trên attention weights để trộn thông tin giữa các query và đặc trưng ảnh. \\
+        Classification head & Sinh class score/logit cho từng query; score được chuyển thành độ tin cậy khi evaluate. \\
+        Box head & Dự đoán tọa độ box chuẩn hóa cho từng query. \\
+        Mask head & Sinh mask logit/probability cho từng prediction; mask là đầu ra chính dùng để đánh giá segmentation. \\
+        \bottomrule
+    \end{tabularx}
+    \label{tab:rfdetr_activations}
+\end{table}
 
 Trong notebook, nhóm không chỉnh sửa nội bộ kiến trúc RF-DETR mà dùng implementation có sẵn của thư viện \texttt{rfdetr}. Trọng tâm của phần thực nghiệm là chuẩn hóa dữ liệu COCO, fine-tune checkpoint pretrained và đánh giá trên test set.
 
