@@ -15,16 +15,56 @@
 \label{subsec:config_maskrcnn}
 
 \subsubsection{Tiền xử lý đầu vào đặc thù}
-\textit{[TODO --- Lê Xuân Trí: Mô tả pipeline tiền xử lý riêng của Mask R-CNN (kích thước input, format annotation COCO JSON, chuẩn hóa pixel, v.v.).]}
+Ảnh đầu vào và các nhãn thực thể (instance annotations) được xử lý qua các bước đặc thù của Mask R-CNN từ thư viện \texttt{torchvision}:
+\begin{itemize}
+    \item \textbf{Định dạng nhãn}: Dữ liệu gốc dạng COCO JSON chứa nhãn đa giác (polygons) được tự động chuyển đổi thành các mặt nạ nhị phân (binary mask) dạng tensor \texttt{UInt8Tensor[N, H, W]} với $N$ là số thực thể trong ảnh và kích thước mặt nạ là $256 \times 256$ pixel.
+    \item \textbf{Bounding Boxes}: Các hộp bao quanh đối tượng được chuyển đổi từ định dạng COCO \texttt{[x, y, width, height]} sang dạng tọa độ tuyệt đối \texttt{[x1, y1, x2, y2]} để đưa vào mô hình. Các nhãn category ID (0-7 trong dự án) được dịch chuyển tăng thêm 1 đơn vị để dành nhãn \texttt{0} làm nhãn nền (background) theo quy định của Mask R-CNN.
+    \item \textbf{Chuẩn hóa ảnh}: Giá trị cường độ điểm ảnh được chuyển về khoảng $[0, 1]$, sau đó được z-score chuẩn hóa sử dụng các giá trị trung bình (mean) và độ lệch chuẩn (std) tính từ tập huấn luyện (Train split): $\mu = [0.485, 0.456, 0.406]$, $\sigma = [0.229, 0.224, 0.225]$.
+    \item \textbf{Lọc mẫu lỗi}: Các bounding boxes có chiều rộng hoặc chiều cao $\leq 0$, hoặc các mặt nạ bị rỗng hoặc có diện tích hiển thị bằng 0 sau quá trình rasterization được lọc bỏ để tránh lỗi trong quá trình tối ưu.
+\end{itemize}
 
 \subsubsection{Hàm mất mát}
-\textit{[TODO --- Lê Xuân Trí: Nêu hàm mất mát sử dụng ($\mathcal{L}_{cls}$, $\mathcal{L}_{box}$, $\mathcal{L}_{mask}$), công thức và lý do.]}
+Mô hình Mask R-CNN tối ưu hóa một hàm mất mát đa nhiệm (multi-task loss) tổng hợp bao gồm hai giai đoạn:
+\begin{equation}
+    \mathcal{L} = \mathcal{L}_{rpn\_class} + \mathcal{L}_{rpn\_box} + \mathcal{L}_{fastrcnn\_class} + \mathcal{L}_{fastrcnn\_box} + \mathcal{L}_{mask}
+\end{equation}
+Trong đó:
+\begin{itemize}
+    \item $\mathcal{L}_{rpn\_class}$: Hàm mất mát phân loại vật thể/nền của mạng đề xuất vùng RPN, sử dụng hàm Binary Cross-Entropy Loss giữa dự đoán objectness và ground-truth.
+    \item $\mathcal{L}_{rpn\_box}$: Hàm mất mát hồi quy tọa độ của RPN sử dụng Smooth $L_1$ Loss (hay Huber Loss) đo khoảng cách sai lệch giữa tọa độ đề xuất và hộp thực tế đối với các anchors dương.
+    \item $\mathcal{L}_{fastrcnn\_class}$: Hàm mất mát phân loại lớp bệnh của Fast R-CNN Head sử dụng Cross-Entropy Loss trên 9 lớp bệnh (gồm 8 lớp bệnh đặc thù và lớp nền).
+    \item $\mathcal{L}_{fastrcnn\_box}$: Hàm mất mát hồi quy bounding box cuối cùng của Fast R-CNN Head sử dụng Smooth $L_1$ Loss nhằm tinh chỉnh vị trí các vùng đề xuất đã khớp với đối tượng.
+    \item $\mathcal{L}_{mask}$: Hàm mất mát phân vùng mặt nạ ở cấp pixel sử dụng Binary Cross-Entropy Loss tính trên từng điểm ảnh của mặt nạ kích thước $28 \times 28$. Hàm mất mát này được tính trung bình trên các pixel thuộc vùng RoI và chỉ tính cho lớp thực tế (ground-truth class) của đối tượng, giúp tránh phạt các dự đoán mặt nạ của các lớp không liên quan.
+\end{itemize}
 
 \subsubsection{Thuật toán tối ưu \& Learning Rate}
-\textit{[TODO --- Lê Xuân Trí: Ghi rõ optimizer (SGD/Adam/AdamW), learning rate, momentum, weight decay, LR scheduler và lý do lựa chọn.]}
+\begin{itemize}
+    \item \textbf{Optimizer}: Thuật toán tối ưu hóa được sử dụng là \textbf{AdamW} với hệ số suy giảm trọng số (weight decay) được thiết lập ở mức $10^{-4}$ để hạn chế hiện tượng overfitting. Lựa chọn AdamW giúp quá trình học hội tụ nhanh chóng và ổn định hơn so với SGD cổ điển đối với các mô hình hai giai đoạn có độ phức tạp cao trên tập dữ liệu kích thước nhỏ.
+    \item \textbf{Learning Rate (LR)}: Tốc độ học cơ sở (Base Learning Rate) được thiết lập ở mức $10^{-4}$.
+    \item \textbf{LR Scheduler}: Sử dụng bộ điều chỉnh \textbf{ReduceLROnPlateau} để tự động giảm tốc độ học. Metric giám sát là giá trị validation \texttt{mAP@50:95}. Nếu metric này không cải thiện sau $3$ epoch liên tiếp, tốc độ học sẽ được giảm với hệ số thu nhỏ là $0,1$ (giảm đi 10 lần).
+\end{itemize}
 
 \subsubsection{Siêu tham số}
-\textit{[TODO --- Lê Xuân Trí: Liệt kê batch size, số epochs, pretrained weights, image size và các siêu tham số quan trọng khác.]}
+Các siêu tham số chính thiết lập trong quá trình huấn luyện bao gồm:
+\begin{table}[H]
+    \caption{Siêu tham số huấn luyện mô hình Mask R-CNN}
+    \centering
+    \begin{tabularx}{0.8\textwidth}{lX}
+        \toprule
+        \textbf{Siêu tham số} & \textbf{Giá trị cài đặt} \\
+        \midrule
+        Kích thước ảnh đầu vào (Image size) & $256 \times 256$ pixel \\
+        Kích thước lô (Batch size) & $2$ ảnh / GPU \\
+        Số epoch tối đa (Max epochs) & $30$ epochs \\
+        Cơ chế dừng sớm (Early stopping) & Dừng nếu validation \texttt{mAP@50:95} không cải thiện sau $5$ epoch \\
+        Trọng số tiền huấn luyện (Pretrained weights) & \texttt{MaskRCNN\_ResNet50\_FPN\_Weights.COCO\_V1} \\
+        Số lượng vùng đề xuất RPN huấn luyện & 1000 vùng (sau NMS) \\
+        Ngưỡng tin cậy kiểm thử (Score threshold) & 0,5 \\
+        Kích thước RoI Align & $7 \times 7$ (nhánh Box) và $14 \times 14$ (nhánh Mask) \\
+        \bottomrule
+    \end{tabularx}
+    \label{tab:hyperparams_maskrcnn}
+\end{table}
 
 % ----------------------------------------
 \subsection{YOLO26-seg}

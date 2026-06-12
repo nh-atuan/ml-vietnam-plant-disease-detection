@@ -10,6 +10,14 @@
 % ----------------------------------------
 \subsection{Hiện tượng Overfitting / Underfitting}
 
+\textit{[TODO --- Từng thành viên tự phân tích mô hình của mình dựa vào learning curves (Mục~\ref{sec:results})]}
+
+\subsubsection{Đánh giá đối với mô hình Mask R-CNN}
+Dựa trên biểu đồ quá trình học (Mục~\ref{subsec:res_maskrcnn}):
+\begin{itemize}
+    \item \textbf{Tập dữ liệu Lúa (Rice)}: Mô hình có hiện tượng quá khớp (overfitting) nhẹ từ sau epoch 15. Giá trị loss huấn luyện tiếp tục giảm ổn định xuống mức 0,38 nhưng loss kiểm thử (validation loss) bắt đầu có xu hướng đi ngang và tăng nhẹ trở lại ở khoảng $0,45 - 0,55$. Chỉ số validation mAP đạt giá trị tốt nhất là 0,5226 ở epoch 24 và giảm nhẹ sau đó. Để khắc phục hiện tượng này, nhóm đã áp dụng cơ chế lưu checkpoint tốt nhất dựa trên validation mAP và Early Stopping để dừng quá trình huấn luyện sớm, giúp giữ lại trọng số tối ưu nhất và ngăn mô hình học thêm nhiễu từ tập train.
+    \item \textbf{Tập dữ liệu Cà phê (Coffee)}: Mô hình đạt trạng thái hội tụ rất tốt và gần như không xuất hiện overfitting. Đường loss huấn luyện và validation giảm song hành rất mượt mà. Validation mAP đạt mức ổn định và duy trì quanh ngưỡng 0,88. Điều này cho thấy các đặc trưng hình học và màu sắc của bệnh đốm lá và gỉ sắt trên lá cà phê rất đặc trưng và dễ học, đồng thời quy mô tập dữ liệu đủ tốt giúp mô hình tổng quát hóa vượt trội mà không cần áp dụng các biện pháp chế tài quá khớp mạnh.
+\end{itemize}
 Đối với RF-DETR, learning curve trong Hình~\ref{fig:rfdetr_coffee_curve} và Hình~\ref{fig:rfdetr_rice_curve} cho thấy loss huấn luyện giảm dần qua các epoch. Coffee có xu hướng ổn định hơn: validation segmentation mAP@50 đạt khoảng $0.9207$ ở epoch cuối được log, trong khi kết quả test đạt mAP50:95 segmentation $0.825083$, mIoU $0.857505$ và Dice $0.871758$. Điều này cho thấy mô hình học được đặc trưng mask khá tốt trên tập coffee, chưa có dấu hiệu overfitting nghiêm trọng trong phạm vi 8 epoch.
 
 Với rice, đường cong dao động hơn và validation segmentation mAP@50 đạt khoảng $0.7592$, thấp hơn coffee. Kết quả test cũng thấp hơn coffee ở các chỉ số segmentation chính: mAP50:95 segmentation $0.687440$, mIoU $0.813240$ và Dice $0.830791$. Hiện tượng này không hẳn là underfitting, vì mIoU và Dice vẫn ở mức khá; nguyên nhân hợp lý hơn là tập rice có nhiều ảnh chứa nhiều vùng bệnh, nhiều annotation trên cùng ảnh và hình thái bệnh dễ nhầm hơn.
@@ -24,12 +32,33 @@ Các biện pháp đã được dùng để giảm rủi ro overfitting và quá
 
 Do artifact hiện tại chưa có các ảnh minh họa dạng ảnh gốc--ground truth--prediction, phần phân tích lỗi của RF-DETR được thực hiện dựa trên confusion matrix và bảng precision/recall/F1 theo lớp ở Mục~\ref{subsec:res_rfdetr}. Cách phân tích này chưa cho thấy trực quan từng ảnh sai, nhưng đủ để xác định các nhóm lỗi chính theo lớp.
 
-\textbf{Lưu ý các cặp lớp dễ nhầm đã được xác định từ EDA (Phase 2):}
-\begin{itemize}
-    \item \textbf{BrownSpot $\leftrightarrow$ LeafBlast (lúa):} Cả hai có vết nâu, khác nhau ở hình dạng vết và viền màu; Bhattacharyya distance thấp giữa hai lớp.
-    \item \textbf{AlgalLeafSpot $\leftrightarrow$ Rust (cà phê):} Cả hai tạo đốm trên lá, màu sắc tương tự trong điều kiện ánh sáng kém.
-\end{itemize}
+\subsubsection{Phân tích lỗi đối với mô hình Mask R-CNN}
+Hình~\ref{fig:maskrcnn_visual_rice} và Hình~\ref{fig:maskrcnn_visual_coffee} thể hiện kết quả dự đoán thực tế của Mask R-CNN trên tập Test đối với hai tập dữ liệu Lúa và Cà phê:
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.32\textwidth]{img/mask-rcnn/rice/image.png}
+    \caption{Một số kết quả dự đoán thực tế của Mask R-CNN trên tập Test Lúa}
+    \label{fig:maskrcnn_visual_rice}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.32\textwidth]{img/mask-rcnn/coffee/image.png}
+    \caption{Một số kết quả dự đoán thực tế của Mask R-CNN trên tập Test Cà phê}
+    \label{fig:maskrcnn_visual_coffee}
+\end{figure}
+
+Qua phân tích các kết quả dự đoán sai trên tập Test, mô hình Mask R-CNN gặp các lỗi phân loại và phân vùng cụ thể sau:
+\begin{enumerate}
+    \item \textbf{Nhầm lẫn do tương đồng trực quan (Visual Similarity)}:
+          \begin{itemize}
+              \item \emph{Lúa}: Cặp lớp \texttt{BrownSpot} (Đốm nâu) và \texttt{LeafBlast} (Đạo ôn) bị nhầm lẫn nhiều nhất. Cả hai bệnh này đều biểu hiện thành các vết đốm màu nâu trên bề mặt lá lúa. Vết đạo ôn thường có hình thoi thon dài ở hai đầu, trong khi đốm nâu tròn trịa hơn. Tuy nhiên, khi vết bệnh mới hình thành (giai đoạn đầu), hình dạng của chúng chưa định hình rõ rệt, dẫn đến việc mô hình phân loại sai nhãn lớp mặc dù khoanh vùng bounding box vẫn chính xác.
+              \item \emph{Cà phê}: Xảy ra sự nhầm lẫn giữa \texttt{AlgalLeafSpot} (Đốm lá tảo) và \texttt{Rust} (Gỉ sắt). Do cả hai đều tạo ra các chấm nhỏ màu cam/nâu vàng trên lá cà phê, trong các ảnh chụp thiếu sáng hoặc ảnh chụp từ xa, nhánh phân loại của Mask R-CNN không đủ độ nhạy sắc thái màu sắc mịn để phân biệt, dẫn đến phân loại nhầm lẫn.
+          \end{itemize}
+    \item \textbf{Vết bệnh kích thước quá nhỏ (Small Objects)}: Do đặc trưng của vết bệnh lúa giai đoạn đầu thường chỉ có đường kính một vài pixel, sau khi qua các tầng tích chập sâu của ResNet-50 và giảm độ phân giải xuống 1/16 hoặc 1/32, các chi tiết không gian bị biến mất. Mặc dù FPN đã hỗ trợ lấy đặc trưng đa tỷ lệ, cơ chế RoI Align ở độ phân giải $7 \times 7$ hoặc $14 \times 14$ vẫn gặp khó khăn lớn trong việc tái tạo thông tin chi tiết của các đốm bệnh siêu nhỏ, dẫn đến bỏ sót vết bệnh (False Negatives).
+    \item \textbf{Nhiễu nền và chồng lấp lá (Complex Background / Occlusion)}: Ở một số ảnh thực địa có nền đất hoặc các lá lúa đè lên nhau, nhánh RPN thỉnh thoảng đề xuất nhầm các khe hở giữa các lá hoặc các vết bùn đất trên lá thành vết bệnh (False Positives).
+\end{enumerate}
 Trên coffee, RF-DETR có F1 cao nhất ở \texttt{PowderyMildew} ($0.871$) và \texttt{AlgalLeafSpot} ($0.837$). Tuy nhiên, \texttt{LeafMiner} có precision thấp ($0.578$) dù recall cao ($0.879$), cho thấy mô hình phát hiện được nhiều vùng bệnh thật nhưng cũng sinh nhiều prediction dư. Confusion matrix cho thấy nhóm \texttt{\_\_background\_\_} dự đoán vào \texttt{LeafMiner} và \texttt{Rust} khá nhiều, lần lượt $116$ và $83$ trường hợp. Đây là dấu hiệu false positive trên nền lá hoặc vùng texture giống bệnh.
 
 Lỗi giữa \texttt{AlgalLeafSpot} và \texttt{Rust} có xuất hiện nhưng không phải nguồn lỗi lớn nhất trong lần chạy này: \texttt{Rust} bị dự đoán thành \texttt{AlgalLeafSpot} $1$ trường hợp, còn \texttt{AlgalLeafSpot} bị dự đoán thành \texttt{Rust} $2$ trường hợp. Như vậy giả thuyết từ EDA về hai lớp dễ nhầm là hợp lý về mặt thị giác, nhưng với RF-DETR lỗi nổi bật hơn lại là false positive từ nền sang các lớp bệnh.
@@ -53,6 +82,13 @@ Hiện tại báo cáo mới có đầy đủ kết quả RF-DETR cho cả rice 
         \toprule
         \textbf{Tiêu chí} & \textbf{Mask R-CNN} & \textbf{YOLO-seg} & \textbf{RF-DETR} & \textbf{MobileSAM} & \textbf{Mask2Former} \\
         \midrule
+        mAP@50:95       & 0,5294 (Lúa) / 0,9041 (Cà phê) & --- & --- & --- & --- \\
+        mIoU            & 0,8669 (Lúa) / 0,9128 (Cà phê) & --- & --- & --- & --- \\
+        Inference (ms)  & 760,50 ms / 702,36 ms & --- & --- & --- & --- \\
+        Model size (MB) & 503,44 MB / 501,73 MB & --- & --- & --- & --- \\
+        Train--Val gap  & Trung bình (Lúa) / Rất nhỏ (Cà phê) & --- & --- & --- & --- \\
+        \midrule
+        \textbf{Xếp hạng} & Baseline (Lúa) / Tốt nhất (Cà phê) & --- & --- & --- & --- \\
         mAP@50:95       & --- & --- & 0.825 (coffee) / 0.687 (rice) & --- & --- \\
         mIoU            & --- & --- & 0.858 (coffee) / 0.813 (rice) & --- & --- \\
         Inference (ms)  & --- & --- & 70.306 (coffee) / 198.306 (rice) & --- & --- \\

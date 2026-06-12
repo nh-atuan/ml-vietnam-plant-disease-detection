@@ -15,13 +15,88 @@
 \label{subsec:res_maskrcnn}
 
 \subsubsection{Biểu đồ quá trình học (Learning Curves)}
-\textit{[TODO --- Lê Xuân Trí: Chèn biểu đồ Loss và mAP@50 trên Train/Val theo epoch cho cả tập Rice và Coffee (4 biểu đồ). Nhận xét: mô hình có hội tụ không? Có dao động mạnh? Dấu hiệu overfitting/underfitting?]}
+Quá trình huấn luyện mô hình Mask R-CNN được ghi nhận qua các biểu đồ Loss (gồm Loss tổng và các thành phần mất mát cụ thể) cũng như chỉ số \texttt{mAP@50:95} trên tập Validation theo từng epoch:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/mask-rcnn/rice/results.png}
+    \caption{Biểu đồ quá trình học (Loss tổng, các loss thành phần và validation mAP) của Mask R-CNN trên tập Lúa}
+    \label{fig:learning_curve_rice}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/mask-rcnn/coffee/results.png}
+    \caption{Biểu đồ quá trình học (Loss tổng, các loss thành phần và validation mAP) của Mask R-CNN trên tập Cà phê}
+    \label{fig:learning_curve_coffee}
+\end{figure}
+
+\textbf{Nhận xét}:
+\begin{itemize}
+    \item \textbf{Khả năng hội tụ}: Trên cả hai tập dữ liệu, mô hình đều cho thấy xu hướng hội tụ rõ rệt. Loss tổng giảm mạnh trong 10 epoch đầu và tiệm cận dần về trạng thái ổn định ở các epoch sau. Trên tập Cà phê, loss tổng giảm từ khoảng 1,6 xuống dưới 0,2; trên tập Lúa, loss tổng giảm từ 1,5 xuống khoảng 0,4.
+    \item \textbf{Độ dao động}: Đường validation loss và validation mAP của mô hình có sự dao động nhẹ ở các epoch giữa nhưng dần ổn định về cuối. Trên tập Cà phê, các chỉ số biến động rất ít, cho thấy sự ổn định cao của dữ liệu. Trên tập Lúa, đường validation loss dao động mạnh hơn (ở khoảng $0,45 - 0,55$), cho thấy độ phức tạp cao hơn trong việc phát hiện các vết bệnh lúa.
+    \item \textbf{Hiện tượng Overfitting/Underfitting}:
+          \begin{itemize}
+              \item \emph{Tập Lúa}: Xuất hiện hiện tượng overfitting nhẹ từ sau epoch 15 khi training loss tiếp tục giảm nhưng validation loss bắt đầu đi ngang và có xu hướng tăng nhẹ. Nhờ việc sử dụng cơ chế lưu checkpoint tốt nhất theo validation \texttt{mAP@50:95} (đạt đỉnh tại epoch 24 với 0,5226), mô hình baseline đã tránh được việc bị overfitting sâu ở các epoch cuối.
+              \item \emph{Tập Cà phê}: Sự chênh lệch giữa training loss và validation loss là rất nhỏ, đường validation mAP tăng đều đặn và duy trì ở mức cao ($\approx 0,88$). Điều này chứng minh mô hình học đặc trưng rất tốt và không xảy ra hiện tượng overfitting đáng kể.
+          \end{itemize}
+\end{itemize}
 
 \subsubsection{Đánh giá trên tập Test}
-\textit{[TODO --- Lê Xuân Trí: Điền bảng kết quả mAP@50, mAP@50:95, mIoU, Dice, inference time, model size cho cả Rice và Coffee.]}
+Sau khi chọn checkpoint tốt nhất trên tập Validation, mô hình được đánh giá trên tập Test bị khóa (locked Test set). Kết quả chi tiết của mô hình ở cả hai cấu hình Baseline (Phase 3) và Tuned (ASHA Tuning - Phase 4) được thể hiện ở bảng dưới đây:
+
+\begin{table}[H]
+    \caption{Kết quả đánh giá mô hình Mask R-CNN trên tập Test}
+    \centering
+    \begin{tabularx}{\textwidth}{llccccccr}
+        \toprule
+        \textbf{Cây trồng} & \textbf{Cấu hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{F1-Macro} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
+        \midrule
+        Lúa & Baseline & 0,5966 & 0,5294 & 0,8669 & 0,8935 & 0,1254 & 760,50 & 503,44 \\
+             & Tuned    & 0,5404 & 0,4805 & 0,8708 & 0,8999 & 0,0465 & 760,50 & 503,44 \\
+        \midrule
+        Cà phê & Baseline & 0,9480 & 0,9041 & 0,9128 & 0,9356 & 0,5694 & 702,36 & 501,73 \\
+               & Tuned    & 0,9195 & 0,8600 & 0,8973 & 0,9225 & 0,3978 & 702,36 & 501,73 \\
+        \bottomrule
+    \end{tabularx}
+    \label{tab:maskrcnn_test_results}
+\end{table}
+
+\textbf{Nhận xét}:
+\begin{itemize}
+    \item Trên tập Cà phê, Mask R-CNN cho kết quả cực kỳ ấn tượng với \texttt{mAP@50} đạt 0,9480 và \texttt{mAP@50:95} đạt 0,9041, cùng độ tương đồng pixel cao (\texttt{mIoU} = 0,9128, \texttt{Dice} = 0,9356). Kết quả này cho thấy mô hình rất hiệu quả trong việc khoanh vùng các vết bệnh đốm lá tảo (Algal Leaf Spot) hay gỉ sắt (Rust) trên lá cà phê.
+    \item Trên tập Lúa, hiệu năng mô hình thấp hơn đáng kể (\texttt{mAP@50:95} = 0,5294). Nguyên nhân chính là do kích thước ảnh đầu vào nhỏ ($256 \times 256$) trong khi các vết bệnh của lúa (như BrownSpot, LeafBlast) có kích thước rất nhỏ và mảnh, gây khó khăn cho nhánh RPN trong việc đề xuất vùng chứa và nhánh RoI Align bị mất mát thông tin không gian.
+    \item \textbf{Đặc điểm thú vị}: Trên cả hai tập dữ liệu, cấu hình \textbf{Baseline} đều đạt độ chính xác (\texttt{mAP}) cao hơn so với cấu hình \textbf{Tuned} tốt nhất tìm được bởi ASHA. Điều này có thể lý giải do các thử nghiệm tinh chỉnh (như áp dụng CutMix hay đóng băng backbone một số epoch) đã làm thay đổi sự phân bố đặc trưng nhãn pixel hoặc giảm độ nhạy của nhánh Mask Head đối với các vết bệnh nhỏ, dẫn đến việc suy giảm nhẹ mAP trên tập Test, dù mIoU và Dice của các pixel dự đoán đúng có tăng nhẹ (ở tập Lúa, mIoU tăng từ 0,8669 lên 0,8708).
+    \item Tốc độ inference của mô hình khá chậm ($\approx 700 - 760$ ms trên CPU), và dung lượng mô hình lớn ($\approx 500$ MB), gây thách thức lớn cho việc triển khai ứng dụng thời gian thực.
+\end{itemize}
 
 \subsubsection{Confusion Matrix}
-\textit{[TODO --- Lê Xuân Trí: Chèn confusion matrix per-class của Mask R-CNN trên tập Test (Rice và Coffee). Nhận xét lớp nào bị nhầm nhiều nhất.]}
+Nhằm đánh giá chi tiết sai số phân loại giữa các lớp bệnh, ma trận nhầm lẫn chuẩn hóa theo dòng được xây dựng dựa trên các dự đoán có độ trùng khớp \texttt{IoU} $\geq 0,5$ với nhãn thực tế:
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/mask-rcnn/rice/confusion_matrix.png}
+        \caption{Tập dữ liệu Lúa (Rice)}
+        \label{fig:cm_rice}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/mask-rcnn/coffee/confusion_matrix.png}
+        \caption{Tập dữ liệu Cà phê (Coffee)}
+        \label{fig:cm_coffee}
+    \end{subfigure}
+    \caption{Ma trận nhầm lẫn (Confusion Matrix) của Mask R-CNN trên tập Test}
+    \label{fig:maskrcnn_cm}
+\end{figure}
+
+\textbf{Nhận xét}:
+\begin{itemize}
+    \item \textbf{Tập Lúa}: Nhầm lẫn xảy ra nhiều nhất giữa cặp lớp \texttt{BrownSpot} (Đốm nâu) và \texttt{LeafBlast} (Đạo ôn). Cụ thể, mô hình thường xuyên phân loại nhầm các đốm đạo ôn thành đốm nâu hoặc ngược lại do hai vết bệnh này đều có nhân màu nâu sẫm và viền vàng nhạt. Ngoài ra, lớp \texttt{LeafMiner} (Sâu vẽ bùa) do số lượng mẫu quá ít (bị mất cân bằng lớp nghiêm trọng) nên mô hình khó học được đặc trưng phân vùng, dẫn đến tỷ lệ bỏ sót thực thể rất cao.
+    \item \textbf{Tập Cà phê}: Sự nhầm lẫn chủ yếu xảy ra giữa \texttt{AlgalLeafSpot} (Đốm lá tảo) và \texttt{Rust} (Gỉ sắt). Về mặt trực quan, hai vết bệnh này đều tạo ra các đốm tròn có màu cam/vàng/nâu trên bề mặt lá cà phê, khiến mô hình dễ nhầm lẫn lớp khi vùng ảnh hưởng có kích thước nhỏ hoặc điều kiện ánh sáng không lý tưởng. Lớp \texttt{Healthy} (Lá khỏe) được dự đoán chính xác tuyệt đối, không bị nhầm lẫn với các lớp bệnh.
+\end{itemize}
 
 % ----------------------------------------
 \subsection{YOLO26-seg}
@@ -344,7 +419,7 @@ Quá trình huấn luyện mô hình MobileSAM trên hai tập dữ liệu Rice 
         \toprule
         \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
         \midrule
-        Mask R-CNN    & --- & --- & --- & --- & --- & --- \\
+        Mask R-CNN    & 0,5966 & 0,5294 & 0,8669 & 0,8935 & 760,50 & 503,44 \\
         YOLO26-seg    & --- & --- & --- & --- & --- & --- \\
         RF-DETR       & 0.704 & 0.687 & 0.813 & 0.831 & 198.306 & 133 \\
         YOLO26-seg    & 0.761382 & 0.750642 & 0.820998 & 0.833742 & 65.72 & 6.23129 \\
@@ -355,7 +430,7 @@ Quá trình huấn luyện mô hình MobileSAM trên hai tập dữ liệu Rice 
     \end{tabular}
     \label{tab:results_rice}
 \end{table}
-
+ 
 \begin{table}[H]
     \caption{Kết quả đánh giá 5 mô hình trên tập Test --- Coffee dataset}
     \centering
@@ -363,7 +438,7 @@ Quá trình huấn luyện mô hình MobileSAM trên hai tập dữ liệu Rice 
         \toprule
         \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
         \midrule
-        Mask R-CNN    & --- & --- & --- & --- & --- & --- \\
+        Mask R-CNN    & 0,9480 & 0,9041 & 0,9128 & 0,9356 & 702,36 & 501,73 \\
         YOLO26-seg    & --- & --- & --- & --- & --- & --- \\
         RF-DETR       & 0.843 & 0.825 & 0.858 & 0.872 & 70.306 & 133 \\
         YOLO26-seg    & 0.127095 & 0.123509 & 0.876297 & 0.888267 & 20.21 & 6.227811 \\

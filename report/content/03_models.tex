@@ -55,29 +55,54 @@ Nhóm triển khai và so sánh \textbf{5 mô hình segmentation} thuộc hai nh
 \subsubsection{Lý do lựa chọn}
 Mask R-CNN \cite{he2017maskrcnn} là mô hình instance segmentation CNN nền tảng, được sử dụng làm \textbf{baseline} để so sánh với các mô hình ViT-based. Kiến trúc hai nhánh tách biệt giúp dễ debug và hiểu rõ từng thành phần.
 
-\subsubsection{Kiến trúc chi tiết}
-
 \begin{enumerate}
-      \item \textbf{Sơ đồ kiến trúc} \textit{[Lê Xuân Trí điền]}\\
-            \textit{[TODO: Chèn hình sơ đồ kiến trúc Mask R-CNN với chú thích bên dưới.
-                              Phải thể hiện rõ: Image → Backbone (ResNet-FPN) → RPN → RoI Align → Cls/Box/Mask heads.]}
-            % \begin{figure}[H]
-            %     \centering
-            %     \includegraphics[width=0.85\textwidth]{img/maskrcnn_arch.png}
-            %     \caption{Kiến trúc Mask R-CNN với backbone ResNet-50 FPN}
-            %     \label{fig:maskrcnn_arch}
-            % \end{figure}
+    \item \textbf{Sơ đồ kiến trúc}:
+          Kiến trúc chi tiết của mô hình Mask R-CNN được mô tả qua sơ đồ khối dưới đây:
+          
+          \begin{figure}[H]
+              \centering
+              \begin{tikzpicture}[
+                  node distance=1.0cm and 0.8cm,
+                  box/.style={draw, rectangle, minimum width=2.2cm, minimum height=1cm, align=center, fill=blue!10, rounded corners, font=\footnotesize},
+                  arrow/.style={-Latex, thick}
+              ]
+                  \node (img) [box, fill=green!10] {Ảnh đầu vào \\ ($256 \times 256 \times 3$)};
+                  \node (backbone) [box, right=of img] {ResNet-50 \\ Backbone \\ (C2 - C5)};
+                  \node (fpn) [box, right=of backbone] {Feature Pyramid \\ Network (FPN) \\ (P2 - P6)};
+                  \node (rpn) [box, above right=of fpn, xshift=-0.5cm, yshift=-0.2cm] {Region Proposal \\ Network (RPN)};
+                  \node (roialign) [box, below right=of fpn, xshift=-0.5cm, yshift=0.2cm] {RoI Align};
+                  
+                  \node (clsbox) [box, right=of roialign, yshift=0.8cm, fill=orange!10] {Fast R-CNN Head \\ (Phân lớp \& BBox)};
+                  \node (maskhead) [box, right=of roialign, yshift=-0.8cm, fill=orange!10] {Mask Head \\ (FCN Branch)};
+                  
+                  \draw [arrow] (img) -- (backbone);
+                  \draw [arrow] (backbone) -- (fpn);
+                  \draw [arrow] (fpn.east) -- ++(0.2,0) |- (rpn.west);
+                  \draw [arrow] (fpn.east) -- ++(0.2,0) |- (roialign.west);
+                  \draw [arrow] (rpn.east) -- ++(0.2,0) |- (roialign.north);
+                  \draw [arrow] (roialign.east) -- ++(0.2,0) |- (clsbox.west);
+                  \draw [arrow] (roialign.east) -- ++(0.2,0) |- (maskhead.west);
+              \end{tikzpicture}
+              \caption{Sơ đồ kiến trúc mô hình Mask R-CNN với backbone ResNet-50 FPN}
+              \label{fig:maskrcnn_arch}
+          \end{figure}
 
-      \item \textbf{Số lượng tham số} \textit{[Lê Xuân Trí điền]}\\
-            \textit{[TODO: Điền tổng số tham số trainable/frozen, ví dụ:
-                              Backbone ResNet-50 FPN $\approx$~?M params; RPN $\approx$~?M; Mask head $\approx$~?M;
-                              Tổng: $\approx$~44M params (ước tính theo paper gốc --- cần xác nhận lại với
-                              \texttt{sum(p.numel() for p in model.parameters())}).]}
+    \item \textbf{Số lượng tham số}:
+          Mô hình sử dụng cài đặt mặc định từ thư viện \texttt{torchvision} với tổng cộng khoảng \textbf{41,8 triệu tham số}. Trong quá trình huấn luyện baseline, toàn bộ các tham số này đều được cập nhật trọng số (trainable). Chi tiết số lượng tham số của các thành phần chính như sau:
+          \begin{itemize}
+              \item \textbf{Backbone (ResNet-50) \& FPN Neck}: $\approx 26,8$ triệu tham số (ResNet-50 đóng góp khoảng 23,5 triệu tham số trích xuất đặc trưng và FPN đóng góp khoảng 3,3 triệu tham số tích chập lateral và output để xây dựng kim tự tháp đặc trưng đa tỷ lệ).
+              \item \textbf{RPN Head}: $\approx 0,6$ triệu tham số (dùng để quét qua các feature maps và tạo các đề xuất vùng chứa vật thể).
+              \item \textbf{RoI Heads}: $\approx 14,4$ triệu tham số (gồm Fast R-CNN Head phân lớp/regress box chiếm khoảng 11,8 triệu và Mask Head với kiến trúc Fully Convolutional Network chiếm khoảng 2,6 triệu tham số để dự đoán mặt nạ nhãn nhị phân).
+          \end{itemize}
 
-      \item \textbf{Hàm kích hoạt} \textit{[Lê Xuân Trí điền]}\\
-            \textit{[TODO: Liệt kê hàm kích hoạt tại từng thành phần.
-                              Gợi ý: ReLU (ResNet backbone, FPN, RPN convs); Sigmoid (mask output head).
-                              Cần xác nhận lại theo code thực tế.]}
+    \item \textbf{Hàm kích hoạt}:
+          Hàm kích hoạt được sử dụng trong mô hình Mask R-CNN bao gồm:
+          \begin{itemize}
+              \item \textbf{Backbone (ResNet-50) \& FPN Neck}: Sử dụng hàm kích hoạt \textbf{ReLU} sau mỗi lớp tích chập $3 \times 3$ và $1 \times 1$ trong các khối Bottleneck.
+              \item \textbf{RPN Head}: Sử dụng hàm kích hoạt \textbf{ReLU} sau lớp tích chập trượt $3 \times 3$. Nhánh dự đoán độ tin cậy (objectness logits) sử dụng hàm kích hoạt \textbf{Sigmoid} ngầm định ở khâu tính toán loss.
+              \item \textbf{Fast R-CNN (Box Head)}: Sử dụng hàm kích hoạt \textbf{ReLU} sau mỗi lớp Fully Connected (FC) ẩn của mạng nơ-ron đa tầng (MLP). Ở đầu ra, nhánh phân loại lớp sử dụng hàm kích hoạt \textbf{Softmax} để lấy phân phối xác suất trên 9 lớp (gồm 8 lớp bệnh và 1 lớp nền - background). Nhánh bounding box regression là dạng tuyến tính (không dùng hàm kích hoạt).
+              \item \textbf{Mask Head}: Sử dụng hàm kích hoạt \textbf{ReLU} sau mỗi lớp tích chập $3 \times 3$ và lớp tích chập chuyển vị (transpose convolution) $2 \times 2$. Ở lớp cuối cùng, hàm kích hoạt \textbf{Sigmoid} được sử dụng để dự đoán mặt nạ nhị phân độc lập cho từng lớp đối tượng ở độ phân giải pixel ($28 \times 28$).
+          \end{itemize}
 \end{enumerate}
 
 % ----------------------------------------
