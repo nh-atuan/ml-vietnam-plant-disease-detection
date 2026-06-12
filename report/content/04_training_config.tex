@@ -27,20 +27,30 @@ Xem thêm không gian tìm kiếm hyperparameter của Phase~4 tại Mục~\ref{
 \textit{[TODO --- Lê Xuân Trí: Liệt kê batch size, số epochs, pretrained weights, image size và các siêu tham số quan trọng khác.]}
 
 % ----------------------------------------
-\subsection{YOLO26-seg --- \textit{Nguyễn Hồ Anh Tuấn}}
+\subsection{YOLO26-seg}
 \label{subsec:config_yolo}
 
 \subsubsection{Tiền xử lý đầu vào đặc thù}
-\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Mô tả pipeline tiền xử lý riêng của YOLO26-seg (kích thước $640\times640$, format nhãn YOLO-txt, letterbox, chuẩn hóa pixel, v.v.).]}
+Ảnh và annotation COCO polygon được chuyển sang định dạng YOLO segmentation, trong đó mỗi dòng nhãn có dạng \texttt{class\_id x1 y1 x2 y2 ...} với tọa độ polygon đã chuẩn hóa về $[0,1]$. Các ảnh không có polygon hợp lệ bị loại khỏi tập huấn luyện để tránh tạo nhãn mask rỗng. Khi đưa vào mô hình, ảnh được letterbox về $640 \times 640$ nhằm giữ tỉ lệ gốc, padding phần thiếu và chuẩn hóa giá trị pixel theo pipeline của Ultralytics.
 
 \subsubsection{Hàm mất mát}
-\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Nêu hàm mất mát ($\mathcal{L}_{box}$, $\mathcal{L}_{cls}$, $\mathcal{L}_{dfl}$, $\mathcal{L}_{mask}$) và lý do.]}
+YOLO26-seg tối ưu đồng thời nhiều thành phần mất mát:
+\[
+    \mathcal{L} =
+    \lambda_{box}\mathcal{L}_{box}
+    + \lambda_{cls}\mathcal{L}_{cls}
+    + \lambda_{dfl}\mathcal{L}_{dfl}
+    + \lambda_{mask}\mathcal{L}_{mask}.
+\]
+Trong đó $\mathcal{L}_{box}$ tối ưu vị trí hộp bao, $\mathcal{L}_{cls}$ tối ưu nhãn bệnh, $\mathcal{L}_{dfl}$ cải thiện độ chính xác biên hộp thông qua phân phối tọa độ, và $\mathcal{L}_{mask}$ tối ưu vùng phân đoạn của instance. Cách ghép loss này phù hợp với bài toán vì mô hình phải học cả nhận diện đối tượng bệnh và vùng tổn thương trên lá.
 
 \subsubsection{Thuật toán tối ưu \& Learning Rate}
-\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Optimizer, LR, scheduler (Cosine Annealing...) và lý do.]}
+Thực nghiệm sử dụng cấu hình huấn luyện mặc định của Ultralytics cho mô hình segmentation, với learning rate được warm-up ở các epoch đầu và giảm dần về cuối quá trình huấn luyện. Dựa trên \texttt{results.csv}, learning rate tăng từ khoảng $2.77 \times 10^{-4}$ ở epoch 1 lên gần $8.0 \times 10^{-4}$ trong giai đoạn đầu của Rice, sau đó giảm về $2.48 \times 10^{-5}$ ở epoch 50; Coffee có cùng xu hướng, giảm về $3.73 \times 10^{-5}$ ở epoch 50. Lịch học này giúp mô hình ổn định ở đầu quá trình huấn luyện và tinh chỉnh nhỏ dần khi đã gần hội tụ.
 
 \subsubsection{Siêu tham số}
-\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Batch size, epochs, variant (nano/small/medium/large), pretrained weights, v.v.]}
+Các siêu tham số chính của thực nghiệm YOLO26-seg được giữ nhất quán trên hai tập Rice và Coffee để so sánh công bằng: biến thể \texttt{yolo26n-seg.pt}, số epoch là 50, kích thước ảnh là 640, trọng số khởi tạo từ pretrained checkpoint của Ultralytics, và dữ liệu được chia theo train/validation/test manifest cố định của dự án. Batch size được để theo cấu hình notebook/Kaggle sao cho phù hợp bộ nhớ GPU T4/P100.
+
+Phương pháp tinh chỉnh tham số được thực hiện theo hướng thử nghiệm thủ công có kiểm soát thay vì Grid Search hoặc Random Search toàn diện. Lý do là mỗi lượt huấn luyện YOLO segmentation trên hai bộ dữ liệu tốn nhiều thời gian GPU, trong khi mục tiêu Phase 3 là tạo baseline ổn định để so sánh với các mô hình khác. Nhóm cố định các tham số có ảnh hưởng lớn đến tính tái lập như pretrained checkpoint, số epoch và kích thước ảnh, sau đó theo dõi loss, mask mAP@50 và mask mAP@50:95 trên validation để đánh giá hội tụ. Các cấu hình được ưu tiên là cấu hình cho đường cong validation ổn định, không tăng loss kéo dài ở cuối quá trình huấn luyện và đạt mAP@50:95 tốt hơn trên tập validation/test.
 
 % ----------------------------------------
 \subsection{RF-DETR --- \textit{Tống Thanh Phúc}}

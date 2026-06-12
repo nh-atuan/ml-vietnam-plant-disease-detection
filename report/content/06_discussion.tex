@@ -18,6 +18,8 @@
 \end{itemize}
 Ghi rõ cách khắc phục đã áp dụng (Dropout, Early Stopping, tăng augmentation, giảm LR, v.v.).]}
 
+Đối với YOLO26-seg, tập Rice cho thấy xu hướng hội tụ tốt hơn: train loss giảm đều, validation loss không tăng kéo dài ở cuối quá trình huấn luyện, và mask mAP@50:95 tăng ổn định đến khoảng 0.6910 ở epoch 50 trên validation. Khoảng cách train--validation chủ yếu thể hiện qua loss validation cao hơn loss train, nhưng chưa đủ mạnh để kết luận overfitting nghiêm trọng. Tập Coffee có dấu hiệu underfitting hoặc bão hòa sớm theo metric instance mAP, vì mask mAP@50:95 chỉ dao động quanh 0.13 ở cuối quá trình dù learning rate đã giảm dần. Cách xử lý phù hợp cho các lần huấn luyện sau là tăng dữ liệu/augmentation cho các lớp khó, kiểm tra lại chất lượng annotation polygon và thử tăng biến thể mô hình hoặc kéo dài số epoch có early stopping.
+
 % ----------------------------------------
 \subsection{Phân tích các trường hợp dự đoán sai}
 \label{subsec:error_analysis}
@@ -33,6 +35,8 @@ Với mỗi ví dụ: hiển thị ảnh gốc, ground truth mask, predicted mas
 
 \textit{[TODO --- Từng thành viên: Phân tích xem mô hình của mình có mắc các lỗi nhầm lẫn trên không,
 và đưa ra giả thuyết nguyên nhân (nhiễu nền, vết bệnh nhỏ, chồng lấp lá, mất cân bằng lớp...).]}
+
+Với YOLO26-seg, confusion matrix và EDA cho thấy hai nhóm lỗi chính. Trên Rice, các lớp có vết nâu hoặc vùng cháy lá tương tự nhau, đặc biệt BrownSpot và LeafBlast, dễ bị nhầm khi vùng bệnh nhỏ hoặc biên vết bệnh không rõ. Trên Coffee, AlgalLeafSpot và Rust có màu sắc/texture gần nhau trong điều kiện ánh sáng kém, đồng thời vùng bệnh có thể nhỏ và rải rác trên nền lá, làm mô hình phát hiện được vùng tổn thương tổng thể nhưng phân tách instance/lớp chưa tốt theo mAP.
 
 % ----------------------------------------
 \subsection{So sánh tổng hợp các mô hình}
