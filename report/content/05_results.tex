@@ -93,8 +93,8 @@ Nhằm đánh giá chi tiết sai số phân loại giữa các lớp bệnh, ma
 
 \textbf{Nhận xét}:
 \begin{itemize}
-    \item Tập Lúa: Nhầm lẫn xảy ra nhiều nhất giữa cặp lớp \texttt{BrownSpot} (Đốm nâu) và \texttt{LeafBlast} (Đạo ôn). Cụ thể, mô hình thường xuyên phân loại nhầm các đốm đạo ôn thành đốm nâu hoặc ngược lại do hai vết bệnh này đều có nhân màu nâu sẫm và viền vàng nhạt. Ngoài ra, lớp \texttt{LeafMiner} (Sâu vẽ bùa) do số lượng mẫu quá ít (bị mất cân bằng lớp nghiêm trọng) nên mô hình khó học được đặc trưng phân vùng, dẫn đến tỷ lệ bỏ sót thực thể rất cao.
-    \item Tập Cà phê: Sự nhầm lẫn chủ yếu xảy ra giữa \texttt{AlgalLeafSpot} (Đốm lá tảo) và \texttt{Rust} (Gỉ sắt). Về mặt trực quan, hai vết bệnh này đều tạo ra các đốm tròn có màu cam/vàng/nâu trên bề mặt lá cà phê, khiến mô hình dễ nhầm lẫn lớp khi vùng ảnh hưởng có kích thước nhỏ hoặc điều kiện ánh sáng không lý tưởng. Lớp \texttt{Healthy} (Lá khỏe) được dự đoán chính xác tuyệt đối, không bị nhầm lẫn với các lớp bệnh.
+    \item Tập Lúa: Nhầm lẫn xảy ra nhiều nhất giữa cặp lớp \texttt{BrownSpot} (Đốm nâu) và \texttt{LeafBlast} (Đạo ôn). Cụ thể, mô hình thường xuyên phân loại nhầm các đốm đạo ôn thành đốm nâu hoặc ngược lại do hai vết bệnh này đều có nhân màu nâu sẫm và viền vàng nhạt. Lớp \texttt{Healthy} (Lá khỏe) được dự đoán chính xác tuyệt đối, không bị nhầm lẫn với các lớp bệnh.
+    \item Tập Cà phê: Sự nhầm lẫn chủ yếu xảy ra giữa \texttt{AlgalLeafSpot} (Đốm lá tảo) và \texttt{Rust} (Gỉ sắt). Về mặt trực quan, hai vết bệnh này đều tạo ra các đốm tròn có màu cam/vàng/nâu trên bề mặt lá cà phê, khiến mô hình dễ nhầm lẫn lớp khi vùng ảnh hưởng có kích thước nhỏ hoặc điều kiện ánh sáng không lý tưởng. Ngoài ra, lớp \texttt{PowderyMildew} (Phấn trắng) do số lượng mẫu quá ít (bị mất cân bằng lớp nghiêm trọng) nên mô hình khó học được đặc trưng phân vùng, dẫn đến tỷ lệ bỏ sót thực thể rất cao.
 \end{itemize}
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
@@ -388,10 +388,10 @@ Quá trình huấn luyện mô hình MobileSAM trên hai tập dữ liệu Rice 
     \item Đối với bộ dữ liệu Rice (Lúa):\begin{itemize}
               \item Lớp lá khỏe mạnh (\texttt{Healthy}) đạt độ chính xác nhận diện rất tốt nhờ hình thái phiến lá trơn láng, không chứa khuyết tật/vết màu khác lạ.
               \item Sự nhầm lẫn chính tập trung ở hai lớp \texttt{BrownSpot} (đốm nâu) và \texttt{LeafBlast} (đạo ôn). Điều này phản ánh đúng thực tế thị giác máy tính khi cả hai loại bệnh này đều tạo ra những đốm màu nâu/xám nhỏ có biên dạng tương đối giống nhau trên phiến lá, khiến mô hình đôi khi dự đoán sai lệch giữa chúng.
-              \item Lớp \texttt{LeafMiner} (sâu vẽ bùa) thỉnh thoảng bị nhầm lẫn với \texttt{Hispa} vì cả hai đều biểu hiện bằng các vệt màu trắng/xám chạy dọc theo thân lá.
+              \item Lớp \texttt{Hispa} (sâu gai) thỉnh thoảng bị nhầm lẫn với các vết xước hoặc gân lá sáng màu vì vết bệnh biểu hiện bằng các vệt màu trắng/xám chạy dọc theo thân lá.
           \end{itemize}
     \item Đối với bộ dữ liệu Coffee (Cà phê):\begin{itemize}
-              \item Mô hình phân loại rất chính xác lớp lá khỏe (\texttt{Healthy}) và lớp bệnh phấn trắng (\texttt{PowderyMildew}) do các mảng phấn trắng bám trên lá có đặc trưng màu sắc và kết cấu cực kỳ riêng biệt.
+              \item Mô hình phân loại rất chính xác lớp bệnh phấn trắng (\texttt{PowderyMildew}) do các mảng phấn trắng bám trên lá có đặc trưng màu sắc và kết cấu cực kỳ riêng biệt. Lớp \texttt{LeafMiner} (sâu vẽ bùa) thỉnh thoảng bị nhầm lẫn với các đường gân lá sáng màu vì vết bệnh biểu hiện bằng các vệt màu trắng/xám.
               \item Sự nhầm lẫn đáng kể nhất xảy ra giữa lớp bệnh gỉ sắt (\texttt{Rust}) và đốm tảo (\texttt{AlgalLeafSpot}). Hai bệnh này đều biểu hiện dưới dạng các đốm có màu vàng cam hoặc đỏ gạch phân bổ trên bề mặt lá, làm cho mô hình dễ bị nhầm lẫn khi phân loại nhãn dù cho mặt nạ phân vùng vùng bệnh vẫn có tính chính xác cao.
           \end{itemize}
 \end{itemize}
