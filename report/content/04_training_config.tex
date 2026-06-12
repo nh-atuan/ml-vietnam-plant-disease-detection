@@ -7,8 +7,8 @@
 \label{sec:training_config}
 
 \textit{Phần này do từng thành viên tự hoàn thiện theo mô hình mình phụ trách.
-Mỗi mô hình cần trình bày đầy đủ các mục con bên dưới.
-Xem thêm không gian tìm kiếm hyperparameter của Phase~4 tại Mục~\ref{subsec:tuning_results}.}
+    Mỗi mô hình cần trình bày đầy đủ các mục con bên dưới.
+    Xem thêm không gian tìm kiếm hyperparameter của Phase~4 tại Mục~\ref{subsec:tuning_results}.}
 
 % ----------------------------------------
 \subsection{Mask R-CNN --- \textit{Lê Xuân Trí}}
@@ -67,52 +67,189 @@ Các siêu tham số chính thiết lập trong quá trình huấn luyện bao g
 \end{table}
 
 % ----------------------------------------
-\subsection{YOLO26-seg --- \textit{Nguyễn Hồ Anh Tuấn}}
+\subsection{YOLO26-seg}
 \label{subsec:config_yolo}
 
 \subsubsection{Tiền xử lý đầu vào đặc thù}
-\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Mô tả pipeline tiền xử lý riêng của YOLO26-seg (kích thước $640\times640$, format nhãn YOLO-txt, letterbox, chuẩn hóa pixel, v.v.).]}
+Ảnh và annotation COCO polygon được chuyển sang định dạng YOLO segmentation, trong đó mỗi dòng nhãn có dạng \texttt{class\_id x1 y1 x2 y2 ...} với tọa độ polygon đã chuẩn hóa về $[0,1]$. Các ảnh không có polygon hợp lệ bị loại khỏi tập huấn luyện để tránh tạo nhãn mask rỗng. Khi đưa vào mô hình, ảnh được letterbox về $640 \times 640$ nhằm giữ tỉ lệ gốc, padding phần thiếu và chuẩn hóa giá trị pixel theo pipeline của Ultralytics.
 
 \subsubsection{Hàm mất mát}
-\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Nêu hàm mất mát ($\mathcal{L}_{box}$, $\mathcal{L}_{cls}$, $\mathcal{L}_{dfl}$, $\mathcal{L}_{mask}$) và lý do.]}
+YOLO26-seg tối ưu đồng thời nhiều thành phần mất mát:
+\[
+    \mathcal{L} =
+    \lambda_{box}\mathcal{L}_{box}
+    + \lambda_{cls}\mathcal{L}_{cls}
+    + \lambda_{dfl}\mathcal{L}_{dfl}
+    + \lambda_{mask}\mathcal{L}_{mask}.
+\]
+Trong đó $\mathcal{L}_{box}$ tối ưu vị trí hộp bao, $\mathcal{L}_{cls}$ tối ưu nhãn bệnh, $\mathcal{L}_{dfl}$ cải thiện độ chính xác biên hộp thông qua phân phối tọa độ, và $\mathcal{L}_{mask}$ tối ưu vùng phân đoạn của instance. Cách ghép loss này phù hợp với bài toán vì mô hình phải học cả nhận diện đối tượng bệnh và vùng tổn thương trên lá.
 
 \subsubsection{Thuật toán tối ưu \& Learning Rate}
-\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Optimizer, LR, scheduler (Cosine Annealing...) và lý do.]}
+Thực nghiệm sử dụng cấu hình huấn luyện mặc định của Ultralytics cho mô hình segmentation, với learning rate được warm-up ở các epoch đầu và giảm dần về cuối quá trình huấn luyện. Dựa trên \texttt{results.csv}, learning rate tăng từ khoảng $2.77 \times 10^{-4}$ ở epoch 1 lên gần $8.0 \times 10^{-4}$ trong giai đoạn đầu của Rice, sau đó giảm về $2.48 \times 10^{-5}$ ở epoch 50; Coffee có cùng xu hướng, giảm về $3.73 \times 10^{-5}$ ở epoch 50. Lịch học này giúp mô hình ổn định ở đầu quá trình huấn luyện và tinh chỉnh nhỏ dần khi đã gần hội tụ.
 
 \subsubsection{Siêu tham số}
-\textit{[TODO --- Nguyễn Hồ Anh Tuấn: Batch size, epochs, variant (nano/small/medium/large), pretrained weights, v.v.]}
+Các siêu tham số chính của thực nghiệm YOLO26-seg được giữ nhất quán trên hai tập Rice và Coffee để so sánh công bằng: biến thể \texttt{yolo26n-seg.pt}, số epoch là 50, kích thước ảnh là 640, trọng số khởi tạo từ pretrained checkpoint của Ultralytics, và dữ liệu được chia theo train/validation/test manifest cố định của dự án. Batch size được để theo cấu hình notebook/Kaggle sao cho phù hợp bộ nhớ GPU T4/P100.
+
+Phương pháp tinh chỉnh tham số được thực hiện theo hướng thử nghiệm thủ công có kiểm soát thay vì Grid Search hoặc Random Search toàn diện. Lý do là mỗi lượt huấn luyện YOLO segmentation trên hai bộ dữ liệu tốn nhiều thời gian GPU, trong khi mục tiêu Phase 3 là tạo baseline ổn định để so sánh với các mô hình khác. Nhóm cố định các tham số có ảnh hưởng lớn đến tính tái lập như pretrained checkpoint, số epoch và kích thước ảnh, sau đó theo dõi loss, mask mAP@50 và mask mAP@50:95 trên validation để đánh giá hội tụ. Các cấu hình được ưu tiên là cấu hình cho đường cong validation ổn định, không tăng loss kéo dài ở cuối quá trình huấn luyện và đạt mAP@50:95 tốt hơn trên tập validation/test.
 
 % ----------------------------------------
 \subsection{RF-DETR --- \textit{Tống Thanh Phúc}}
 \label{subsec:config_rfdetr}
 
 \subsubsection{Tiền xử lý đầu vào đặc thù}
-\textit{[TODO --- Tống Thanh Phúc: Mô tả pipeline tiền xử lý riêng của RF-DETR (kích thước input, format annotation, chuẩn hóa, v.v.).]}
+RF-DETR được huấn luyện từ dữ liệu COCO segmentation. Notebook không dùng trực tiếp toàn bộ thư mục ảnh thô, mà trước hết xây dựng lại dataset theo format RF-DETR:
+
+\begin{itemize}
+    \item Đọc file \texttt{annotations.coco.json} của từng domain: \texttt{coffee\_leaf\_disease} và \texttt{rice\_leaf\_disease}.
+    \item Resolve đường dẫn ảnh thực tế trên Kaggle.
+    \item Loại bỏ ảnh không có annotation hợp lệ.
+    \item Loại bỏ nhãn invalid/background như \texttt{uit}, \texttt{none}, nhãn rỗng, \texttt{invalid}, \texttt{background}.
+    \item Remap nhãn coffee từ folder/category id số sang nhãn sạch: \texttt{LeafMiner}, \texttt{PowderyMildew}, \texttt{Rust}, \texttt{AlgalLeafSpot}.
+    \item Giữ nguyên multi-annotation, đặc biệt với rice vì một ảnh có thể chứa nhiều vùng bệnh.
+    \item Chia raw data thành train/valid/test theo tỷ lệ $70/15/15$.
+\end{itemize}
+
+Trong hai notebook \texttt{train-eva-coffee.ipynb} và \texttt{train-eva-rice.ipynb}, biến \texttt{USE\_PROCESSED\_EXTRA} đang được đặt bằng 0. Vì vậy lần chạy báo cáo hiện tại \textbf{không dùng thêm dữ liệu processed}; nguồn train/evaluate chính là raw COCO. Code vẫn có nhánh hỗ trợ processed extra nếu bật lại, nhưng nhánh đó chỉ tạo pseudo full-image annotation vì \texttt{processed/} không có lesion mask COCO thật.
+
+Dataset RF-DETR sau khi dựng được lưu tại:
+
+\begin{verbatim}
+/kaggle/working/rfdetr_datasets/coffee
+/kaggle/working/rfdetr_datasets/rice
+\end{verbatim}
+
+Các artifact đã export vào báo cáo được chuẩn hóa tên tại:
+
+\begin{verbatim}
+report/data/rfdetr/
+report/img/rfdetr/
+\end{verbatim}
 
 \subsubsection{Hàm mất mát}
-\textit{[TODO --- Tống Thanh Phúc: Nêu hàm mất mát (Hungarian matching loss: CE + GIoU + L1) và lý do.]}
+Notebook gọi trực tiếp hàm \texttt{model.train(...)} của thư viện \texttt{rfdetr}; phần loss nội bộ do RF-DETR quản lý. Về bản chất, RF-DETR thuộc họ DETR nên quá trình học dựa trên matching giữa prediction queries và ground truth, kết hợp các thành phần loss cho phân loại, định vị box và mask segmentation.
 
-\subsubsection{Thuật toán tối ưu \& Learning Rate}
-\textit{[TODO --- Tống Thanh Phúc: Optimizer (AdamW), LR, linear warmup + cosine scheduler và lý do.]}
+Trong báo cáo, nhóm mô tả loss ở mức hệ thống như sau:
+
+\begin{itemize}
+    \item Classification loss để học nhãn bệnh của từng prediction.
+    \item Box regression loss để học vị trí vùng bệnh.
+    \item Mask/segmentation loss để học vùng mask bệnh.
+    \item Matching loss theo tinh thần DETR để gán prediction với ground truth theo cách end-to-end.
+\end{itemize}
+
+Do nhóm dùng implementation RF-DETR có sẵn, các hệ số loss chi tiết không được chỉnh tay trong notebook.
+
+\subsubsection{Thuật toán tối ưu và Learning Rate}
+Các tham số tối ưu được truyền vào hàm train:
+
+\begin{verbatim}
+lr = 1e-4
+lr_encoder = 1.5e-4
+gradient_checkpointing = True
+early_stopping = True
+early_stopping_min_delta = 0.001
+\end{verbatim}
+
+RF-DETR tự cấu hình optimizer/scheduler tương ứng với implementation của thư viện. Nhóm không tự viết optimizer riêng trong notebook. Hai learning rate được tách riêng cho phần model chính và encoder để quá trình fine-tune ổn định hơn trên dataset có kích thước vừa.
+
+Khi evaluate test set, notebook dùng ngưỡng confidence \texttt{threshold=0.35}. Đây là ngưỡng được dùng để tạo metric tổng hợp, confusion matrix và các thống kê per-class trong artifact của báo cáo.
 
 \subsubsection{Siêu tham số}
-\textit{[TODO --- Tống Thanh Phúc: Batch size, epochs, frozen/unfrozen backbone layers, v.v.]}
+Cấu hình train duy nhất trong hai notebook là:
+
+\begin{table}[H]
+    \caption{Cấu hình huấn luyện RF-DETR trong notebook}
+    \centering
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Tham số} & \textbf{Giá trị} \\
+        \midrule
+        Model size & \texttt{nano} \\
+        Tên run & \texttt{train\_lr1e4} \\
+        Epochs & 8 \; (2 nếu \texttt{QUICK\_RUN=1}) \\
+        Batch size coffee & 4 \\
+        Batch size rice & 2 \\
+        Gradient accumulation & 4 \\
+        Learning rate & $1\times10^{-4}$ \\
+        Encoder learning rate & $1.5\times10^{-4}$ \\
+        Checkpoint interval & $\min(5,\ \text{epochs})$ \\
+        Early stopping patience & 5 \; (2 nếu \texttt{QUICK\_RUN=1}) \\
+        TensorBoard & Bật \\
+        WandB & Tắt \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:rfdetr_train_config}
+\end{table}
+
+\subsubsection{Tinh chỉnh tham số}
+Notebook hiện tại không chạy RayTune/ASHA hay grid search nhiều cấu hình. Thay vào đó, nhóm tinh chỉnh cấu hình theo hướng thủ công và an toàn tài nguyên. Phương pháp tinh chỉnh gồm:
+
+\begin{itemize}
+    \item Chọn \texttt{RFDETRSegNano} để vừa với GPU Kaggle và giảm thời gian huấn luyện.
+    \item Giữ số epoch là 8 để đủ quan sát hội tụ nhưng không vượt quá thời lượng notebook.
+    \item Dùng batch size khác nhau cho coffee và rice do rice có ảnh/annotation phức tạp hơn, dễ tốn VRAM hơn.
+    \item Dùng gradient accumulation để tăng batch hiệu dụng mà không cần tăng batch thật trên GPU.
+    \item Bật early stopping để tránh huấn luyện dư khi mAP validation không cải thiện.
+\end{itemize}
+
+Như vậy, phần tinh chỉnh trong báo cáo được hiểu là \textbf{phương pháp chọn cấu hình fine-tune của RF-DETR}, không phải một thí nghiệm hyperparameter tuning tự động hay một bảng kết quả before/after riêng.
 
 % ----------------------------------------
 \subsection{MobileSAM --- \textit{Đàm Tiến Đạt}}
 \label{subsec:config_mobilesam}
 
 \subsubsection{Tiền xử lý đầu vào đặc thù}
-\textit{[TODO --- Đàm Tiến Đạt: Mô tả pipeline tiền xử lý riêng của MobileSAM (kích thước $1024\times1024$, image embedding, prompt format, v.v.).]}
+Pipeline tiền xử lý dữ liệu đặc thù của MobileSAM được thực hiện nghiêm ngặt qua các bước:
+\begin{itemize}
+    \item Hình ảnh gốc được chuẩn hóa kích thước cố định về khổ vuông $1024 \times 1024$ pixel theo tham số \texttt{image\_size} trong file cấu hình.
+    \item Thực hiện chuẩn hóa giá trị pixel bằng tập tham số \texttt{MEAN} và \texttt{STD} cố định của kiến trúc ViT nhằm đưa dải dữ liệu về phân phối chuẩn thích hợp.
+    \item \textbf{Prompt Formatting}: Trong quá trình huấn luyện thực tế, mô hình nhận tín hiệu gợi ý dạng Bounding Box (\texttt{bbox}) bao quanh vùng bệnh lá lúa làm điều kiện định hướng không gian. Để tăng cường độ mạnh mẽ (robustness) và mô phỏng sai số của con người hoặc hệ thống detector tự động, các tọa độ hộp được áp dụng cơ chế dịch chuyển ngẫu nhiên với biên độ dịch tối đa là \texttt{max\_bbox\_shift = 20} pixel.
+\end{itemize}
 
 \subsubsection{Hàm mất mát}
-\textit{[TODO --- Đàm Tiến Đạt: Nêu hàm mất mát (Focal Loss + Dice Loss) với công thức và lý do chọn Focal cho pixel imbalance.]}
+Hàm mất mát tổng hợp $\mathcal{L}_{\text{total}}$ dùng để huấn luyện MobileSAM là sự kết hợp tuyến tính có trọng số của ba thành phần mất mát, được định nghĩa theo công thức:
+\begin{equation}
+    \mathcal{L}_{\text{total}} = 20 \times \mathcal{L}_{\text{Focal}} + \mathcal{L}_{\text{Dice}} + \mathcal{L}_{\text{MSE}}
+\end{equation}
+Trong đó:
+\begin{itemize}
+    \item \textbf{Sigmoid Focal Loss ($\mathcal{L}_{\text{Focal}}$)}: Tính toán trung bình tổn thất pixel dựa trên hàm \texttt{sigmoid\_focal\_loss}. Lý do lựa chọn thành phần này nhằm giải quyết triệt để bài toán mất cân bằng lớp nghiêm trọng (pixel imbalance) giữa diện tích vùng tổn thương do bệnh lá cây chiếm tỷ lệ rất nhỏ so với vùng nền ảnh lá lành xung quanh. Hệ số nhân trừng phạt lớn (trọng số 20) giúp ép mô hình tập trung tối đa vào các pixel biên khó phân loại.
+    \item \textbf{Dice Loss ($\mathcal{L}_{\text{Dice}}$)}: Được cấu hình với thuộc tính \texttt{squared\_pred=True} thu được từ thư viện MONAI. Hàm này tối ưu hóa trực tiếp độ trùng khớp vùng phân vùng (Intersection over Union), ngăn chặn việc suy giảm gradient khi kích thước vùng bệnh phân tách quá bé.
+    \item \textbf{MSE Loss ($\mathcal{L}_{\text{MSE}}$)}: Đo lường lỗi bình phương trung bình giữa hệ số IoU dự đoán từ nhánh phụ của Mask Decoder (\texttt{pred\_IOU}) và chỉ số IoU thực tế tính trên batch (\texttt{iou}), giúp tinh chỉnh độ tin cậy nội bộ của mạng.
+\end{itemize}
 
 \subsubsection{Thuật toán tối ưu \& Learning Rate}
-\textit{[TODO --- Đàm Tiến Đạt: Optimizer (Adam), LR, ReduceLROnPlateau và lý do.]}
+\begin{itemize}
+    \item \textbf{Optimizer}: Mô hình sử dụng thuật toán tối ưu hóa \textbf{AdamW} thay vì Adam truyền thống, đi kèm với bộ lọc chỉ cập nhật các trọng số có \texttt{requires\_grad = True}. Lựa chọn AdamW giúp quản lý hiệu quả cơ chế phân rã trọng số (weight decay), hạn chế tối đa hiện tượng quá khớp (overfitting) thường xuất hiện trên cấu trúc mạng Transformer.
+    \item \textbf{Chiến lược điều khiển Learning Rate}: Tốc độ học ban đầu được thiết lập ở mức cực nhỏ $1 \times 10^{-5}$ (\texttt{learning\_rate: 1e-5}). Nhóm không áp dụng ReduceLROnPlateau như kế hoạch ban đầu, thay vào đó mã nguồn được hiện thực hóa tối ưu hơn bằng cơ chế suy giảm dựa trên hàm cosine (\textbf{CosineAnnealingLR}) mở rộng theo tổng số bước học tập (\texttt{T\_max = epochs * len(train\_loader)}).
+    \item \textbf{Warmup steps}: Đồng thời, bộ lập lịch \textbf{LinearWarmup} được tích hợp trong \texttt{250} bước khởi đầu (\texttt{warmup\_step: 250}) để tăng dần tốc độ học từ mức 0 lên mức chỉ định, giúp ổn định hóa các gradient trong giai đoạn đầu tiên của quá trình tối ưu.
+\end{itemize}
 
 \subsubsection{Siêu tham số}
-\textit{[TODO --- Đàm Tiến Đạt: Batch size, epochs, frozen encoder vs fine-tune toàn bộ, v.v.]}
+Các thông số thiết lập chi tiết phục vụ phiên huấn luyện tinh chỉnh mô hình được trình bày trong bảng dưới đây:
+
+\begin{table}[H]
+    \centering
+    \caption{Bảng siêu tham số cấu hình thực nghiệm mạng MobileSAM.}
+    \label{tab:mobilesam_hyperparams}
+    \begin{tabular}{ll}
+        \hline
+        \textbf{Siêu tham số}                                       & \textbf{Giá trị thiết lập}                 \\ \hline
+        Dataset                                                     & \texttt{rice\_leaf\_disease} (Bệnh lá lúa) \\
+        Kích thước ảnh vào                                          & $1024 \times 1024$                         \\
+        Số lượng Epochs tối đa                                      & $10000$                                    \\
+        Batch size                                                  & $4$                                        \\
+        Tốc độ học cơ sở (Learning Rate)                            & $1 \times 10^{-5}$                         \\
+        Số bước khởi động ấm (Warmup steps)                         & $250$                                      \\
+        Chu kỳ đánh giá validation (\texttt{val\_freq})             & Mỗi $5$ Epoch                              \\
+        Cơ chế dừng sớm (\texttt{patience})                         & $10$ chu kỳ không cải thiện                \\
+        Đóng băng Image Encoder (\texttt{freeze\_image\_encoder})   & \textbf{True}                              \\
+        Đóng băng Prompt Encoder (\texttt{freeze\_prompt\_encoder}) & \textbf{True}                              \\
+        Đóng băng Mask Decoder (\texttt{freeze\_mask\_decoder})     & \textbf{False}                             \\ \hline
+    \end{tabular}
+\end{table}
+
+\textit{Lý do thiết lập đóng băng}: Nhóm thực hiện đóng băng hoàn toàn bộ Image Encoder (TinyViT) và Prompt Encoder nhằm giữ nguyên khả năng trích xuất đặc trưng tổng quát (zero-shot foundation capabilities) đã được tiền huấn luyện trên tập dữ liệu hàng triệu ảnh SA-1B. Việc chỉ tinh chỉnh (\textit{fine-tune}) duy nhất khối \textbf{Mask Decoder} gọn nhẹ giúp mô hình nhanh chóng thích ứng tốt với cấu trúc hình thái tổn thương của bệnh học thực vật (domain-specific data) mà không tốn kém tài nguyên tính toán phần cứng.
 
 % ----------------------------------------
 \subsection{Mask2Former --- \textit{Dương Tuấn Anh}}

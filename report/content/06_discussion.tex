@@ -18,12 +18,19 @@ Dựa trên biểu đồ quá trình học (Mục~\ref{subsec:res_maskrcnn}):
     \item \textbf{Tập dữ liệu Lúa (Rice)}: Mô hình có hiện tượng quá khớp (overfitting) nhẹ từ sau epoch 15. Giá trị loss huấn luyện tiếp tục giảm ổn định xuống mức 0,38 nhưng loss kiểm thử (validation loss) bắt đầu có xu hướng đi ngang và tăng nhẹ trở lại ở khoảng $0,45 - 0,55$. Chỉ số validation mAP đạt giá trị tốt nhất là 0,5226 ở epoch 24 và giảm nhẹ sau đó. Để khắc phục hiện tượng này, nhóm đã áp dụng cơ chế lưu checkpoint tốt nhất dựa trên validation mAP và Early Stopping để dừng quá trình huấn luyện sớm, giúp giữ lại trọng số tối ưu nhất và ngăn mô hình học thêm nhiễu từ tập train.
     \item \textbf{Tập dữ liệu Cà phê (Coffee)}: Mô hình đạt trạng thái hội tụ rất tốt và gần như không xuất hiện overfitting. Đường loss huấn luyện và validation giảm song hành rất mượt mà. Validation mAP đạt mức ổn định và duy trì quanh ngưỡng 0,88. Điều này cho thấy các đặc trưng hình học và màu sắc của bệnh đốm lá và gỉ sắt trên lá cà phê rất đặc trưng và dễ học, đồng thời quy mô tập dữ liệu đủ tốt giúp mô hình tổng quát hóa vượt trội mà không cần áp dụng các biện pháp chế tài quá khớp mạnh.
 \end{itemize}
+Đối với RF-DETR, learning curve trong Hình~\ref{fig:rfdetr_coffee_curve} và Hình~\ref{fig:rfdetr_rice_curve} cho thấy loss huấn luyện giảm dần qua các epoch. Coffee có xu hướng ổn định hơn: validation segmentation mAP@50 đạt khoảng $0.9207$ ở epoch cuối được log, trong khi kết quả test đạt mAP50:95 segmentation $0.825083$, mIoU $0.857505$ và Dice $0.871758$. Điều này cho thấy mô hình học được đặc trưng mask khá tốt trên tập coffee, chưa có dấu hiệu overfitting nghiêm trọng trong phạm vi 8 epoch.
+
+Với rice, đường cong dao động hơn và validation segmentation mAP@50 đạt khoảng $0.7592$, thấp hơn coffee. Kết quả test cũng thấp hơn coffee ở các chỉ số segmentation chính: mAP50:95 segmentation $0.687440$, mIoU $0.813240$ và Dice $0.830791$. Hiện tượng này không hẳn là underfitting, vì mIoU và Dice vẫn ở mức khá; nguyên nhân hợp lý hơn là tập rice có nhiều ảnh chứa nhiều vùng bệnh, nhiều annotation trên cùng ảnh và hình thái bệnh dễ nhầm hơn.
+
+Các biện pháp đã được dùng để giảm rủi ro overfitting và quá tải tài nguyên gồm: sử dụng biến thể \texttt{RFDETRSegNano}, bật early stopping, dùng best checkpoint để evaluate thay vì epoch cuối, đặt gradient accumulation bằng $4$ và giảm batch size của rice xuống $2$. Nhóm chưa chạy hyperparameter search tự động, nên phần nhận xét này chỉ phản ánh cấu hình fine-tune cuối cùng trong notebook.
+
+Đối với YOLO26-seg, tập Rice cho thấy xu hướng hội tụ tốt hơn: train loss giảm đều, validation loss không tăng kéo dài ở cuối quá trình huấn luyện, và mask mAP@50:95 tăng ổn định đến khoảng 0.6910 ở epoch 50 trên validation. Khoảng cách train--validation chủ yếu thể hiện qua loss validation cao hơn loss train, nhưng chưa đủ mạnh để kết luận overfitting nghiêm trọng. Tập Coffee có dấu hiệu underfitting hoặc bão hòa sớm theo metric instance mAP, vì mask mAP@50:95 chỉ dao động quanh 0.13 ở cuối quá trình dù learning rate đã giảm dần. Cách xử lý phù hợp cho các lần huấn luyện sau là tăng dữ liệu/augmentation cho các lớp khó, kiểm tra lại chất lượng annotation polygon và thử tăng biến thể mô hình hoặc kéo dài số epoch có early stopping.
 
 % ----------------------------------------
 \subsection{Phân tích các trường hợp dự đoán sai}
 \label{subsec:error_analysis}
 
-\textit{[TODO --- Từng thành viên: Lấy 2--3 ví dụ cụ thể ảnh mô hình của mình dự đoán sai.]}
+Do artifact hiện tại chưa có các ảnh minh họa dạng ảnh gốc--ground truth--prediction, phần phân tích lỗi của RF-DETR được thực hiện dựa trên confusion matrix và bảng precision/recall/F1 theo lớp ở Mục~\ref{subsec:res_rfdetr}. Cách phân tích này chưa cho thấy trực quan từng ảnh sai, nhưng đủ để xác định các nhóm lỗi chính theo lớp.
 
 \subsubsection{Phân tích lỗi đối với mô hình Mask R-CNN}
 Hình~\ref{fig:maskrcnn_visual_rice} và Hình~\ref{fig:maskrcnn_visual_coffee} thể hiện kết quả dự đoán thực tế của Mask R-CNN trên tập Test đối với hai tập dữ liệu Lúa và Cà phê:
@@ -52,12 +59,21 @@ Qua phân tích các kết quả dự đoán sai trên tập Test, mô hình Mas
     \item \textbf{Vết bệnh kích thước quá nhỏ (Small Objects)}: Do đặc trưng của vết bệnh lúa giai đoạn đầu thường chỉ có đường kính một vài pixel, sau khi qua các tầng tích chập sâu của ResNet-50 và giảm độ phân giải xuống 1/16 hoặc 1/32, các chi tiết không gian bị biến mất. Mặc dù FPN đã hỗ trợ lấy đặc trưng đa tỷ lệ, cơ chế RoI Align ở độ phân giải $7 \times 7$ hoặc $14 \times 14$ vẫn gặp khó khăn lớn trong việc tái tạo thông tin chi tiết của các đốm bệnh siêu nhỏ, dẫn đến bỏ sót vết bệnh (False Negatives).
     \item \textbf{Nhiễu nền và chồng lấp lá (Complex Background / Occlusion)}: Ở một số ảnh thực địa có nền đất hoặc các lá lúa đè lên nhau, nhánh RPN thỉnh thoảng đề xuất nhầm các khe hở giữa các lá hoặc các vết bùn đất trên lá thành vết bệnh (False Positives).
 \end{enumerate}
+Trên coffee, RF-DETR có F1 cao nhất ở \texttt{PowderyMildew} ($0.871$) và \texttt{AlgalLeafSpot} ($0.837$). Tuy nhiên, \texttt{LeafMiner} có precision thấp ($0.578$) dù recall cao ($0.879$), cho thấy mô hình phát hiện được nhiều vùng bệnh thật nhưng cũng sinh nhiều prediction dư. Confusion matrix cho thấy nhóm \texttt{\_\_background\_\_} dự đoán vào \texttt{LeafMiner} và \texttt{Rust} khá nhiều, lần lượt $116$ và $83$ trường hợp. Đây là dấu hiệu false positive trên nền lá hoặc vùng texture giống bệnh.
+
+Lỗi giữa \texttt{AlgalLeafSpot} và \texttt{Rust} có xuất hiện nhưng không phải nguồn lỗi lớn nhất trong lần chạy này: \texttt{Rust} bị dự đoán thành \texttt{AlgalLeafSpot} $1$ trường hợp, còn \texttt{AlgalLeafSpot} bị dự đoán thành \texttt{Rust} $2$ trường hợp. Như vậy giả thuyết từ EDA về hai lớp dễ nhầm là hợp lý về mặt thị giác, nhưng với RF-DETR lỗi nổi bật hơn lại là false positive từ nền sang các lớp bệnh.
+
+Trên rice, lớp \texttt{Healthy} có F1 cao nhất ($0.775$), còn \texttt{Hispa} thấp nhất ($0.660$). \texttt{Hispa} bị dự đoán thành \texttt{Healthy} $19$ trường hợp, cho thấy mô hình có thể bỏ qua hoặc đánh giá thấp các dấu hiệu bệnh nhỏ/khó thấy. \texttt{LeafBlast} có recall cao ($0.807$) nhưng precision chỉ $0.600$, chủ yếu do nhiều prediction dư từ \texttt{\_\_background\_\_} sang \texttt{LeafBlast} ($47$ trường hợp).
+
+Đối với cặp \texttt{BrownSpot} và \texttt{LeafBlast}, confusion matrix ghi nhận nhầm hai chiều: BrownSpot thành LeafBlast $4$ trường hợp và LeafBlast thành BrownSpot $5$ trường hợp. Mức nhầm này không quá lớn nhưng phù hợp với nhận xét EDA rằng hai lớp đều có vết nâu và dễ bị ảnh hưởng bởi hình dạng/vị trí vết bệnh. Nhìn chung, lỗi trên rice đến từ cả nhầm lớp giữa các biểu hiện bệnh gần nhau lẫn false positive trên nền.
+
+Với YOLO26-seg, confusion matrix và EDA cho thấy hai nhóm lỗi chính. Trên Rice, các lớp có vết nâu hoặc vùng cháy lá tương tự nhau, đặc biệt BrownSpot và LeafBlast, dễ bị nhầm khi vùng bệnh nhỏ hoặc biên vết bệnh không rõ. Trên Coffee, AlgalLeafSpot và Rust có màu sắc/texture gần nhau trong điều kiện ánh sáng kém, đồng thời vùng bệnh có thể nhỏ và rải rác trên nền lá, làm mô hình phát hiện được vùng tổn thương tổng thể nhưng phân tách instance/lớp chưa tốt theo mAP.
 
 % ----------------------------------------
 \subsection{So sánh tổng hợp các mô hình}
 \label{subsec:model_comparison}
 
-\textit{[TODO --- Cả nhóm tổng hợp sau khi có đủ kết quả. Điền số liệu vào bảng và xếp hạng các mô hình theo 5 tiêu chí lựa chọn.]}
+Hiện tại báo cáo mới có đầy đủ kết quả RF-DETR cho cả rice và coffee; các mô hình còn lại vẫn chờ thành viên phụ trách bổ sung. Vì vậy bảng dưới đây chỉ điền phần RF-DETR và chưa xếp hạng cuối cùng giữa 5 mô hình.
 
 \begin{table}[H]
     \caption{Bảng so sánh đa tiêu chí giữa 5 mô hình (tổng hợp từ Phase 3)}
@@ -73,6 +89,13 @@ Qua phân tích các kết quả dự đoán sai trên tập Test, mô hình Mas
         Train--Val gap  & Trung bình (Lúa) / Rất nhỏ (Cà phê) & --- & --- & --- & --- \\
         \midrule
         \textbf{Xếp hạng} & Baseline (Lúa) / Tốt nhất (Cà phê) & --- & --- & --- & --- \\
+        mAP@50:95       & --- & --- & 0.825 (coffee) / 0.687 (rice) & --- & --- \\
+        mIoU            & --- & --- & 0.858 (coffee) / 0.813 (rice) & --- & --- \\
+        Inference (ms)  & --- & --- & 70.306 (coffee) / 198.306 (rice) & --- & --- \\
+        Model size (MB) & --- & --- & 133 & --- & --- \\
+        Train--Val gap  & --- & --- & Chưa đủ log train/val trực tiếp & --- & --- \\
+        \midrule
+        \textbf{Xếp hạng} & --- & --- & Chưa kết luận chung & --- & --- \\
         \bottomrule
     \end{tabularx}
     \label{tab:model_comparison}
@@ -81,13 +104,14 @@ Qua phân tích các kết quả dự đoán sai trên tập Test, mô hình Mas
 % ----------------------------------------
 \subsection{Mô hình được chọn cho Phase 4}
 
-\textit{[TODO --- Cả nhóm quyết định sau khi hoàn thành bảng so sánh trên.
-Điền tên model, dataset (Rice/Coffee) và lý do chọn theo 5 tiêu chí:
-mAP@50:95, mIoU, inference time ($< 500$ms/ảnh trên CPU), model size, độ ổn định train/val.]}
+Do chưa có đủ kết quả của cả 5 mô hình, nhóm chưa thể đưa ra quyết định cuối cùng cho toàn bộ hệ thống. Nếu chỉ xét phần RF-DETR đã hoàn thiện, cấu hình RF-DETR trên coffee đang là kết quả tốt hơn so với rice về mAP50:95 segmentation, mIoU, Dice và inference time.
 
-\textbf{Quyết định:} Mô hình \textbf{\textit{[TÊN MODEL]}} trên tập \textbf{\textit{[Rice / Coffee]}} được chọn để tinh chỉnh trong Phase 4, vì:
+\textbf{Quyết định tạm thời:} RF-DETR trên tập \textbf{coffee} là ứng viên mạnh trong các kết quả RF-DETR hiện có, vì:
 \begin{itemize}
-    \item \textit{[TODO: Lý do theo tiêu chí mAP@50:95]}
-    \item \textit{[TODO: Lý do theo tiêu chí inference time / khả năng deploy]}
-    \item \textit{[TODO: Lý do theo độ ổn định, gap train/val nhỏ]}
+    \item mAP50:95 segmentation đạt $0.825083$, cao hơn rice ($0.687440$).
+    \item mIoU đạt $0.857505$ và Dice đạt $0.871758$, cho thấy chất lượng mask ổn định.
+    \item Inference trung bình khoảng $70.306$ms/ảnh, thấp hơn ngưỡng $500$ms/ảnh và nhanh hơn đáng kể so với rice trong lần đo hiện tại.
+    \item Best checkpoint khoảng $133$MB, có thể tối ưu thêm bằng export hoặc quantization khi triển khai.
 \end{itemize}
+
+Kết luận này chỉ là lựa chọn tạm thời trong phạm vi RF-DETR. Sau khi Mask R-CNN, YOLO26-seg, MobileSAM và Mask2Former được bổ sung đầy đủ kết quả, nhóm cần cập nhật lại bảng so sánh và quyết định cuối cùng.
