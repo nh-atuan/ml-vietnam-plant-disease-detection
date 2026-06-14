@@ -13,14 +13,14 @@ Tuy nhiên, chẩn đoán bệnh cây truyền thống đòi hỏi chuyên gia n
 
 Nhóm xây dựng hệ thống \textbf{Instance Segmentation} (phân vùng đối tượng) trên ảnh lá cây, với mục tiêu:
 \begin{itemize}
-    \item Đầu vào:Ảnh lá cây chụp ngoài thực địa (có thể chứa nhiều lá, nhiều vùng bệnh).
-    \item Đầu ra:Mask pixel-wise xác định \emph{vùng bị bệnh} kèm theo \emph{nhãn loại bệnh} tương ứng.
-    \item Phạm vi:8 lớp nhãn được chia đều cho hai đối tượng cây trồng chính:
+    \item \textbf{Đầu vào}: Ảnh lá cây chụp ngoài thực địa (có thể chứa nhiều lá, nhiều vùng bệnh).
+    \item \textbf{Đầu ra}: Mask pixel-wise xác định \emph{vùng bị bệnh} kèm theo \emph{nhãn loại bệnh} tương ứng.
+    \item \textbf{Phạm vi}: 8 lớp nhãn được chia đều cho hai đối tượng cây trồng chính:
           \begin{itemize}
-              \item Lúa (Rice):\texttt{Healthy} (Khỏe mạnh), \texttt{BrownSpot} (Đốm nâu), \texttt{Hispa} (Sâu gai), \texttt{LeafBlast} (Đạo ôn).
-              \item Cà phê (Coffee):\texttt{AlgalLeafSpot} (Đốm lá tảo), \texttt{LeafMiner} (Sâu vẽ bùa), \texttt{PowderyMildew} (Phấn trắng), \texttt{Rust} (Gỉ sắt).
+              \item Lúa:\texttt{Healthy} (Khỏe mạnh), \texttt{BrownSpot} (Đốm nâu), \texttt{Hispa} (Sâu gai), \texttt{LeafBlast} (Đạo ôn).
+              \item Cà phê:\texttt{AlgalLeafSpot} (Đốm lá tảo), \texttt{LeafMiner} (Sâu vẽ bùa), \texttt{PowderyMildew} (Phấn trắng), \texttt{Rust} (Gỉ sắt).
           \end{itemize}
-\end{itemize}
+\end{itemize}z
 
 \subsubsection{Định nghĩa hình thức}
 Một cách toán học, bài toán phân vùng thực thể bệnh trên lá cây được định nghĩa như sau. Cho ảnh đầu vào $I \in \mathbb{R}^{H \times W \times 3}$, trong đó $H$ và $W$ lần lượt là chiều cao và chiều rộng của ảnh. Mục tiêu của mô hình là tìm tập hợp gồm $K$ thực thể bệnh xuất hiện trong ảnh:

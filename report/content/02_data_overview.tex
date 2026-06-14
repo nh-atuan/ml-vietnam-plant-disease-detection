@@ -55,7 +55,7 @@ Nhóm áp dụng tỷ lệ phân chia \textbf{70/15/15} (Train / Validation / Te
 \end{itemize}
 
 \subsubsection{Xử lý dữ liệu mất cân bằng}
-Một số lớp bệnh hiếm (ví dụ: \texttt{LeafMiner}) có số lượng ảnh thấp hơn đáng kể so với \texttt{Healthy}. Nhóm áp dụng \textbf{WeightedRandomSampler} trong DataLoader để đảm bảo mỗi batch huấn luyện có phân phối lớp cân bằng hơn.
+Một số lớp bệnh hiếm (ví dụ: \texttt{PowderyMildew}) có số lượng ảnh thấp hơn đáng kể so với các lớp còn lại. Nhóm áp dụng \textbf{WeightedRandomSampler} trong DataLoader để đảm bảo mỗi batch huấn luyện có phân phối lớp cân bằng hơn.
 
 \subsubsection{Tăng cường dữ liệu (Data Augmentation)}
 
