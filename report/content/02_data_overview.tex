@@ -14,50 +14,64 @@ Bộ dữ liệu được xây dựng từ nhiều nguồn công khai kết hợ
     \centering
     \begin{tabular}{llrr}
         \toprule
-        \textbf{Loại cây} & \textbf{Nhãn bệnh} & \textbf{Số ảnh (gốc)} & \textbf{Số ảnh (sạch)} \\
+        \textbf{Loại cây}                      & \textbf{Nhãn bệnh}              & \textbf{Số ảnh (gốc)} & \textbf{Số ảnh (sạch)} \\
         \midrule
-        Lúa & Healthy, BrownSpot, Hispa, LeafBlast & 3.421 & 3.351 \\
-        Cà phê & AlgalLeafSpot, LeafMiner, PowderyMildew, Rust & 3.879 & 3.798 \\
+        \multirow{4}{*}{Lúa}                   & Healthy (Khỏe mạnh)             & --                    & --                     \\
+                                               & BrownSpot (Đốm nâu)             & --                    & --                     \\
+                                               & Hispa (Sâu gai)                 & --                    & --                     \\
+                                               & LeafBlast (Bệnh đạo ôn)         & --                    & --                     \\
+        \cmidrule{2-4}
+                                               & \textit{Tổng Lúa}               & 3.421                 & 3.351                  \\
         \midrule
-        \multicolumn{2}{l}{\textbf{Tổng cộng}} & \textbf{7.300} & \textbf{7.149} \\
+        \multirow{4}{*}{Cà phê}                & LeafMiner (Bệnh sâu vẽ bùa)     & --                    & --                     \\
+                                               & PowderyMildew (Bệnh phấn trắng) & --                    & --                     \\
+                                               & Rust (Bệnh nấm rỉ sắt)          & --                    & --                     \\
+                                               & AlgalLeafSpot (Bệnh đốm rong)   & --                    & --                     \\
+        \cmidrule{2-4}
+                                               & \textit{Tổng Cà phê}            & 3.879                 & 3.798                  \\
+        \midrule
+        \multicolumn{2}{l}{\textbf{Tổng cộng}} & \textbf{7.300}                  & \textbf{7.149}                                 \\
         \bottomrule
     \end{tabular}
     \label{tab:dataset_stats}
 \end{table}
 
-\subsection{Phân chia dữ liệu Train/Validation/Test}
+\subsection{Phân chia dữ liệu và thiết lập chung}
 
-Nhóm áp dụng tỷ lệ phân chia \textbf{70/15/15} (Train / Validation / Test):
+Dữ liệu thô (raw data) được chia thành ba tập \textbf{Train / Validation / Test} theo tỷ lệ \textbf{70/15/15}. Phân chia được thực hiện theo chiến lược \emph{stratified split} để duy trì phân phối lớp đồng đều giữa các tập.
 
 \begin{table}[H]
     \caption{Tỷ lệ phân chia tập dữ liệu}
     \centering
     \begin{tabular}{lrr}
         \toprule
-        \textbf{Tập} & \textbf{Tỷ lệ} & \textbf{Số ảnh (ước tính)} \\
+        \textbf{Tập} & \textbf{Tỷ lệ} & \textbf{Số ảnh} \\
         \midrule
-        Train      & 70\%  & 5.004 \\
-        Validation & 15\%  & 1.072 \\
-        Test       & 15\%  & 1.073 \\
+        Train        & 70\%           & 5.004           \\
+        Validation   & 15\%           & 1.072           \\
+        Test         & 15\%           & 1.073           \\
         \bottomrule
     \end{tabular}
     \label{tab:split}
 \end{table}
 
-\textbf{Lý do chọn tỷ lệ 70/15/15:} Tập dữ liệu có quy mô trung bình ($\sim$7.000 ảnh); tỷ lệ này đảm bảo tập Train đủ lớn để học đặc trưng phân vùng, trong khi Validation và Test mỗi tập đủ $\sim$1.000 ảnh để đánh giá tin cậy về mặt thống kê. Phân chia được thực hiện theo chiến lược \emph{stratified split} để duy trì phân phối lớp đồng đều giữa các tập.
+\textbf{Lý do chọn tỷ lệ 70/15/15:} Tập dữ liệu có quy mô trung bình ($\sim$7.000 ảnh); tỷ lệ này đảm bảo tập Train đủ lớn để học đặc trưng phân vùng, trong khi Validation và Test mỗi tập đủ $\sim$1.000 ảnh để đánh giá tin cậy về mặt thống kê.
 
 \subsection{Tiền xử lý ảnh}
 
+Tất cả 5 mô hình trong thực nghiệm đều được huấn luyện trên cùng một pipeline tiền xử lý và tăng cường dữ liệu thống nhất nhằm đảm bảo tính công bằng khi so sánh. Kích thước ảnh đầu vào được resize phù hợp với yêu cầu của từng kiến trúc mô hình (chi tiết tại Mục~\ref{sec:training_config}).
+
 \subsubsection{Chuẩn hóa kích thước}
+Chuẩn hóa kích thước gồm hai bước:
 \begin{itemize}
-    \item Resize:Tất cả ảnh được resize về canvas $256 \times 256$ pixel, sử dụng \emph{letterbox padding} (padding trắng giữ tỷ lệ khung hình gốc) để tránh biến dạng hình học.
-    \item Normalize:Chuẩn hóa giá trị pixel về $[0, 1]$ rồi chuẩn hóa z-score theo thống kê tập Train: $\mu = [0,5458; \, 0,5713; \, 0,5405]$, $\sigma = [0,3226; \, 0,3161; \, 0,3575]$ (xem \texttt{normalization\_stats.json}).
+    \item Resize: Ảnh được resize sử dụng \emph{letterbox padding} (padding giữ tỷ lệ khung hình gốc) để tránh biến dạng hình học. Kích thước cụ thể phụ thuộc vào từng mô hình.
+    \item Normalize: Chuẩn hóa giá trị pixel về $[0, 1]$ rồi chuẩn hóa z-score theo thống kê tập Train.
 \end{itemize}
 
 \subsubsection{Xử lý dữ liệu mất cân bằng}
 Một số lớp bệnh hiếm (ví dụ: \texttt{PowderyMildew}) có số lượng ảnh thấp hơn đáng kể so với các lớp còn lại. Nhóm áp dụng \textbf{WeightedRandomSampler} trong DataLoader để đảm bảo mỗi batch huấn luyện có phân phối lớp cân bằng hơn.
 
-\subsubsection{Tăng cường dữ liệu (Data Augmentation)}
+\subsubsection{Tăng cường dữ liệu}
 
 Pipeline augmentation được áp dụng \emph{chỉ trên tập Train} với các kỹ thuật:
 
@@ -66,24 +80,19 @@ Pipeline augmentation được áp dụng \emph{chỉ trên tập Train} với c
     \centering
     \begin{tabular}{lll}
         \toprule
-        \textbf{Kỹ thuật} & \textbf{Tham số} & \textbf{Mục đích} \\
+        \textbf{Kỹ thuật}    & \textbf{Tham số}                 & \textbf{Mục đích}           \\
         \midrule
-        RandomResizedCrop  & scale=(0.5, 1.0)  & Đa dạng hóa góc nhìn, scale \\
-        RandomHorizontalFlip & p=0.5           & Bất biến với lật ngang \\
-        RandomVerticalFlip   & p=0.3           & Bất biến với lật dọc \\
-        ColorJitter          & brightness, contrast, saturation & Đa dạng ánh sáng \\
-        Affine transform     & rotate, shear, translate & Bất biến hình học \\
-        MixUp                & $\alpha = 0.4$  & Chống overfitting \\
-        CutMix               & $\alpha = 1.0$  & Chống overfitting \\
-        CutOut               & n\_holes=1, length=64 & Tăng cường độ bền \\
+        RandomResizedCrop    & scale=(0.5, 1.0)                 & Đa dạng hóa góc nhìn, scale \\
+        RandomHorizontalFlip & p=0.5                            & Bất biến với lật ngang      \\
+        RandomVerticalFlip   & p=0.3                            & Bất biến với lật dọc        \\
+        ColorJitter          & brightness, contrast, saturation & Đa dạng ánh sáng            \\
+        Affine transform     & rotate, shear, translate         & Bất biến hình học           \\
+        MixUp                & $\alpha = 0.4$                   & Chống overfitting           \\
+        CutMix               & $\alpha = 1.0$                   & Chống overfitting           \\
+        CutOut               & n\_holes=1, length=64            & Tăng cường độ bền           \\
         \bottomrule
     \end{tabular}
     \label{tab:augmentation}
 \end{table}
 
 \textbf{Lưu ý:} MixUp và CutMix được áp dụng ở cấp batch (trong vòng lặp huấn luyện), không phải trong DataLoader pipeline, và \emph{không áp dụng lên mask segmentation} để đảm bảo tính hợp lệ của nhãn pixel.
-
-\subsubsection{Tiền xử lý riêng theo từng mô hình}
-
-Ngoài pipeline tiền xử lý chung trên, \textbf{mỗi mô hình sẽ có bước tiền xử lý bổ sung riêng} trong quá trình huấn luyện để đảm bảo định dạng đầu vào phù hợp với yêu cầu của từng kiến trúc. Ví dụ: YOLO yêu cầu ảnh $640 \times 640$ và nhãn theo định dạng YOLO-txt; MobileSAM/SAM yêu cầu ảnh $1024 \times 1024$ với embedding từ image encoder; Mask2Former yêu cầu chuẩn hóa theo mean/std của ImageNet và format annotation COCO panoptic. Các bước tiền xử lý đặc thù này được mô tả chi tiết trong phần \textbf{Cấu hình huấn luyện} (Mục~\ref{sec:training_config}) tương ứng với từng mô hình.
-

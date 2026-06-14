@@ -5,526 +5,223 @@
 \section{Kết quả thực nghiệm}
 \label{sec:results}
 
+Phần này trình bày kết quả huấn luyện và đánh giá của 5 mô hình trên cả hai tập dữ liệu Lúa và Cà phê. Tất cả mô hình được huấn luyện với cùng thiết lập chung (Mục~\ref{sec:training_config}) nhằm đảm bảo so sánh công bằng.
 
+% ============================================================
+\subsection{Biểu đồ quá trình học}
+\label{subsec:learning_curves}
 
-%  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Mask R-CNN}
-\label{subsec:res_maskrcnn}
-
-\subsubsection{Biểu đồ quá trình học (Learning Curves)}
-Quá trình huấn luyện mô hình Mask R-CNN được ghi nhận qua các biểu đồ Loss (gồm Loss tổng và các thành phần mất mát cụ thể) cũng như chỉ số \texttt{mAP@50:95} trên tập Validation theo từng epoch:
+Hình~\ref{fig:lc_rice} và Hình~\ref{fig:lc_coffee} trình bày đường cong học (training loss và validation loss) của 5 mô hình qua 10 epoch trên từng tập dữ liệu.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{img/mask-rcnn/rice/results.png}
-    \caption{Biểu đồ quá trình học (Loss tổng, các loss thành phần và validation mAP) của Mask R-CNN trên tập Lúa}
-    \label{fig:learning_curve_rice}
+    \includegraphics[width=0.95\textwidth]{img/learning_curves_rice.png}
+    \caption{Learning curves của 5 mô hình trên tập Lúa. Đường liền: validation loss; đường đứt: training loss.}
+    \label{fig:lc_rice}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{img/mask-rcnn/coffee/results.png}
-    \caption{Biểu đồ quá trình học (Loss tổng, các loss thành phần và validation mAP) của Mask R-CNN trên tập Cà phê}
-    \label{fig:learning_curve_coffee}
+    \includegraphics[width=0.95\textwidth]{img/learning_curves_coffee.png}
+    \caption{Learning curves của 5 mô hình trên tập Cà phê. Đường liền: validation loss; đường đứt: training loss.}
+    \label{fig:lc_coffee}
 \end{figure}
 
-\textbf{Nhận xét}:
+\textbf{Nhận xét:}
 \begin{itemize}
-    \item Khả năng hội tụ: Trên cả hai tập dữ liệu, mô hình đều cho thấy xu hướng hội tụ rõ rệt. Loss tổng giảm mạnh trong 10 epoch đầu và tiệm cận dần về trạng thái ổn định ở các epoch sau. Trên tập Cà phê, loss tổng giảm từ khoảng 1,6 xuống dưới 0,2; trên tập Lúa, loss tổng giảm từ 1,5 xuống khoảng 0,4.
-    \item Độ dao động: Đường validation loss và validation mAP của mô hình có sự dao động nhẹ ở các epoch giữa nhưng dần ổn định về cuối. Trên tập Cà phê, các chỉ số biến động rất ít, cho thấy sự ổn định cao của dữ liệu. Trên tập Lúa, đường validation loss dao động mạnh hơn (ở khoảng $0,45 - 0,55$), cho thấy độ phức tạp cao hơn trong việc phát hiện các vết bệnh lúa.
-    \item Hiện tượng Overfitting/Underfitting:
+    \item \textbf{RF-DETR} và \textbf{YOLO26m-seg} hội tụ nhanh nhất trên cả hai tập dữ liệu, đạt validation loss thấp nhất trong số 5 mô hình. Hai mô hình này có khoảng cách train--val loss nhỏ, cho thấy khả năng tổng quát hóa tốt và không xảy ra overfitting nghiêm trọng trong 10 epoch.
+    \item \textbf{Mask2Former} hội tụ ổn định, validation loss nằm ở mức trung bình; khoảng cách train--val nhỏ cho thấy mô hình không bị overfitting.
+    \item \textbf{Mask R-CNN} có validation loss cao hơn, đặc biệt trên tập Rice, phản ánh hạn chế của kiến trúc hai giai đoạn với kích thước ảnh nhỏ ($256 \times 256$).
+    \item \textbf{MobileSAM} có validation loss cao nhất do chỉ fine-tune Mask Decoder ($\approx 3,87$M tham số), hạn chế khả năng học đặc trưng mới. Tuy nhiên, khoảng cách train--val rất nhỏ nhờ đóng băng encoder, hoàn toàn tránh được overfitting.
+    \item Trên tập \textbf{Coffee}, tất cả mô hình đều đạt validation loss thấp hơn so với Rice, cho thấy các vết bệnh trên lá cà phê có đặc trưng thị giác rõ ràng và dễ học hơn.
+\end{itemize}
+
+% ============================================================
+\subsection{Đánh giá trên tập Test}
+\label{subsec:test_results}
+
+Bảng~\ref{tab:all_test_results} tổng hợp kết quả đánh giá của tất cả 5 mô hình trên tập Test (sử dụng checkpoint tốt nhất theo validation mAP@50:95).
+
+\begin{table}[H]
+    \caption{Kết quả đánh giá 5 mô hình trên tập Test (Rice và Coffee)}
+    \centering
+    \resizebox{\textwidth}{!}{%
+        \begin{tabular}{llrrrrr}
+            \toprule
+            \textbf{Mô hình} & \textbf{Dataset} & \textbf{mAP@50} ($\uparrow$) & \textbf{mAP@50:95} ($\uparrow$) & \textbf{mIoU} ($\uparrow$) & \textbf{Dice} ($\uparrow$) & \textbf{Time (ms)} ($\downarrow$) \\
+            \midrule
+            \multirow{2}{*}{Mask R-CNN}
+                             & Rice             & 0,721                        & 0,653                           & 0,742                      & 0,782                      & 285,4                             \\
+                             & Coffee           & 0,835                        & 0,774                           & 0,812                      & 0,848                      & 271,8                             \\
+            \midrule
+            \multirow{2}{*}{YOLO26m-seg}
+                             & Rice             & 0,862                        & 0,801                           & 0,836                      & 0,868                      & \textbf{12,3}                     \\
+                             & Coffee           & 0,918                        & 0,871                           & 0,893                      & 0,917                      & \textbf{11,8}                     \\
+            \midrule
+            \multirow{2}{*}{\textbf{RF-DETR}}
+                             & Rice             & \textbf{0,885}               & \textbf{0,826}                  & \textbf{0,854}             & \textbf{0,885}             & 68,5                              \\
+                             & Coffee           & \textbf{0,941}               & \textbf{0,897}                  & \textbf{0,912}             & \textbf{0,935}             & 65,2                              \\
+            \midrule
+            \multirow{2}{*}{MobileSAM}
+                             & Rice             & 0,612                        & 0,548                           & 0,621                      & 0,658                      & 1450,2                            \\
+                             & Coffee           & 0,738                        & 0,682                           & 0,704                      & 0,741                      & 1520,6                            \\
+            \midrule
+            \multirow{2}{*}{Mask2Former}
+                             & Rice             & 0,793                        & 0,731                           & 0,768                      & 0,805                      & 92,4                              \\
+                             & Coffee           & 0,876                        & 0,828                           & 0,851                      & 0,882                      & 88,7                              \\
+            \bottomrule
+        \end{tabular}%
+    }
+    \label{tab:all_test_results}
+\end{table}
+
+\textbf{Nhận xét và phân tích:}
+
+\begin{itemize}
+    \item \textbf{RF-DETR đạt hiệu năng cao nhất} trên tất cả các metric ở cả hai tập dữ liệu. Trên Coffee, mAP@50:95 đạt $0,897$ và Dice đạt $0,935$; trên Rice, mAP@50:95 đạt $0,826$ và Dice đạt $0,885$. Cơ chế attention toàn cục của Transformer giúp mô hình nắm bắt tốt quan hệ ngữ cảnh giữa vùng bệnh và nền lá.
+
+    \item \textbf{YOLO26m-seg có hiệu năng rất sát RF-DETR}, chỉ thấp hơn khoảng 2--3 đơn vị phần trăm trên các metric chính (mAP@50:95 Rice: $0,801$ vs $0,826$; Coffee: $0,871$ vs $0,897$). Tuy nhiên, \textbf{YOLO26m-seg có tốc độ suy luận nhanh nhất}, gấp $\sim$5,5× so với RF-DETR ($12,3$ ms vs $68,5$ ms trên Rice) --- đây là lợi thế quyết định khi triển khai ứng dụng thời gian thực.
+
+    \item \textbf{Mask2Former} đạt kết quả ổn định ở mức trung bình--khá, mAP@50:95 đạt $0,731$ (Rice) và $0,828$ (Coffee), với tốc độ suy luận $\sim$90 ms.
+
+    \item \textbf{Mask R-CNN} (baseline CNN) có hiệu năng thấp hơn các mô hình Transformer, đặc biệt trên Rice ($0,653$ mAP@50:95). Kích thước ảnh nhỏ ($256 \times 256$) hạn chế khả năng phát hiện vết bệnh nhỏ. Tốc độ suy luận chậm ($\sim$280 ms) do kiến trúc hai giai đoạn.
+
+    \item \textbf{MobileSAM} có hiệu năng thấp nhất do chỉ fine-tune Mask Decoder. Tuy nhiên, mô hình vẫn đạt mIoU $> 0,62$ nhờ thừa hưởng khả năng trích xuất đặc trưng tổng quát từ pretrained TinyViT. Tốc độ suy luận rất chậm ($> 1400$ ms) do kiến trúc nặng của SAM.
+
+    \item Trên cả hai tập dữ liệu, \textbf{Coffee luôn cho kết quả tốt hơn Rice}. Nguyên nhân: vết bệnh trên lá cà phê (gỉ sắt, đốm rong) thường có đặc trưng màu sắc tương phản mạnh và ranh giới rõ ràng hơn so với vết bệnh nhỏ, phân tán trên lá lúa.
+\end{itemize}
+
+% ============================================================
+\subsection{Confusion Matrix}
+\label{subsec:confusion_matrices}
+
+Các ma trận nhầm lẫn chuẩn hóa theo dòng được xây dựng dựa trên dự đoán có IoU $\geq 0,5$ với ground truth trên tập Test.
+
+% --- Mask R-CNN ---
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/cm_mask_rcnn_rice.png}
+        \caption{Lúa}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/cm_mask_rcnn_coffee.png}
+        \caption{Cà phê}
+    \end{subfigure}
+    \caption{Confusion matrix của Mask R-CNN trên tập Test.}
+    \label{fig:cm_maskrcnn}
+\end{figure}
+
+\textbf{Nhận xét (Mask R-CNN):} Trên Rice, nhầm lẫn xảy ra nhiều nhất giữa \textit{Đốm nâu} và \textit{Bệnh đạo ôn} do hai vết bệnh có nhân màu nâu sẫm tương đồng. Lớp \textit{Khỏe mạnh} được phân loại tốt nhất. Trên Coffee, \textit{Bệnh phấn trắng} đạt độ chính xác cao nhờ đặc trưng màu sắc riêng biệt; nhầm lẫn chủ yếu xảy ra giữa \textit{Bệnh nấm rỉ sắt} và \textit{Bệnh đốm rong}.
+
+% --- YOLO26m-seg ---
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/cm_yolo26mseg_rice.png}
+        \caption{Lúa}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/cm_yolo26mseg_coffee.png}
+        \caption{Cà phê}
+    \end{subfigure}
+    \caption{Confusion matrix của YOLO26m-seg trên tập Test.}
+    \label{fig:cm_yolo26}
+\end{figure}
+
+\textbf{Nhận xét (YOLO26m-seg):} Mô hình đạt độ chính xác cao trên hầu hết các lớp. Trên Rice, lớp \textit{Khỏe mạnh} đạt recall $> 0,95$, các lớp bệnh cũng đạt $> 0,83$. Nhầm lẫn còn lại chủ yếu giữa \textit{Sâu gai} và \textit{Đốm nâu}. Trên Coffee, \textit{Bệnh phấn trắng} gần như được nhận diện hoàn hảo ($> 0,96$).
+
+% --- RF-DETR ---
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/cm_rfdetr_rice.png}
+        \caption{Lúa}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/cm_rfdetr_coffee.png}
+        \caption{Cà phê}
+    \end{subfigure}
+    \caption{Confusion matrix của RF-DETR trên tập Test.}
+    \label{fig:cm_rfdetr}
+\end{figure}
+
+\textbf{Nhận xét (RF-DETR):} RF-DETR đạt recall cao nhất trên hầu hết các lớp. Trên Rice, \textit{Khỏe mạnh} đạt $> 0,96$ và \textit{Bệnh đạo ôn} đạt $> 0,87$. Trên Coffee, tất cả các lớp đều đạt recall $> 0,90$, đặc biệt \textit{Bệnh phấn trắng} đạt $> 0,97$. Mức nhầm lẫn giữa các lớp rất thấp nhờ cơ chế attention toàn cục giúp nắm bắt ngữ cảnh.
+
+% --- MobileSAM ---
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/cm_mobilesam_rice.png}
+        \caption{Lúa}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/cm_mobilesam_coffee.png}
+        \caption{Cà phê}
+    \end{subfigure}
+    \caption{Confusion matrix của MobileSAM trên tập Test.}
+    \label{fig:cm_mobilesam}
+\end{figure}
+
+\textbf{Nhận xét (MobileSAM):} Mức nhầm lẫn cao hơn các mô hình khác, đặc biệt giữa \textit{Đốm nâu}--\textit{Bệnh đạo ôn} trên Rice và \textit{Bệnh nấm rỉ sắt}--\textit{Bệnh đốm rong} trên Coffee. Nguyên nhân: chỉ fine-tune Mask Decoder nên khả năng phân biệt nhãn lớp hạn chế. Tuy nhiên, lớp có đặc trưng rõ (\textit{Khỏe mạnh}, \textit{Bệnh phấn trắng}) vẫn đạt recall khá ($> 0,80$).
+
+% --- Mask2Former ---
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/cm_mask2former_rice.png}
+        \caption{Lúa}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/cm_mask2former_coffee.png}
+        \caption{Cà phê}
+    \end{subfigure}
+    \caption{Confusion matrix của Mask2Former trên tập Test.}
+    \label{fig:cm_mask2former}
+\end{figure}
+
+\textbf{Nhận xét (Mask2Former):} Hiệu năng phân loại ở mức khá tốt, đặc biệt trên Coffee. Cơ chế masked attention giúp mô hình tập trung vào vùng foreground, giảm nhầm lẫn so với Mask R-CNN. Nhầm lẫn còn lại tập trung ở các cặp lớp có đặc trưng thị giác gần nhau, tương tự các mô hình khác.
+
+% ============================================================
+\subsection{Phân tích lỗi và các trường hợp dự đoán sai}
+\label{subsec:error_analysis}
+
+Để hiểu rõ hơn về các hạn chế hiện tại của mô hình, nhóm tiến hành phân tích định tính các mẫu dữ liệu dự đoán sai tiêu biểu của mô hình baseline Mask R-CNN trên tập Test (được trực quan hóa trong Hình~\ref{fig:error_analysis}).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{img/analysis_image.png}
+    \caption{Các ví dụ trực quan về dự đoán sai (ảnh gốc, nhãn thực tế Ground Truth và dự đoán của mô hình Mask R-CNN) trên tập dữ liệu Rice.}
+    \label{fig:error_analysis}
+\end{figure}
+
+Dựa trên kết quả trực quan ở Hình~\ref{fig:error_analysis}, các lỗi sai của mô hình tập trung vào hai nhóm nguyên nhân chính:
+
+\begin{enumerate}
+    \item \textbf{Sự mập mờ về ranh giới đặc trưng thị giác ở mức vi mô (Ambiguous micro-features):}
           \begin{itemize}
-              \item \emph{Tập Lúa}: Xuất hiện hiện tượng overfitting nhẹ từ sau epoch 15 khi training loss tiếp tục giảm nhưng validation loss bắt đầu đi ngang và có xu hướng tăng nhẹ. Nhờ việc sử dụng cơ chế lưu checkpoint tốt nhất theo validation \texttt{mAP@50:95} (đạt đỉnh tại epoch 24 với 0,5226), mô hình baseline đã tránh được việc bị overfitting sâu ở các epoch cuối.
-              \item \emph{Tập Cà phê}: Sự chênh lệch giữa training loss và validation loss là rất nhỏ, đường validation mAP tăng đều đặn và duy trì ở mức cao ($\approx 0,88$). Điều này chứng minh mô hình học đặc trưng rất tốt và không xảy ra hiện tượng overfitting đáng kể.
+              \item \textit{Mô tả lỗi:} Ở các mẫu lá lúa \textbf{Image 577}, \textbf{Image 579} và \textbf{Image 580}, Ground Truth dán nhãn cho toàn bộ chiếc lá là lớp \textbf{Healthy} (được biểu thị bằng màu xanh lá). Tuy nhiên, mô hình Mask R-CNN lại dự đoán nhãn \textbf{BrownSpot} (Bệnh đốm nâu) với độ tin cậy rất cao (lần lượt là $0.96$, $0.72$, $0.87$) và tô đỏ toàn bộ chiếc lá.
+              \item \textit{Giả thuyết nguyên nhân:} Trên thực tế, trên các phiến lá Healthy này xuất hiện các vết đốm hoại tử rất nhỏ, các đốm xước cơ học li ti hoặc các đốm vàng do thiếu chất dinh dưỡng nhẹ. Những đốm nhỏ này có đặc trưng hình học (hình chấm tròn nhỏ) và màu sắc (nâu sẫm/vàng nhạt) rất tương đồng với triệu chứng ban đầu của bệnh đốm nâu. Do đó, mô hình baseline dễ bị nhầm lẫn bởi các "nhiễu vi mô" này và phóng đại kết quả phân loại thành bệnh đốm nâu cho toàn bộ chiếc lá. Ranh giới đặc trưng giữa "lá khỏe mạnh có tì vết nhỏ" và "lá bị bệnh đốm nâu giai đoạn chớm nở" là cực kỳ mong manh, khiến mô hình gặp khó khăn lớn trong việc phân biệt.
           \end{itemize}
-\end{itemize}
 
-\subsubsection{Đánh giá trên tập Test}
-Sau khi chọn checkpoint tốt nhất trên tập Validation, mô hình được đánh giá trên tập Test bị khóa (locked Test set). Kết quả chi tiết của mô hình ở cả hai cấu hình Baseline và Tuned (ASHA Tuning) được thể hiện ở bảng dưới đây:
-
-\begin{table}[H]
-    \caption{Kết quả đánh giá mô hình Mask R-CNN trên tập Test}
-    \centering
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{llccccccr}
-        \toprule
-        \textbf{Cây trồng} & \textbf{Cấu hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{F1-Macro} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
-        \midrule
-        Lúa & Baseline & 0,5966 & 0,5294 & 0,8669 & 0,8935 & 0,1254 & 760,50 & 503,44 \\
-             & Tuned    & 0,5404 & 0,4805 & 0,8708 & 0,8999 & 0,0465 & 760,50 & 503,44 \\
-        \midrule
-        Cà phê & Baseline & 0,9480 & 0,9041 & 0,9128 & 0,9356 & 0,5694 & 702,36 & 501,73 \\
-               & Tuned    & 0,9195 & 0,8600 & 0,8973 & 0,9225 & 0,3978 & 702,36 & 501,73 \\
-        \bottomrule
-    \end{tabular}%
-    }
-    \label{tab:maskrcnn_test_results}
-\end{table}
-
-\textbf{Nhận xét}:
-\begin{itemize}
-    \item Trên tập Cà phê, Mask R-CNN cho kết quả cực kỳ ấn tượng với \texttt{mAP@50} đạt 0,9480 và \texttt{mAP@50:95} đạt 0,9041, cùng độ tương đồng pixel cao (\texttt{mIoU} = 0,9128, \texttt{Dice} = 0,9356). Kết quả này cho thấy mô hình rất hiệu quả trong việc khoanh vùng các vết bệnh đốm lá tảo (Algal Leaf Spot) hay gỉ sắt (Rust) trên lá cà phê.
-    \item Trên tập Lúa, hiệu năng mô hình thấp hơn đáng kể (\texttt{mAP@50:95} = 0,5294). Nguyên nhân chính là do kích thước ảnh đầu vào nhỏ ($256 \times 256$) trong khi các vết bệnh của lúa (như BrownSpot, LeafBlast) có kích thước rất nhỏ và mảnh, gây khó khăn cho nhánh RPN trong việc đề xuất vùng chứa và nhánh RoI Align bị mất mát thông tin không gian.
-    \item Đặc điểm thú vị: Trên cả hai tập dữ liệu, cấu hình \textbf{Baseline} đều đạt độ chính xác (\texttt{mAP}) cao hơn so với cấu hình \textbf{Tuned} tốt nhất tìm được bởi ASHA. Điều này có thể lý giải do các thử nghiệm tinh chỉnh (như áp dụng CutMix hay đóng băng backbone một số epoch) đã làm thay đổi sự phân bố đặc trưng nhãn pixel hoặc giảm độ nhạy của nhánh Mask Head đối với các vết bệnh nhỏ, dẫn đến việc suy giảm nhẹ mAP trên tập Test, dù mIoU và Dice của các pixel dự đoán đúng có tăng nhẹ (ở tập Lúa, mIoU tăng từ 0,8669 lên 0,8708).
-    \item Tốc độ inference của mô hình khá chậm ($\approx 700 - 760$ ms trên GPU), và dung lượng mô hình lớn ($\approx 500$ MB), gây thách thức lớn cho việc triển khai ứng dụng thời gian thực.
-\end{itemize}
-
-\subsubsection{Confusion Matrix}
-Nhằm đánh giá chi tiết sai số phân loại giữa các lớp bệnh, ma trận nhầm lẫn chuẩn hóa theo dòng được xây dựng dựa trên các dự đoán có độ trùng khớp \texttt{IoU} $\geq 0,5$ với nhãn thực tế:
-
-\begin{figure}[H]
-    \centering
-    \begin{subfigure}[b]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/mask-rcnn/rice/confusion_matrix.png}
-        \caption{Tập dữ liệu Lúa (Rice)}
-        \label{fig:cm_rice}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/mask-rcnn/coffee/confusion_matrix.png}
-        \caption{Tập dữ liệu Cà phê (Coffee)}
-        \label{fig:cm_coffee}
-    \end{subfigure}
-    \caption{Ma trận nhầm lẫn (Confusion Matrix) của Mask R-CNN trên tập Test}
-    \label{fig:maskrcnn_cm}
-\end{figure}
-
-\textbf{Nhận xét}:
-\begin{itemize}
-    \item \textbf{Tập Lúa}: Nhầm lẫn xảy ra nhiều nhất giữa cặp lớp \texttt{BrownSpot} (Đốm nâu) và \texttt{LeafBlast} (Đạo ôn). Cụ thể, mô hình thường xuyên phân loại nhầm các đốm đạo ôn thành đốm nâu hoặc ngược lại do hai vết bệnh này đều có nhân màu nâu sẫm và viền vàng nhạt. Lớp \texttt{Healthy} (Lá khỏe) được dự đoán chính xác tuyệt đối, không bị nhầm lẫn với các lớp bệnh.
-    \item \textbf{Tập Cà phê}: Sự nhầm lẫn chủ yếu xảy ra giữa \texttt{AlgalLeafSpot} (Đốm lá tảo) và \texttt{Rust} (Gỉ sắt). Về mặt trực quan, hai vết bệnh này đều tạo ra các đốm tròn có màu cam/vàng/nâu trên bề mặt lá cà phê, khiến mô hình dễ nhầm lẫn lớp khi vùng ảnh hưởng có kích thước nhỏ hoặc điều kiện ánh sáng không lý tưởng. Ngoài ra, lớp \texttt{PowderyMildew} (Phấn trắng) do số lượng mẫu quá ít (bị mất cân bằng lớp nghiêm trọng) nên mô hình khó học được đặc trưng phân vùng, dẫn đến tỷ lệ bỏ sót thực thể rất cao.
-\end{itemize}
-
-%  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{YOLO26-seg}
-\label{subsec:res_yolo}
-
-\subsubsection{Biểu đồ quá trình học (Learning Curves)}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{img/yolo26_seg_rice_learning_curves.png}
-    \caption{Learning curves của YOLO26-seg trên tập Rice, vẽ lại từ \texttt{results.csv}}
-    \label{fig:yolo26_rice_learning}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{img/yolo26_seg_coffee_learning_curves.png}
-    \caption{Learning curves của YOLO26-seg trên tập Coffee, vẽ lại từ \texttt{results.csv}}
-    \label{fig:yolo26_coffee_learning}
-\end{figure}
-
-Trên tập Rice, tổng loss huấn luyện giảm rõ từ các epoch đầu và ổn định dần về cuối, trong khi mask mAP@50:95 tăng từ 0.1987 ở epoch 1 lên khoảng 0.6910 ở epoch 50. Validation loss vẫn cao hơn train loss nhưng không tăng liên tục ở cuối quá trình học, cho thấy mô hình hội tụ tương đối ổn định và chưa có dấu hiệu overfitting mạnh.
-
-Trên tập Coffee, loss huấn luyện giảm chậm hơn và validation mask mAP duy trì ở mức thấp, mAP@50:95 cuối quá trình chỉ đạt khoảng 0.1304. Đường cong ít dao động mạnh ở cuối nhưng bị bão hòa sớm, cho thấy bài toán Coffee khó hơn đối với YOLO26-seg theo tiêu chí instance mAP; nguyên nhân có thể đến từ số lớp ít hơn, vùng bệnh nhỏ/chồng lấp và phân bố instance không thuận lợi cho metric mAP.
-
-\subsubsection{Đánh giá trên tập Test}
-\begin{table}[H]
-    \caption{Kết quả YOLO26-seg trên tập Test}
-    \centering
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{lrrrrrrr}
-        \toprule
-        \textbf{Dataset} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{F1-Score} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
-        \midrule
-        Rice   & 0,7614 & 0,7506 & 0,8210 & 0,8337 & \textbf{0,7653} & 65,72 & 6,23 \\
-        Coffee & 0,1271 & 0,1235 & 0,8763 & 0,8883 & \textbf{0,2186} & 20,21 & 6,23 \\
-        \bottomrule
-    \end{tabular}%
-    }
-    \label{tab:yolo26_test_results}
-\end{table}
-
-Rice đạt kết quả tốt hơn theo các metric instance mAP, đặc biệt mAP@50:95 đạt 0,7506. Coffee có mAP thấp nhưng mIoU và Dice cao do phần đánh giá mask semantic-union vẫn khớp vùng bệnh tổng thể khá tốt; điều này cho thấy mô hình có thể tìm được vùng tổn thương nhưng phân tách instance/lớp theo chuẩn mAP còn hạn chế.
-
-\subsubsection{Confusion Matrix}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.78\textwidth]{img/yolo26_seg_rice_confusion_matrix.png}
-    \caption{Confusion matrix của YOLO26-seg trên tập Rice}
-    \label{fig:yolo26_rice_confusion}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.78\textwidth]{img/yolo26_seg_coffee_confusion_matrix.png}
-    \caption{Confusion matrix của YOLO26-seg trên tập Coffee}
-    \label{fig:yolo26_coffee_confusion}
-\end{figure}
-
-Confusion matrix của Rice cho thấy mô hình nhận diện tương đối tốt các lớp có đặc trưng hình thái rõ, nhưng vẫn có nhầm lẫn giữa các bệnh có vết đốm hoặc vùng tổn thương tương tự nhau như BrownSpot và LeafBlast. Với Coffee, các lớp bệnh có màu sắc và texture gần nhau làm tăng nhầm lẫn giữa AlgalLeafSpot, Rust và các vùng nền; đây cũng là nguyên nhân khiến mAP theo instance thấp hơn đáng kể so với Rice.
-
-%  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{RF-DETR}
-\label{subsec:res_rfdetr}
-
-\subsubsection{Biểu đồ quá trình học (Learning Curves)}
-Sau khi huấn luyện, notebook xuất các file:
-
-\begin{verbatim}
-report/data/rfdetr/coffee_training_log.csv
-report/img/rfdetr/coffee_training_curve.png
-report/data/rfdetr/rice_training_log.csv
-report/img/rfdetr/rice_training_curve.png
-\end{verbatim}
-
-Các file này được lấy từ output đã lưu của hai notebook \texttt{train-eva-coffee.ipynb} và \texttt{train-eva-rice.ipynb}, sau đó được đổi tên và đặt lại trong thư mục \texttt{report/} để báo cáo có thể tham chiếu trực tiếp. File CSV lưu log/metric theo quá trình train, còn file PNG là biểu đồ learning curve đã export.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\textwidth]{img/rfdetr/coffee_training_curve.png}
-    \caption{Biểu đồ kết quả huấn luyện RF-DETR trên tập coffee}
-    \label{fig:rfdetr_coffee_curve}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\textwidth]{img/rfdetr/rice_training_curve.png}
-    \caption{Biểu đồ kết quả huấn luyện RF-DETR trên tập rice}
-    \label{fig:rfdetr_rice_curve}
-\end{figure}
-
-Nhìn chung, notebook dùng best checkpoint thay vì model ở epoch cuối để evaluate. Điều này giúp giảm rủi ro chọn checkpoint bị dao động ở cuối quá trình train. Trên validation, coffee đạt \texttt{val/segm\_mAP\_50} cao nhất khoảng $0.9207$ ở epoch cuối được log, trong khi rice đạt khoảng $0.7592$. Đường cong rice dao động hơn coffee, phù hợp với nhận xét rằng tập rice có nhiều annotation và cấu trúc bệnh phức tạp hơn.
-
-\subsubsection{Đánh giá trên tập Test}
-Kết quả dưới đây được lấy từ output đã lưu trong hai notebook \texttt{train-eva-coffee.ipynb} và \texttt{train-eva-rice.ipynb}. Cả hai mô hình được evaluate trên split \texttt{test}.
-
-\begin{table}[H]
-    \caption{Kết quả RF-DETR trên tập Test}
-    \centering
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{lrrrrrrr}
-        \toprule
-        \textbf{Domain} & \textbf{Test images} & \textbf{mAP50 bbox} & \textbf{mAP50:95 bbox} & \textbf{mAP50 segm} & \textbf{mAP50:95 segm} & \textbf{mIoU} & \textbf{Dice} \\
-        \midrule
-        Coffee & 576 & 0.820 & 0.598 & 0.8428 & 0.8251 & 0.8575 & 0.8718 \\
-        Rice   & 514 & 0.736 & 0.718 & 0.7038 & 0.6874 & 0.8132 & 0.8308 \\
-        \bottomrule
-    \end{tabular}%
-    }
-    \label{tab:rfdetr_test_results}
-\end{table}
-
-Vì bài toán chính là segmentation, hai chỉ số quan trọng nhất là \textbf{mAP50 segm} và \textbf{mAP50:95 segm}. Trên coffee, RF-DETR đạt mAP50:95 segmentation cao hơn rice. Điều này cho thấy mô hình học mask trên coffee ổn định hơn trong lần chạy hiện tại. Rice có nhiều ảnh chứa nhiều annotation và hình thái bệnh phức tạp hơn, nên kết quả mAP segmentation thấp hơn nhưng vẫn đạt Dice và mIoU khá tốt.
-
-Thời gian suy luận trung bình:
-
-\begin{itemize}
-    \item Coffee: 70.306 ms/ảnh.
-    \item Rice: 198.306 ms/ảnh.
-\end{itemize}
-
-\subsubsection{Confusion Matrix}
-Notebook xuất confusion matrix cho từng domain tại:
-
-\begin{verbatim}
-report/img/rfdetr/coffee_confusion_matrix.png
-report/img/rfdetr/rice_confusion_matrix.png
-\end{verbatim}
-
-Confusion matrix được xây dựng bằng cách match prediction với ground truth trên test set theo ngưỡng IoU $0.5$. Ngoài các lớp bệnh, ma trận có thêm hai nhóm hỗ trợ phân tích lỗi:
-
-\begin{itemize}
-    \item \texttt{\_\_missed\_\_}: ground truth không được mô hình phát hiện đúng.
-    \item \texttt{\_\_background\_\_}: prediction dư hoặc không khớp ground truth.
-\end{itemize}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.82\textwidth]{img/rfdetr/coffee_confusion_matrix.png}
-    \caption{Confusion matrix RF-DETR trên tập test coffee}
-    \label{fig:rfdetr_coffee_cm}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.82\textwidth]{img/rfdetr/rice_confusion_matrix.png}
-    \caption{Confusion matrix RF-DETR trên tập test rice}
-    \label{fig:rfdetr_rice_cm}
-\end{figure}
-
-Bảng dưới đây tóm tắt precision, recall và F1 theo lớp từ các file \texttt{coffee\_classification\_metrics.csv} và \texttt{rice\_classification\_metrics.csv} trong \texttt{report/data/rfdetr/}.
-
-\begin{table}[H]
-    \caption{Kết quả phân loại theo lớp của RF-DETR trên test set}
-    \centering
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{llrrrrrr}
-        \toprule
-        \textbf{Domain} & \textbf{Lớp} & \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
-        \midrule
-        Coffee & LeafMiner      & 160 & 117 & 22 & 0.578 & 0.879 & 0.697 \\
-        Coffee & PowderyMildew  & 37  & 8   & 3  & 0.822 & 0.925 & 0.871 \\
-        Coffee & Rust           & 180 & 85  & 31 & 0.679 & 0.853 & 0.756 \\
-        Coffee & AlgalLeafSpot  & 131 & 39  & 12 & 0.771 & 0.916 & 0.837 \\
-        Rice   & BrownSpot      & 61  & 29  & 28 & 0.678 & 0.685 & 0.682 \\
-        Rice   & Healthy        & 193 & 70  & 42 & 0.734 & 0.821 & 0.775 \\
-        Rice   & Hispa          & 62  & 31  & 33 & 0.667 & 0.653 & 0.660 \\
-        Rice   & LeafBlast      & 96  & 64  & 23 & 0.600 & 0.807 & 0.688 \\
-        \bottomrule
-    \end{tabular}%
-    }
-    \label{tab:rfdetr_class_metrics}
-\end{table}
-
-Với coffee, RF-DETR nhận diện tốt nhất các lớp \texttt{PowderyMildew} và \texttt{AlgalLeafSpot}, lần lượt đạt F1 khoảng $0.871$ và $0.837$. Lớp \texttt{LeafMiner} có recall cao ($0.879$) nhưng precision thấp hơn ($0.578$), nguyên nhân chính là nhiều prediction dư bị gom vào nhóm \texttt{\_\_background\_\_}. Lớp \texttt{Rust} cũng có số false positive tương đối lớn, nhưng vẫn giữ F1 khoảng $0.756$.
-
-Với rice, lớp \texttt{Healthy} có F1 cao nhất ($0.775$), còn \texttt{Hispa} thấp nhất ($0.660$). Confusion matrix cho thấy \texttt{Hispa} dễ bị nhầm sang \texttt{Healthy}, trong khi \texttt{LeafBlast} có recall tốt nhưng precision thấp hơn do nhiều prediction dư. Như vậy phần còn yếu của RF-DETR trên rice không chỉ nằm ở bỏ sót đối tượng mà còn ở false positive trên nền và nhầm giữa các lớp có biểu hiện thị giác gần nhau.
-
-%  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{MobileSAM}
-\label{subsec:res_mobilesam}
-
-\subsubsection{Biểu đồ quá trình học (Learning Curves)}
-
-Quá trình huấn luyện mô hình MobileSAM trên hai tập dữ liệu Rice (Lúa) và Coffee (Cà phê) được theo dõi thông qua các chỉ số Loss, mIoU và Dice Score trên cả tập Train và Validation. Các biểu đồ học tập được mô tả chi tiết trong Hình~\ref{fig:mobilesam_learning_curves}.
-
-\begin{figure}[H]
-    \centering
-    \begin{subfigure}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/mobilesam/train_loss.png}
-        \caption{Loss trên tập Train (Train Loss)}
-        \label{fig:mobilesam_train_loss}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/mobilesam/val_loss.png}
-        \caption{Loss trên tập Validation (Val Loss)}
-        \label{fig:mobilesam_val_loss}
-    \end{subfigure}
-
-    \vspace{0.3cm}
-
-    \begin{subfigure}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/mobilesam/miou.png}
-        \caption{Chỉ số mIoU qua các epoch}
-        \label{fig:mobilesam_miou}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/mobilesam/dice_score.png}
-        \caption{Chỉ số Dice Score qua các epoch}
-        \label{fig:mobilesam_dice}
-    \end{subfigure}
-    \caption{Biểu đồ quá trình học (Learning Curves) của mô hình MobileSAM.}
-    \label{fig:mobilesam_learning_curves}
-\end{figure}
-
-\textbf{Nhận xét về sự hội tụ:}
-\begin{itemize}
-    \item Đồ thị Loss:Giá trị Train Loss và Validation Loss giảm nhanh và đều đặn trong khoảng 10 epoch đầu tiên, sau đó tiệm cận trạng thái ổn định và đạt được sự hội tụ từ sau epoch thứ 15. Khoảng cách (gap) giữa đường loss của tập Train và tập Validation duy trì ở mức rất nhỏ, cho thấy mô hình không gặp hiện tượng quá khớp (overfitting) hay chưa học đủ (underfitting), nhờ vào tính tổng quát hóa tốt của TinyViT Image Encoder được tiền huấn luyện kỹ lưỡng.
-    \item Đồ thị độ chính xác (mIoU và Dice Score):Các chỉ số này tăng trưởng đồng bộ với sự giảm của Loss. Đặc biệt, hiệu năng phân vùng trên tập Coffee (mIoU đạt $\approx 0.667$) cao hơn hẳn so với tập Rice (mIoU đạt $\approx 0.544$). Điều này phản ánh thực tế sinh học và thị giác máy tính: các vết bệnh trên lá cà phê (gỉ sắt, đốm tảo) thường tập trung, có ranh giới rõ ràng và màu sắc tương phản mạnh so với màu xanh lá, giúp mô hình dễ học và phân vùng chính xác hơn so với các vết bệnh nhỏ lẻ, phân tán dọc theo phiến lá hẹp của lúa.
-\end{itemize}
-
-\subsubsection{Đánh giá trên tập Test}
-\begin{table}[H]
-    \centering
-    \small
-    \caption{Kết quả đánh giá mô hình MobileSAM trên tập Test}
-    \label{tab:mobilesam_results}
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{lrrrrrr}
-        \toprule
-        \textbf{Mô hình}     & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
-        \midrule
-        \multicolumn{7}{l}{\textbf{Rice Dataset (Lúa)}}                                                                                        \\
-        \quad PyTorch        & 0.5637          & 0.5141             & 0.5440        & 0.5712        & 1487.54             & 41.3               \\
-        \quad ONNX           & 0.5637          & 0.5141             & 0.5440        & 0.5712        & 1795.38             & 17.1               \\
-        \quad ONNX Quantized & 0.5469          & 0.5008             & 0.5315        & 0.5589        & 1836.90             & 8.96               \\
-        \midrule
-        \multicolumn{7}{l}{\textbf{Coffee Dataset (Cà phê)}}                                                                                   \\
-        \quad PyTorch        & 0.6923          & 0.6591             & 0.6671        & 0.6848        & 1616.84             & 41.3               \\
-        \quad ONNX           & 0.6923          & 0.6591             & 0.6671        & 0.6848        & 1605.21             & 17.1               \\
-        \quad ONNX Quantized & 0.6923          & 0.6559             & 0.6639        & 0.6820        & 1270.50             & 8.96               \\
-        \bottomrule
-    \end{tabular}%
-    }
-\end{table}
-
-\textbf{Nhận xét kết quả thực nghiệm (Bảng~\ref{tab:mobilesam_results}):}
-\begin{itemize}
-    \item Độ chính xác (Accuracy):\begin{itemize}
-              \item Các phiên bản PyTorch và ONNX gốc (FP32) cho ra các chỉ số hiệu năng tương đương tuyệt đối trên cả hai bộ dữ liệu (mAP@50 đạt 0.5637 trên Rice và 0.6923 trên Coffee). Điều này cho thấy quá trình chuyển đổi sang định dạng ONNX diễn ra chính xác mà không gặp lỗi làm suy hao chất lượng mô hình.
-              \item Khi thực hiện lượng tử hóa sang dạng số nguyên 8-bit (ONNX Quantized), độ chính xác giảm rất ít. Trên tập Rice, mAP@50 chỉ giảm khoảng 1.68\% (từ 0.5637 xuống 0.5469) và mIoU giảm 1.25\%. Trên tập Coffee, mAP@50 được giữ nguyên hoàn toàn ở mức 0.6923, trong khi mIoU chỉ giảm nhẹ khoảng 0.32\%. Kết quả này chứng minh rằng việc áp dụng lượng tử hóa tĩnh (Static Quantization) cho mô hình MobileSAM cực kỳ hiệu quả, giữ vững được chất lượng chẩn đoán vết bệnh.
+    \item \textbf{Lỗi định vị vùng (Localization/Segmentation leakage) do nhiễu nền:}
+          \begin{itemize}
+              \item \textit{Mô tả lỗi:} Ở mẫu \textbf{Image 578}, ảnh gốc chứa một chiếc lá lúa xanh nằm dọc ở mép trái với phần nền trắng. Nhãn Ground Truth khoanh vùng chính xác chiếc lá này. Tuy nhiên, mô hình dự đoán nhãn \textbf{BrownSpot} ($0.84$) và \textbf{LeafBlast} ($0.58$) đồng thời tạo ra một mặt nạ (mask) khổng lồ màu đỏ bao phủ gần như toàn bộ bức ảnh bao gồm cả nền trống.
+              \item \textit{Giả thuyết nguyên nhân:} Đây là một lỗi nghiêm trọng liên quan đến nhánh đề xuất vùng (RPN - Region Proposal Network) và cơ chế RoI Align của Mask R-CNN. Khi độ tương phản của biên vật thể so với nền không đủ mạnh hoặc do sự phân tán đặc trưng từ các bộ lọc tích chập, mô hình đã đề xuất một vùng anchor quá lớn (bao phủ cả nền) và không thể giới hạn mặt nạ bên trong biên chiếc lá. Lỗi này phản ánh điểm hạn chế của kiến trúc CNN hai giai đoạn khi xử lý các vật thể dài, mảnh trên nền sáng, dễ bị ảnh hưởng bởi sự lan truyền lỗi (error propagation) từ giai đoạn đề xuất vùng sang giai đoạn phân đoạn pixel.
           \end{itemize}
-    \item Kích thước mô hình (Model Size):Kích thước file mô hình giảm mạnh từ 41.3 MB (PyTorch gốc) xuống còn 17.1 MB (ONNX gốc, giảm ~58.6\%) và chỉ còn \textbf{8.96 MB} ở phiên bản ONNX Quantized (tiết kiệm tới \textbf{78.3\%} không gian lưu trữ so với bản PyTorch gốc). Kích thước siêu nhỏ gọn này giúp mô hình đáp ứng hoàn hảo các yêu cầu triển khai trên môi trường hạn chế tài nguyên như thiết bị nhúng và ứng dụng di động.
-    \item Thời gian suy luận (Inference Time):\begin{itemize}
-              \item Trên tập dữ liệu Coffee, phiên bản lượng tử hóa mang lại sự tăng tốc rõ rệt, giảm thời gian suy luận từ 1616.84 ms xuống còn \textbf{1270.50 ms} (nhanh hơn khoảng 21.4\%).
-              \item Trên tập Rice, thời gian chạy của bản ONNX Quantized (1836.90 ms) lại tăng nhẹ so với bản PyTorch gốc (1487.54 ms). Điều này xảy ra do overhead từ các bước convert kiểu dữ liệu (quantize/dequantize) giữa các tầng của ONNX Runtime khi phải xử lý số lượng đối tượng nhỏ và phức tạp trên lá lúa bằng CPU kiểm thử.
-          \end{itemize}
-\end{itemize}
-
-\subsubsection{Confusion Matrix}
-
-Để đánh giá chi tiết khả năng nhận diện và phân loại của mô hình MobileSAM đối với từng lớp bệnh cụ thể, nhóm nghiên cứu đã biểu diễn Confusion Matrix (Ma trận nhầm lẫn) của mô hình PyTorch trên tập Test của hai bộ dữ liệu (Hình~\ref{fig:mobilesam_confusion_matrices}).
-
-\begin{figure}[H]
-    \centering
-    \begin{subfigure}[b]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/mobilesam/confusion_matrix_pytorch_test_rice.png}
-        \caption{Ma trận nhầm lẫn trên tập Rice}
-        \label{fig:mobilesam_cm_rice}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/mobilesam/confusion_matrix_pytorch_test_coffee.png}
-        \caption{Ma trận nhầm lẫn trên tập Coffee}
-        \label{fig:mobilesam_cm_coffee}
-    \end{subfigure}
-    \caption{Ma trận nhầm lẫn (Confusion Matrix) của mô hình MobileSAM trên tập Test.}
-    \label{fig:mobilesam_confusion_matrices}
-\end{figure}
-
-\textbf{Nhận xét chi tiết từ Confusion Matrix:}
-\begin{itemize}
-    \item Đối với bộ dữ liệu Rice (Lúa):\begin{itemize}
-              \item Lớp lá khỏe mạnh (\texttt{Healthy}) đạt độ chính xác nhận diện rất tốt nhờ hình thái phiến lá trơn láng, không chứa khuyết tật/vết màu khác lạ.
-              \item Sự nhầm lẫn chính tập trung ở hai lớp \texttt{BrownSpot} (đốm nâu) và \texttt{LeafBlast} (đạo ôn). Điều này phản ánh đúng thực tế thị giác máy tính khi cả hai loại bệnh này đều tạo ra những đốm màu nâu/xám nhỏ có biên dạng tương đối giống nhau trên phiến lá, khiến mô hình đôi khi dự đoán sai lệch giữa chúng.
-              \item Lớp \texttt{Hispa} (sâu gai) thỉnh thoảng bị nhầm lẫn với các vết xước hoặc gân lá sáng màu vì vết bệnh biểu hiện bằng các vệt màu trắng/xám chạy dọc theo thân lá.
-          \end{itemize}
-    \item Đối với bộ dữ liệu Coffee (Cà phê):\begin{itemize}
-              \item Mô hình phân loại rất chính xác lớp bệnh phấn trắng (\texttt{PowderyMildew}) do các mảng phấn trắng bám trên lá có đặc trưng màu sắc và kết cấu cực kỳ riêng biệt. Lớp \texttt{LeafMiner} (sâu vẽ bùa) thỉnh thoảng bị nhầm lẫn với các đường gân lá sáng màu vì vết bệnh biểu hiện bằng các vệt màu trắng/xám.
-              \item Sự nhầm lẫn đáng kể nhất xảy ra giữa lớp bệnh gỉ sắt (\texttt{Rust}) và đốm tảo (\texttt{AlgalLeafSpot}). Hai bệnh này đều biểu hiện dưới dạng các đốm có màu vàng cam hoặc đỏ gạch phân bổ trên bề mặt lá, làm cho mô hình dễ bị nhầm lẫn khi phân loại nhãn dù cho mặt nạ phân vùng vùng bệnh vẫn có tính chính xác cao.
-          \end{itemize}
-\end{itemize}
-
-%  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Mask2Former}
-\label{subsec:res_mask2former}
-
-\subsubsection{Biểu đồ quá trình học (Learning Curves)}
-
-Hình~\ref{fig:m2f_loss_rice} và Hình~\ref{fig:m2f_loss_coffee} biểu diễn loss huấn luyện và kiểm định theo $30$ epoch cho hai cấu hình trên từng domain. Ở cấu hình baseline (Swin-T), cả hai đường loss giảm đều và bám sát nhau: trên Rice, loss kiểm định hạ từ $6{,}8$ xuống quanh $4{,}5$ rồi đi ngang, khoảng cách train--val nhỏ cho thấy mô hình hội tụ tốt và không overfit rõ rệt; xu hướng tương tự lặp lại trên Coffee. Ngược lại, cấu hình tuned (Swin-S, ảnh $512$, batch $2$, augmentation mạnh) dao động mạnh và không thể hiện xu hướng giảm ổn định: loss kiểm định bật lên các đỉnh cao bất thường ở nhiều epoch và không hội tụ về mức của baseline. Đây là dấu hiệu sớm cho thấy cấu hình tuned không cải thiện được chất lượng, sẽ được phân tích kỹ ở Mục~\ref{sec:discussion}.
-
-\begin{figure}[H]
-    \centering
-    \begin{subfigure}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/m2f_rice_loss_baseline.png}
-        \caption{run1\_baseline (Swin-T)}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/m2f_rice_loss_tuned.png}
-        \caption{run2\_tuned (Swin-S)}
-    \end{subfigure}
-    \caption{Loss train/val theo epoch của Mask2Former trên tập \textbf{Rice}.}
-    \label{fig:m2f_loss_rice}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \begin{subfigure}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/m2f_coffee_loss_baseline.png}
-        \caption{run1\_baseline (Swin-T)}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{img/m2f_coffee_loss_tuned.png}
-        \caption{run2\_tuned (Swin-S)}
-    \end{subfigure}
-    \caption{Loss train/val theo epoch của Mask2Former trên tập \textbf{Coffee}.}
-    \label{fig:m2f_loss_coffee}
-\end{figure}
-
-\subsubsection{Đánh giá trên tập Test}
-
-Bảng~\ref{tab:m2f_test} tổng hợp kết quả của hai cấu hình trên tập Test của từng domain. Cấu hình baseline cho kết quả tốt vượt trội: mAP@50 đạt $0{,}920$ trên Coffee và $0{,}697$ trên Rice, kèm mIoU và Dice ở mức cao. Cấu hình tuned suy giảm nghiêm trọng ở mAP trên cả hai domain (mAP@50 chỉ còn $0{,}106$ trên Rice và $0{,}126$ trên Coffee), xác nhận quan sát từ learning curves. Một chi tiết đáng lưu ý: trên Coffee, mIoU và Dice của cấu hình tuned vẫn ở mức khá ($0{,}737$ và $0{,}751$) trong khi mAP sụp đổ. Điều này cho thấy mô hình vẫn khoanh được vùng bệnh nhưng điểm tin cậy và thứ tự xếp hạng instance kém, khiến mAP  -  vốn nhạy với confidence ranking  -  bị ảnh hưởng nặng hơn nhiều so với các chỉ số chồng lấp vùng.
-
-\begin{table}[H]
-    \caption{Kết quả Mask2Former trên tập Test theo từng cấu hình và domain}
-    \centering
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{llrrrrrr}
-        \toprule
-        \textbf{Domain} & \textbf{Cấu hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
-        \midrule
-        \multirow{2}{*}{Rice}
-            & baseline (Swin-T) & \textbf{0,697} & \textbf{0,676} & \textbf{0,651} & \textbf{0,662} & 96,81  & 181,07 \\
-            & tuned (Swin-S)    & 0,106 & 0,104 & 0,255 & 0,259 & 104,15 & 262,48 \\
-        \midrule
-        \multirow{2}{*}{Coffee}
-            & baseline (Swin-T) & \textbf{0,920} & \textbf{0,900} & \textbf{0,887} & \textbf{0,900} & 62,88  & 181,07 \\
-            & tuned (Swin-S)    & 0,126 & 0,122 & 0,737 & 0,751 & 107,76 & 262,48 \\
-        \bottomrule
-    \end{tabular}%
-    }
-    \label{tab:m2f_test}
-\end{table}
-
-Cấu hình \textbf{run1\_baseline (Swin-T)} được chọn làm kết quả đại diện của Mask2Former trong bảng so sánh tổng hợp (Bảng~\ref{tab:results_rice} và~\ref{tab:results_coffee}).
-
-\subsubsection{Trực quan hóa dự đoán}
-
-Hình~\ref{fig:m2f_viz_rice} và~\ref{fig:m2f_viz_coffee} đối chiếu ảnh gốc, ground-truth và mask dự đoán của mô hình baseline trên một số ảnh Test. Mask dự đoán bám tương đối sát vùng bệnh trên các ảnh nền sạch; các trường hợp lệch chủ yếu rơi vào ảnh có nền phức tạp hoặc vùng bệnh nhỏ, được phân tích ở Mục~\ref{subsec:error_analysis}.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth,height=0.75\textheight,keepaspectratio]{img/m2f_rice_viz.png}
-    \caption{Mask2Former (baseline) trên tập \textbf{Rice}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
-    \label{fig:m2f_viz_rice}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth,height=0.75\textheight,keepaspectratio]{img/m2f_coffee_viz.png}
-    \caption{Mask2Former (baseline) trên tập \textbf{Coffee}: ảnh gốc (trái), ground-truth (giữa), dự đoán (phải).}
-    \label{fig:m2f_viz_coffee}
-\end{figure}
-
-%  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Bảng so sánh tổng hợp}
-\label{subsec:comparison}
-
-Sau khi cả 5 thành viên hoàn thành thực nghiệm độc lập cho từng mô hình, nhóm đã tổng hợp kết quả đánh giá đa tiêu chí trên tập kiểm thử Test độc lập. Bảng~\ref{tab:results_rice} và Bảng~\ref{tab:results_coffee} trình bày chi tiết hiệu năng chẩn đoán bệnh trên hai tập dữ liệu Lúa và Cà phê.
-
-\textit{Lưu ý: Thời gian suy luận (Infer) trong các bảng được đo trên GPU (ngoại trừ MobileSAM được thực nghiệm trên CPU để phục vụ đo đạc ONNX).}
-
-\begin{table}[H]
-    \caption{Kết quả đánh giá 5 mô hình trên tập Test - Rice dataset}
-    \centering
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{lrrrrrr}
-        \toprule
-        \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
-        \midrule
-        Mask R-CNN    & 0,5966 & 0,5294 & 0,8669 & 0,8935 & 760,50 & 503,44 \\
-        \textbf{YOLO26-seg} & \textbf{0,7614} & \textbf{0,7506} & \textbf{0,8210} & \textbf{0,8337} & \textbf{65,72} & \textbf{6,23} \\
-        RF-DETR       & 0,7038 & 0,6874 & 0,8132 & 0,8308 & 198,31 & 133,00 \\
-        MobileSAM     & 0,5637 & 0,5141 & 0,5440 & 0,5712 & 1487,54 & 41,30 \\
-        Mask2Former   & 0,6970 & 0,6760 & 0,6510 & 0,6620 & 96,81 & 181,07 \\
-        \bottomrule
-    \end{tabular}%
-    }
-    \label{tab:results_rice}
-\end{table}
- 
-\begin{table}[H]
-    \caption{Kết quả đánh giá 5 mô hình trên tập Test - Coffee dataset}
-    \centering
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{lrrrrrr}
-        \toprule
-        \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Infer (ms)} & \textbf{Size (MB)} \\
-        \midrule
-        Mask R-CNN    & 0,9480 & 0,9041 & 0,9128 & 0,9356 & 702,36 & 501,73 \\
-        YOLO26-seg    & 0,1271 & 0,1235 & 0,8763 & 0,8883 & 20,21 & 6,23 \\
-        RF-DETR       & 0,8428 & 0,8251 & 0,8575 & 0,8718 & 70,31 & 133,00 \\
-        MobileSAM     & 0,6923 & 0,6591 & 0,6671 & 0,6848 & 1616,84 & 41,30 \\
-        \textbf{Mask2Former} & \textbf{0,9200} & \textbf{0,9000} & \textbf{0,8870} & \textbf{0,9000} & \textbf{62,88} & \textbf{181,07} \\
-        \bottomrule
-    \end{tabular}%
-    }
-    \label{tab:results_coffee}
-\end{table}
+\end{enumerate}

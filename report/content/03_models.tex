@@ -5,30 +5,26 @@
 \section{Lựa chọn mô hình và kiến trúc}
 \label{sec:models}
 
-Nhóm triển khai và so sánh \textbf{5 mô hình segmentation} thuộc hai nhóm kiến trúc: CNN-based và Vision Transformer-based (ViT-based). Mỗi mô hình được huấn luyện độc lập trên \emph{2 tập riêng biệt} (Rice và Coffee) trên Kaggle Notebook (GPU T4/P100).
+Nhóm triển khai và so sánh \textbf{5 mô hình segmentation} thuộc hai nhóm kiến trúc: CNN-based và Vision Transformer-based (ViT-based). Mỗi mô hình được huấn luyện độc lập trên \emph{2 tập riêng biệt} (Rice và Coffee) trên Kaggle Notebook (GPU T4) với cùng một thiết lập huấn luyện chung (chi tiết tại Mục~\ref{sec:training_config}).
 
 \subsection{Tổng quan các mô hình}
 
 \begin{table}[H]
-      \caption{Tổng quan 5 mô hình segmentation được lựa chọn}
-      \centering
-      \begin{tabularx}{\textwidth}{llX}
-            \toprule
-            \textbf{Mô hình} & \textbf{Loại} & \textbf{Đặc điểm nổi bật}                     \\
-            \midrule
-            Mask R-CNN       & CNN-based     & Baseline hai nhánh (detection + segmentation) \\
-            YOLO26-seg       & CNN-based     & Real-time, kiến trúc một nhánh                \\
-            RF-DETR          & ViT-based     & End-to-end detection transformer (SOTA)       \\
-            MobileSAM        & ViT-based     & SAM rút gọn, segment anything                 \\
-            Mask2Former      & ViT-based     & Universal segmentation SOTA                   \\
-            \bottomrule
-      \end{tabularx}
-      \label{tab:model_overview}
+    \caption{Tổng quan 5 mô hình segmentation được lựa chọn}
+    \centering
+    \begin{tabularx}{\textwidth}{llX}
+        \toprule
+        \textbf{Mô hình} & \textbf{Loại} & \textbf{Đặc điểm nổi bật}                     \\
+        \midrule
+        Mask R-CNN       & CNN-based     & Baseline hai nhánh (detection + segmentation) \\
+        YOLO26m-seg      & CNN-based     & Real-time, kiến trúc một nhánh                \\
+        RF-DETR          & ViT-based     & End-to-end detection transformer (SOTA)       \\
+        MobileSAM        & ViT-based     & SAM rút gọn, segment anything                 \\
+        Mask2Former      & ViT-based     & Universal segmentation SOTA                   \\
+        \bottomrule
+    \end{tabularx}
+    \label{tab:model_overview}
 \end{table}
-
-% ============================================================
-% Hộp nhắc nhở yêu cầu  -  hiển thị một lần, áp dụng cho tất cả
-% ============================================================
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
 \subsection{Mô hình 1: Mask R-CNN}
@@ -37,26 +33,28 @@ Nhóm triển khai và so sánh \textbf{5 mô hình segmentation} thuộc hai nh
 \subsubsection{Lý do lựa chọn}
 Mask R-CNN \cite{he2017maskrcnn} là mô hình instance segmentation CNN nền tảng, được sử dụng làm \textbf{baseline} để so sánh với các mô hình ViT-based. Kiến trúc hai nhánh tách biệt giúp dễ debug và hiểu rõ từng thành phần.
 
+\subsubsection{Kiến trúc chi tiết}
+
 \begin{enumerate}
     \item Sơ đồ kiến trúc:
           Kiến trúc chi tiết của mô hình Mask R-CNN được mô tả qua sơ đồ khối dưới đây:
-          
+
           \begin{figure}[H]
               \centering
               \begin{tikzpicture}[
-                  node distance=1.0cm and 0.8cm,
-                  box/.style={draw, rectangle, minimum width=2.2cm, minimum height=1cm, align=center, fill=blue!10, rounded corners, font=\footnotesize},
-                  arrow/.style={-Latex, thick}
-              ]
+                      node distance=1.0cm and 0.8cm,
+                      box/.style={draw, rectangle, minimum width=2.2cm, minimum height=1cm, align=center, fill=blue!10, rounded corners, font=\footnotesize},
+                      arrow/.style={-Latex, thick}
+                  ]
                   \node (img) [box, fill=green!10] {Ảnh đầu vào \\ ($256 \times 256 \times 3$)};
                   \node (backbone) [box, right=of img] {ResNet-50 \\ Backbone \\ (C2 - C5)};
                   \node (fpn) [box, right=of backbone] {Feature Pyramid \\ Network (FPN) \\ (P2 - P6)};
                   \node (rpn) [box, above right=of fpn, xshift=-0.5cm, yshift=-0.2cm] {Region Proposal \\ Network (RPN)};
                   \node (roialign) [box, below right=of fpn, xshift=-0.5cm, yshift=0.2cm] {RoI Align};
-                  
+
                   \node (clsbox) [box, right=of roialign, yshift=0.8cm, fill=orange!10] {Fast R-CNN Head \\ (Phân lớp \& BBox)};
                   \node (maskhead) [box, right=of roialign, yshift=-0.8cm, fill=orange!10] {Mask Head \\ (FCN Branch)};
-                  
+
                   \draw [arrow] (img) -- (backbone);
                   \draw [arrow] (backbone) -- (fpn);
                   \draw [arrow] (fpn.east) -- ++(0.2,0) |- (rpn.west);
@@ -70,41 +68,117 @@ Mask R-CNN \cite{he2017maskrcnn} là mô hình instance segmentation CNN nền t
           \end{figure}
 
     \item Số lượng tham số:
-          Mô hình sử dụng cài đặt mặc định từ thư viện \texttt{torchvision} với tổng cộng khoảng \textbf{41,8 triệu tham số}. Trong quá trình huấn luyện baseline, toàn bộ các tham số này đều được cập nhật trọng số (trainable). Chi tiết số lượng tham số của các thành phần chính như sau:
+          Mô hình sử dụng cài đặt mặc định từ thư viện \texttt{torchvision} với tổng cộng khoảng \textbf{41,8 triệu tham số}. Chi tiết:
           \begin{itemize}
-              \item Backbone (ResNet-50) \& FPN Neck: $\approx 26,8$ triệu tham số (ResNet-50 đóng góp khoảng 23,5 triệu tham số trích xuất đặc trưng và FPN đóng góp khoảng 3,3 triệu tham số tích chập lateral và output để xây dựng kim tự tháp đặc trưng đa tỷ lệ).
-              \item RPN Head: $\approx 0,6$ triệu tham số (dùng để quét qua các feature maps và tạo các đề xuất vùng chứa vật thể).
-              \item RoI Heads: $\approx 14,4$ triệu tham số (gồm Fast R-CNN Head phân lớp/regress box chiếm khoảng 11,8 triệu và Mask Head với kiến trúc Fully Convolutional Network chiếm khoảng 2,6 triệu tham số để dự đoán mặt nạ nhãn nhị phân).
+              \item Backbone (ResNet-50) \& FPN Neck: $\approx 26,8$ triệu tham số.
+              \item RPN Head: $\approx 0,6$ triệu tham số.
+              \item RoI Heads: $\approx 14,4$ triệu tham số (gồm Fast R-CNN Head $\approx 11,8$M và Mask Head $\approx 2,6$M).
           \end{itemize}
 
     \item Hàm kích hoạt:
-          Hàm kích hoạt được sử dụng trong mô hình Mask R-CNN bao gồm:
           \begin{itemize}
-              \item Backbone (ResNet-50) \& FPN Neck: Sử dụng hàm kích hoạt \textbf{ReLU} sau mỗi lớp tích chập $3 \times 3$ và $1 \times 1$ trong các khối Bottleneck.
-              \item RPN Head: Sử dụng hàm kích hoạt \textbf{ReLU} sau lớp tích chập trượt $3 \times 3$. Nhánh dự đoán độ tin cậy (objectness logits) sử dụng hàm kích hoạt \textbf{Sigmoid} ngầm định ở khâu tính toán loss.
-              \item Fast R-CNN (Box Head): Sử dụng hàm kích hoạt \textbf{ReLU} sau mỗi lớp Fully Connected (FC) ẩn của mạng nơ-ron đa tầng (MLP). Ở đầu ra, nhánh phân loại lớp sử dụng hàm kích hoạt \textbf{Softmax} để lấy phân phối xác suất trên 9 lớp (gồm 8 lớp bệnh và 1 lớp nền - background). Nhánh bounding box regression là dạng tuyến tính (không dùng hàm kích hoạt).
-              \item Mask Head: Sử dụng hàm kích hoạt \textbf{ReLU} sau mỗi lớp tích chập $3 \times 3$ và lớp tích chập chuyển vị (transpose convolution) $2 \times 2$. Ở lớp cuối cùng, hàm kích hoạt \textbf{Sigmoid} được sử dụng để dự đoán mặt nạ nhị phân độc lập cho từng lớp đối tượng ở độ phân giải pixel ($28 \times 28$).
+              \item Backbone \& FPN: \textbf{ReLU} sau mỗi lớp tích chập.
+              \item RPN Head: \textbf{ReLU} sau lớp tích chập trượt; \textbf{Sigmoid} ở nhánh objectness.
+              \item Fast R-CNN Head: \textbf{ReLU} sau các lớp FC; \textbf{Softmax} ở nhánh phân loại.
+              \item Mask Head: \textbf{ReLU} sau tích chập; \textbf{Sigmoid} ở lớp cuối cho mask nhị phân.
           \end{itemize}
 \end{enumerate}
 
+\subsubsection{Hàm mất mát}
+Mask R-CNN tối ưu hàm mất mát đa nhiệm (multi-task loss):
+\begin{equation}
+    \mathcal{L} = \mathcal{L}_{rpn\_class} + \mathcal{L}_{rpn\_box} + \mathcal{L}_{fastrcnn\_class} + \mathcal{L}_{fastrcnn\_box} + \mathcal{L}_{mask}
+\end{equation}
+Trong đó:
+\begin{itemize}
+    \item $\mathcal{L}_{rpn\_class}$: Binary Cross-Entropy Loss cho phân loại vật thể/nền của RPN.
+    \item $\mathcal{L}_{rpn\_box}$: Smooth $L_1$ Loss cho hồi quy tọa độ RPN.
+    \item $\mathcal{L}_{fastrcnn\_class}$: Cross-Entropy Loss cho phân loại lớp bệnh (4 lớp + nền).
+    \item $\mathcal{L}_{fastrcnn\_box}$: Smooth $L_1$ Loss cho hồi quy bounding box.
+    \item $\mathcal{L}_{mask}$: Binary Cross-Entropy Loss pixel-wise trên mask $28 \times 28$, chỉ tính cho lớp ground-truth.
+\end{itemize}
+
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Mô hình 2: YOLO26-seg}
+\subsection{Mô hình 2: YOLO26m-seg}
 \label{subsec:yolo}
 
 \subsubsection{Lý do lựa chọn}
-YOLO26-seg là phiên bản segmentation của họ YOLO \cite{ultralytics_yolo}, thuộc nhóm mô hình CNN one-stage có tốc độ suy luận cao. Nhóm chọn mô hình này để đánh giá đánh đổi giữa tốc độ và độ chính xác, đặc biệt quan trọng khi triển khai trên web với yêu cầu latency $< 500$ms/ảnh.
+YOLO26-seg là phiên bản segmentation của họ YOLO \cite{ultralytics_yolo}, thuộc nhóm mô hình CNN one-stage có tốc độ suy luận cao. Nhóm chọn biến thể \textbf{medium} (YOLO26m-seg) để cân bằng giữa dung lượng mô hình và độ chính xác, đặc biệt quan trọng khi triển khai trên web với yêu cầu latency thấp.
 
 \subsubsection{Kiến trúc chi tiết}
 
 \begin{enumerate}
     \item Sơ đồ kiến trúc\\
-          YOLO26-seg nhận ảnh đầu vào đã được resize/letterbox về $640 \times 640$, trích xuất đặc trưng bằng backbone CNN, hợp nhất đặc trưng đa tỉ lệ qua neck kiểu FPN/PAN, sau đó dùng segmentation head để dự đoán đồng thời hộp bao, lớp bệnh và mask theo từng instance.
+          YOLO26m-seg nhận ảnh đầu vào đã được resize/letterbox về $640 \times 640$, trích xuất đặc trưng bằng backbone CNN, hợp nhất đặc trưng đa tỉ lệ qua neck kiểu FPN/PAN, sau đó dùng segmentation head để dự đoán đồng thời hộp bao, lớp bệnh và mask theo từng instance.
 
-    \begin{figure}[H]
-        \centering
-        \begin{tikzpicture}[
-            node distance=0.5cm and 0.6cm,
-            box/.style={
+          \begin{figure}[H]
+              \centering
+              \begin{tikzpicture}[
+                  node distance=0.5cm and 0.6cm,
+                  box/.style={
+                          draw,
+                          thick,
+                          align=center,
+                          rounded corners=4pt,
+                          minimum height=1.3cm,
+                          font=\footnotesize
+                      },
+                  input_box/.style={box, fill=blue!5, draw=blue!60!black, text width=2.4cm},
+                  backbone_box/.style={box, fill=orange!10, draw=orange!60!black, text width=2.8cm},
+                  neck_box/.style={box, fill=yellow!10, draw=yellow!60!black, text width=2.6cm},
+                  head_box/.style={box, fill=purple!10, draw=purple!60!black, text width=3.0cm},
+                  output_box/.style={box, fill=green!10, draw=green!60!black, text width=2.4cm},
+                  arrow/.style={-{Latex[length=2.5mm]}, thick}
+                  ]
+                  \node (input) [input_box] {\textbf{Input} \\ Ảnh $640 \times 640$ \\ letterbox + chuẩn hóa};
+                  \node (backbone) [backbone_box, right=of input] {\textbf{Backbone} \\ CNN/C2f blocks \\ trích xuất đặc trưng \\ đa tỷ lệ};
+                  \node (neck) [neck_box, right=of backbone] {\textbf{Neck} \\ FPN/PAN \\ hợp nhất đặc trưng};
+                  \node (head) [head_box, right=of neck] {\textbf{Segment head} \\ Box + class + mask coeff. \\ prototype masks};
+                  \node (output) [output_box, right=of head] {\textbf{Output} \\ Bounding boxes \\ instance masks};
+
+                  \draw [arrow] (input) -- (backbone);
+                  \draw [arrow] (backbone) -- (neck);
+                  \draw [arrow] (neck) -- (head);
+                  \draw [arrow] (head) -- (output);
+              \end{tikzpicture}
+              \caption{Sơ đồ khối kiến trúc YOLO26m-seg sử dụng trong thực nghiệm}
+              \label{fig:yolo26_arch}
+          \end{figure}
+
+    \item Số lượng tham số\\
+          Biến thể \texttt{yolo26m-seg} có tổng cộng khoảng \textbf{22,4 triệu tham số}. Việc lựa chọn cấu hình medium nhằm cân bằng giữa khả năng biểu diễn đặc trưng và tốc độ suy luận khi triển khai thực tế.
+
+    \item Hàm kích hoạt\\
+          Các khối tích chập trong backbone và neck dùng activation \textbf{SiLU/Swish} để giữ gradient ổn định. Ở đầu ra, các nhánh dự đoán sử dụng các phép biến đổi phù hợp: xác suất lớp và hệ số mask được ràng buộc về miền xác suất, còn tọa độ hộp và phân phối DFL được giải mã theo cơ chế YOLO.
+\end{enumerate}
+
+\subsubsection{Hàm mất mát}
+YOLO26m-seg tối ưu đồng thời nhiều thành phần mất mát:
+\[
+    \mathcal{L} =
+    \lambda_{box}\mathcal{L}_{box}
+    + \lambda_{cls}\mathcal{L}_{cls}
+    + \lambda_{dfl}\mathcal{L}_{dfl}
+    + \lambda_{mask}\mathcal{L}_{mask}.
+\]
+Trong đó $\mathcal{L}_{box}$ tối ưu vị trí hộp bao, $\mathcal{L}_{cls}$ tối ưu nhãn bệnh, $\mathcal{L}_{dfl}$ cải thiện độ chính xác biên hộp thông qua phân phối tọa độ, và $\mathcal{L}_{mask}$ tối ưu vùng phân đoạn của instance.
+
+%  -  -  -  -  -  -  -  -  -  -  -  -  - -
+\subsection{Mô hình 3: RF-DETR}
+\label{subsec:rfdetr}
+
+\subsubsection{Lý do lựa chọn}
+RF-DETR là mô hình detection transformer của Roboflow, được thiết kế theo hướng \textbf{end-to-end} cho bài toán phát hiện đối tượng và segmentation. Khác với các mô hình CNN, RF-DETR sử dụng cơ chế truy vấn của Transformer để dự đoán trực tiếp tập đối tượng/mask đầu ra, giảm phụ thuộc vào NMS.
+
+Nhóm sử dụng biến thể \texttt{RFDETRSegNano} và huấn luyện \textbf{hai mô hình riêng biệt}: một cho tập Coffee và một cho tập Rice.
+
+\subsubsection{Kiến trúc chi tiết}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.5cm and 0.6cm,
+        box/.style={
                 draw,
                 thick,
                 align=center,
@@ -112,227 +186,145 @@ YOLO26-seg là phiên bản segmentation của họ YOLO \cite{ultralytics_yolo}
                 minimum height=1.3cm,
                 font=\footnotesize
             },
-            input_box/.style={box, fill=blue!5, draw=blue!60!black, text width=2.4cm},
-            backbone_box/.style={box, fill=orange!10, draw=orange!60!black, text width=2.8cm},
-            neck_box/.style={box, fill=yellow!10, draw=yellow!60!black, text width=2.6cm},
-            head_box/.style={box, fill=purple!10, draw=purple!60!black, text width=3.0cm},
-            output_box/.style={box, fill=green!10, draw=green!60!black, text width=2.4cm},
-            arrow/.style={-{Latex[length=2.5mm]}, thick}
+        input_box/.style={box, fill=blue!5, draw=blue!60!black, text width=2.2cm},
+        backbone_box/.style={box, fill=orange!10, draw=orange!60!black, text width=2.6cm},
+        transformer_box/.style={box, fill=yellow!10, draw=yellow!60!black, text width=2.8cm},
+        query_box/.style={box, fill=gray!10, draw=gray!60!black, text width=2.0cm},
+        head_box/.style={box, fill=purple!10, draw=purple!60!black, text width=2.6cm},
+        output_box/.style={box, fill=green!10, draw=green!60!black, text width=2.4cm},
+        arrow/.style={-{Latex[length=2.5mm]}, thick}
         ]
-            \node (input) [input_box] {\textbf{Input} \\ Ảnh $640 \times 640$ \\ letterbox + chuẩn hóa};
-            \node (backbone) [backbone_box, right=of input] {\textbf{Backbone} \\ CNN/C2f blocks \\ trích xuất đặc trưng \\ đa tỷ lệ};
-            \node (neck) [neck_box, right=of backbone] {\textbf{Neck} \\ FPN/PAN \\ hợp nhất đặc trưng};
-            \node (head) [head_box, right=of neck] {\textbf{Segment head} \\ Box + class + mask coeff. \\ prototype masks};
-            \node (output) [output_box, right=of head] {\textbf{Output} \\ Bounding boxes \\ instance masks};
-            
-            \draw [arrow] (input) -- (backbone);
-            \draw [arrow] (backbone) -- (neck);
-            \draw [arrow] (neck) -- (head);
-            \draw [arrow] (head) -- (output);
-        \end{tikzpicture}
-        \caption{Sơ đồ khối kiến trúc YOLO26-seg sử dụng trong thực nghiệm}
-        \label{fig:yolo26_arch}
-    \end{figure}
+        \node (input) [input_box] {\textbf{Ảnh đầu vào} \\ ($640 \times 640$)};
+        \node (backbone) [backbone_box, right=of input] {\textbf{Backbone thị giác} \\ Pretrained \\ trích xuất đặc trưng};
+        \node (transformer) [transformer_box, right=of backbone] {\textbf{Transformer} \\ Encoder/Decoder \\ (Attention mechanism)};
+        \node (queries) [query_box, below=0.8cm of transformer] {\textbf{Object Queries} \\ Học tham số};
+        \node (heads) [head_box, right=of transformer] {\textbf{Prediction Heads} \\ Class, Box, Mask \\ Heads};
+        \node (output) [output_box, right=of heads] {\textbf{Đầu ra} \\ Nhãn lớp \\ Bounding box \\ Segment mask};
 
-    \item Số lượng tham số\\
-          Biến thể được dùng trong thực nghiệm là \texttt{yolo26n-seg.pt} với tổng cộng \textbf{3.056.240 tham số} (khoảng 3,06 triệu tham số). Checkpoint tốt nhất của hai tập dữ liệu có kích thước xấp xỉ 6,23 MB. Việc lựa chọn cấu hình nano này nhằm ưu tiên tốc độ suy luận và tối ưu hóa tài nguyên phần cứng khi triển khai thực tế.
-
-    \item Hàm kích hoạt\\
-          Các khối tích chập trong backbone và neck của YOLO dùng activation phi tuyến kiểu SiLU/Swish để giữ gradient ổn định khi huấn luyện mô hình sâu. Ở đầu ra, các nhánh dự đoán sử dụng các phép biến đổi phù hợp với từng đại lượng: xác suất lớp và hệ số mask được ràng buộc về miền xác suất, còn tọa độ hộp và phân phối DFL được giải mã theo cơ chế của Ultralytics YOLO.
-\end{enumerate}
-
-%  -  -  -  -  -  -  -  -  -  -  -  -  - -
-\subsection{Mô hình 3: RF-DETR}
-\label{subsec:rfdetr}
-
-\subsubsection{Lý do lựa chọn}
-RF-DETR là mô hình detection transformer của Roboflow, được thiết kế theo hướng \textbf{end-to-end} cho bài toán phát hiện đối tượng và segmentation. Khác với các mô hình CNN một hoặc hai giai đoạn, RF-DETR sử dụng cơ chế truy vấn của Transformer để dự đoán trực tiếp tập đối tượng/mask đầu ra, nhờ đó giảm phụ thuộc vào các bước hậu xử lý thủ công như NMS.
-
-Trong đồ án này, RF-DETR được chọn vì ba lý do chính. Thứ nhất, mô hình phù hợp với dữ liệu COCO instance segmentation của bài toán bệnh lá cây, trong đó mỗi ảnh có thể có một hoặc nhiều vùng bệnh. Thứ hai, phiên bản \texttt{RFDETRSegNano} đủ nhẹ để huấn luyện trên Kaggle GPU nhưng vẫn giữ được lợi thế biểu diễn của Transformer. Thứ ba, thư viện RF-DETR hỗ trợ trực tiếp fine-tune từ pretrained weight, evaluate COCO mAP và xuất checkpoint, thuận tiện cho pipeline thử nghiệm cuối kỳ.
-
-Nhóm huấn luyện \textbf{hai mô hình RF-DETR riêng biệt}: một mô hình cho tập coffee và một mô hình cho tập rice. Cách tách này tránh trộn hai miền dữ liệu có nhãn, hình thái lá và phân bố bệnh khác nhau.
-
-\subsubsection{Kiến trúc chi tiết}
-
-\noindent\textbf{Luồng kiến trúc.}
-
-Notebook sử dụng lớp mô hình segmentation của RF-DETR, mặc định là \texttt{RFDETRSegNano}. Luồng xử lý tổng quát:
-
-\begin{figure}[H]
-    \centering
-    \fbox{%
-    \begin{minipage}{0.94\textwidth}
-        \centering
-        Ảnh đầu vào
-        $\rightarrow$ backbone thị giác pretrained
-        $\rightarrow$ encoder/decoder Transformer
-        $\rightarrow$ object queries
-        $\rightarrow$ classification head, box head, mask head
-        $\rightarrow$ nhãn lớp, bounding box và segmentation mask
-    \end{minipage}}
-    \caption{Sơ đồ luồng kiến trúc RF-DETR segmentation dùng trong notebook}
+        \draw [arrow] (input) -- (backbone);
+        \draw [arrow] (backbone) -- (transformer);
+        \draw [arrow] (queries) -- (transformer);
+        \draw [arrow] (transformer) -- (heads);
+        \draw [arrow] (heads) -- (output);
+    \end{tikzpicture}
+    \caption{Sơ đồ luồng kiến trúc RF-DETR segmentation}
     \label{fig:rfdetr_arch}
 \end{figure}
 
-Ảnh được đưa vào backbone để trích xuất đặc trưng thị giác. Các đặc trưng này sau đó đi qua các khối Transformer nhằm mô hình hóa quan hệ không gian giữa vùng lá, vùng bệnh và nền ảnh. Phần prediction head sinh ra ba nhóm đầu ra: nhãn lớp, bounding box và mask tương ứng. Trong bài toán này, đầu ra mask được dùng làm kết quả chính để đánh giá segmentation.
+Ảnh được đưa vào backbone để trích xuất đặc trưng thị giác. Các đặc trưng sau đó đi qua các khối Transformer nhằm mô hình hóa quan hệ không gian giữa vùng lá, vùng bệnh và nền ảnh. Prediction head sinh ra ba nhóm đầu ra: nhãn lớp, bounding box và mask. Detection/mask head được khởi tạo lại theo số lớp của từng domain (4 lớp cho mỗi loại cây).
 
-\paragraph{Biến thể mô hình.}
-Notebook đặt biến:
+\paragraph{Hàm kích hoạt.}
+Backbone dùng activation mặc định của pretrained checkpoint. Transformer feed-forward network dùng \textbf{GELU/ReLU}. Attention dùng \textbf{Softmax} trên attention weights. Classification head sinh class logit, box head dự đoán tọa độ chuẩn hóa, mask head sinh mask probability.
 
-\begin{verbatim}
-DEFAULT_MODEL_SIZE = os.getenv("RFDETR_MODEL_SIZE", "nano").lower()
-\end{verbatim}
-
-Do đó cấu hình mặc định là \texttt{nano}. Các variant khác như \texttt{small}, \texttt{medium}, \texttt{large}, \texttt{xlarge}, \texttt{2xlarge} vẫn được hỗ trợ trong code thông qua mapping \texttt{MODEL\_CLASS\_NAMES}, nhưng kết quả báo cáo hiện tại được chạy với \texttt{nano}. Các thông tin đã xác nhận từ notebook và artifact được tóm tắt trong Bảng~\ref{tab:rfdetr_arch_config}.
-
-\begin{table}[H]
-    \caption{Thông tin kiến trúc và cấu hình đã xác nhận của RF-DETR}
-    \centering
-    \begin{tabularx}{\textwidth}{lX}
-        \toprule
-        \textbf{Mục} & \textbf{Giá trị trong báo cáo} \\
-        \midrule
-        Variant & \texttt{RFDETRSegNano} / model size \texttt{nano} \\
-        Kiểu bài toán & Instance segmentation trên dữ liệu COCO \\
-        Số mô hình & 2 mô hình riêng: coffee và rice \\
-        Số lớp coffee & 4 lớp: \texttt{LeafMiner}, \texttt{PowderyMildew}, \texttt{Rust}, \texttt{AlgalLeafSpot} \\
-        Số lớp rice & 4 lớp: \texttt{Healthy}, \texttt{BrownSpot}, \texttt{Hispa}, \texttt{LeafBlast} \\
-        Kích thước best checkpoint & 133 MB cho coffee và 133 MB cho rice \\
-        Thành phần đầu ra & Class scores, bounding boxes, segmentation masks \\
-        \bottomrule
-    \end{tabularx}
-    \label{tab:rfdetr_arch_config}
-\end{table}
-
-\paragraph{Số lượng tham số.}
-Notebook chưa ghi trực tiếp tổng số tham số ra report. Vì vậy báo cáo không tự điền một con số không được log lại. Kích thước checkpoint tốt nhất đã xác nhận là 133 MB cho cả hai domain; tuy nhiên đây là kích thước file \texttt{best.pt}, không thay thế cho tổng số tham số trainable/frozen của mô hình. Nếu cần bổ sung chính xác, có thể chạy thêm:
-
-\begin{verbatim}
-sum(p.numel() for p in model.parameters())
-sum(p.numel() for p in model.parameters() if p.requires_grad)
-\end{verbatim}
-
-Điểm quan trọng trong pipeline hiện tại là detection/mask head được khởi tạo lại theo số lớp của từng domain: coffee có 4 lớp và rice có 4 lớp. Pretrained checkpoint ban đầu có số lớp khác nên head phân loại được cấu hình lại khi fine-tune.
-
-\paragraph{Hàm kích hoạt và thành phần chính.}
-Notebook không override hàm kích hoạt nội bộ mà dùng nguyên implementation của thư viện \texttt{rfdetr}. Vì vậy báo cáo ghi nhận ở mức thành phần kiến trúc như Bảng~\ref{tab:rfdetr_activations}; nếu giảng viên yêu cầu tuyệt đối theo từng layer, cần xuất thêm model summary hoặc source của phiên bản thư viện đã cài trên Kaggle.
-
-\begin{table}[H]
-    \caption{Các hàm kích hoạt/thành phần phi tuyến chính của RF-DETR}
-    \centering
-    \begin{tabularx}{\textwidth}{lX}
-        \toprule
-        \textbf{Thành phần} & \textbf{Hàm kích hoạt / xử lý đầu ra} \\
-        \midrule
-        Backbone thị giác & Dùng activation mặc định của backbone pretrained trong RF-DETR; notebook không thay đổi. \\
-        Transformer feed-forward network & Activation phi tuyến mặc định của implementation RF-DETR, thường là GELU/ReLU trong các detector họ Transformer. \\
-        Attention & Softmax trên attention weights để trộn thông tin giữa các query và đặc trưng ảnh. \\
-        Classification head & Sinh class score/logit cho từng query; score được chuyển thành độ tin cậy khi evaluate. \\
-        Box head & Dự đoán tọa độ box chuẩn hóa cho từng query. \\
-        Mask head & Sinh mask logit/probability cho từng prediction; mask là đầu ra chính dùng để đánh giá segmentation. \\
-        \bottomrule
-    \end{tabularx}
-    \label{tab:rfdetr_activations}
-\end{table}
-
-Trong notebook, nhóm không chỉnh sửa nội bộ kiến trúc RF-DETR mà dùng implementation có sẵn của thư viện \texttt{rfdetr}. Trọng tâm của phần thực nghiệm là chuẩn hóa dữ liệu COCO, fine-tune checkpoint pretrained và đánh giá trên test set.
+\subsubsection{Hàm mất mát}
+RF-DETR thuộc họ DETR nên quá trình học dựa trên matching giữa prediction queries và ground truth (bipartite matching), kết hợp các thành phần loss:
+\begin{itemize}
+    \item Classification loss để học nhãn bệnh của từng prediction.
+    \item Box regression loss để học vị trí vùng bệnh.
+    \item Mask/segmentation loss để học vùng mask bệnh.
+    \item Matching loss theo tinh thần DETR để gán prediction với ground truth theo cách end-to-end.
+\end{itemize}
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
 \subsection{Mô hình 4: MobileSAM}
 \label{subsec:mobilesam}
 
 \subsubsection{Lý do lựa chọn}
-MobileSAM \cite{mobile_sam} là phiên bản rút gọn của SAM (Segment Anything Model), thay thế ViT-H encoder bằng \textbf{TinyViT}  -  nhỏ hơn 60× và nhanh hơn 40×, phù hợp deploy. Nhóm fine-tune để áp dụng vào domain bệnh lá cây.
+MobileSAM \cite{mobile_sam} là phiên bản rút gọn của SAM (Segment Anything Model), thay thế ViT-H encoder bằng \textbf{TinyViT} --- nhỏ hơn 60× và nhanh hơn 40×, phù hợp deploy. Nhóm fine-tune để áp dụng vào domain bệnh lá cây.
 
 \subsubsection{Kiến trúc chi tiết}
 
 \begin{enumerate}
-      \item Sơ đồ kiến trúc:\\
-            Kiến trúc của MobileSAM kế thừa nguyên bản mô hình SAM nhưng tối ưu hóa luồng xử lý ảnh thông qua mạng backbone gọn nhẹ. Sơ đồ luồng xử lý dữ liệu được mô tả chi tiết như sau:
-
-            \begin{figure}[H]
-                  \centering
-                  \begin{tikzpicture}[
-                              % Styling for block diagram nodes
-                              auto,
+    \item Sơ đồ kiến trúc:\\
+          \begin{figure}[H]
+              \centering
+              \begin{tikzpicture}[
+                      auto,
+                      thick,
+                      arrow/.style={-Latex, thick},
+                      block/.style={
+                              rectangle,
+                              draw,
                               thick,
-                              arrow/.style={-Latex, thick},
-                              block/.style={
-                                          rectangle,
-                                          draw,
-                                          thick,
-                                          align=center,
-                                          rounded corners=4pt,
-                                          minimum height=1.2cm,
-                                          font=\small\sffamily
-                                    },
-                              input_block/.style={block, fill=blue!5, draw=blue!60!black, text width=3.0cm},
-                              encoder_block/.style={block, fill=orange!10, draw=orange!60!black, text width=3.2cm},
-                              prompt_block/.style={block, fill=green!10, draw=green!60!black, text width=3.2cm},
-                              decoder_block/.style={block, fill=red!10, draw=red!60!black, text width=2.8cm},
-                              output_block/.style={block, fill=blue!15, draw=blue!70!black, text width=2.8cm}
-                        ]
-                        % Nodes
-                        \node [input_block] (input) {Input Image\\($1024 \times 1024$)};
-                        \node [encoder_block, right=1.0cm of input] (encoder) {TinyViT\\Image Encoder};
-                        \node [decoder_block, right=2.0cm of encoder] (decoder) {Mask Decoder};
-                        \node [output_block, right=1.0cm of decoder] (output) {Binary Mask\\Output};
-                        \node [prompt_block, below=1.2cm of encoder] (prompt) {Prompt Encoder\\(Bbox/Points)};
+                              align=center,
+                              rounded corners=4pt,
+                              minimum height=1.2cm,
+                              font=\small\sffamily
+                          },
+                      input_block/.style={block, fill=blue!5, draw=blue!60!black, text width=3.0cm},
+                      encoder_block/.style={block, fill=orange!10, draw=orange!60!black, text width=3.2cm},
+                      prompt_block/.style={block, fill=green!10, draw=green!60!black, text width=3.2cm},
+                      decoder_block/.style={block, fill=red!10, draw=red!60!black, text width=2.8cm},
+                      output_block/.style={block, fill=blue!15, draw=blue!70!black, text width=2.8cm}
+                  ]
+                  \node [input_block] (input) {Input Image\\($1024 \times 1024$)};
+                  \node [encoder_block, right=1.0cm of input] (encoder) {TinyViT\\Image Encoder};
+                  \node [decoder_block, right=2.0cm of encoder] (decoder) {Mask Decoder};
+                  \node [output_block, right=1.0cm of decoder] (output) {Binary Mask\\Output};
+                  \node [prompt_block, below=1.2cm of encoder] (prompt) {Prompt Encoder\\(Bbox/Points)};
 
-                        % Connections
-                        \draw[arrow] (input) -- (encoder);
-                        \draw[arrow] (encoder) -- node[above, align=center, font=\scriptsize\sffamily] {Image\\Embedding} (decoder);
-                        \draw[arrow] (prompt.east) -| node[pos=0.35, above, align=center, font=\scriptsize\sffamily] {Sparse/Dense\\Embeddings} (decoder.south);
-                        \draw[arrow] (decoder) -- (output);
-                  \end{tikzpicture}
-                  \caption{Sơ đồ luồng kiến trúc MobileSAM áp dụng trong bài toán phân vùng.}
-                  \label{fig:mobilesam_architecture}
-            \end{figure}
+                  \draw[arrow] (input) -- (encoder);
+                  \draw[arrow] (encoder) -- node[above, align=center, font=\scriptsize\sffamily] {Image\\Embedding} (decoder);
+                  \draw[arrow] (prompt.east) -| node[pos=0.35, above, align=center, font=\scriptsize\sffamily] {Sparse/Dense\\Embeddings} (decoder.south);
+                  \draw[arrow] (decoder) -- (output);
+              \end{tikzpicture}
+              \caption{Sơ đồ luồng kiến trúc MobileSAM áp dụng trong bài toán phân vùng.}
+              \label{fig:mobilesam_architecture}
+          \end{figure}
 
-      \item Số lượng tham số:\\
-            Dựa trên cấu hình thực tế mã nguồn (\texttt{vit\_t}), tổng số lượng tham số của mô hình đạt xấp xỉ \textbf{9.66M}. Chi tiết phân bổ tham số tại các thành phần cốt lõi bao gồm:
-            \begin{itemize}
-                  \item TinyViT-5M Image Encoder: $\approx$ 5.79M tham số (đóng vai trò trích xuất đặc trưng không gian dạng toàn cục).
-                  \item Prompt Encoder: $\approx$ 6.2K tham số (mã hóa các gợi ý dạng hình hộp chữ nhật hoặc điểm).
-                  \item Mask Decoder: $\approx$ 3.87M tham số (bộ giải mã nhẹ thực hiện tích hợp chéo đặc trưng ảnh và gợi ý để dự đoán mặt nạ phân vùng).
-            \end{itemize}
+    \item Số lượng tham số:\\
+          Tổng số lượng tham số đạt xấp xỉ \textbf{9,66M}:
+          \begin{itemize}
+              \item TinyViT-5M Image Encoder: $\approx$ 5,79M tham số.
+              \item Prompt Encoder: $\approx$ 6,2K tham số.
+              \item Mask Decoder: $\approx$ 3,87M tham số.
+          \end{itemize}
 
-      \item Hàm kích hoạt:\\
-            Các hàm kích hoạt và chuẩn hóa phân tầng được áp dụng trong mô hình bao gồm:
-            \begin{itemize}
-                  \item GELU (Gaussian Error Linear Unit): Được sử dụng chủ yếu trong các khối Transformer của TinyViT Image Encoder và Mask Decoder để giữ lại tính phi tuyến mượt mà và giảm thiểu hiện tượng chết neuron.
-                  \item Sigmoid: Áp dụng trực tiếp tại đầu ra của Mask Decoder để chuyển đổi các giá trị logits dự đoán mặt nạ thành xác suất pixel thuộc phân lớp mục tiêu (vùng bệnh) nằm trong khoảng $[0, 1]$.
-                  \item LayerNorm (Layer Normalization): Sử dụng xuyên suốt các tầng ẩn của bộ mã hóa đặc trưng không gian và bộ giải mã nhằm ổn định phân phối dữ liệu đầu vào của các layer.
-            \end{itemize}
+    \item Hàm kích hoạt:
+          \begin{itemize}
+              \item \textbf{GELU}: Sử dụng trong các khối Transformer của TinyViT và Mask Decoder.
+              \item \textbf{Sigmoid}: Áp dụng tại đầu ra của Mask Decoder để chuyển logits thành xác suất pixel.
+              \item \textbf{LayerNorm}: Sử dụng xuyên suốt các tầng ẩn để ổn định phân phối.
+          \end{itemize}
 \end{enumerate}
+
+\subsubsection{Hàm mất mát}
+Hàm mất mát tổng hợp của MobileSAM:
+\begin{equation}
+    \mathcal{L}_{\text{total}} = 20 \times \mathcal{L}_{\text{Focal}} + \mathcal{L}_{\text{Dice}} + \mathcal{L}_{\text{MSE}}
+\end{equation}
+Trong đó:
+\begin{itemize}
+    \item \textbf{Sigmoid Focal Loss} ($\mathcal{L}_{\text{Focal}}$): Giải quyết mất cân bằng pixel giữa vùng bệnh nhỏ và nền lá lành. Hệ số nhân 20 giúp tập trung vào pixel biên khó phân loại.
+    \item \textbf{Dice Loss} ($\mathcal{L}_{\text{Dice}}$): Tối ưu trực tiếp độ trùng khớp vùng phân vùng (IoU).
+    \item \textbf{MSE Loss} ($\mathcal{L}_{\text{MSE}}$): Đo lỗi giữa hệ số IoU dự đoán và IoU thực tế, giúp tinh chỉnh độ tin cậy nội bộ.
+\end{itemize}
 
 %  -  -  -  -  -  -  -  -  -  -  -  -  - -
 \subsection{Mô hình 5: Mask2Former}
 \label{subsec:mask2former}
 
 \subsubsection{Lý do lựa chọn}
-Mask2Former \cite{cheng2022mask2former} thống nhất ba bài toán segmentation (instance, semantic, panoptic) trong một kiến trúc duy nhất dựa trên cơ chế \emph{mask classification}, thay vì dự đoán nhãn cho từng pixel như các mạng FCN truyền thống. Mô hình đạt kết quả SOTA trên COCO tại thời điểm công bố và là đại diện Transformer-based đối lập với baseline CNN (Mask R-CNN) trong nghiên cứu của nhóm. Việc fine-tune một kiến trúc Transformer SOTA trên bộ dữ liệu lá lúa và cà phê Việt Nam cũng chính là đóng góp sáng tạo S2 của nhóm: nó cho phép đánh giá khả năng chuyển giao (transferability) của các trọng số pre-trained trên COCO sang một domain hẹp, ít dữ liệu và đặc thù.
+Mask2Former \cite{cheng2022mask2former} thống nhất ba bài toán segmentation (instance, semantic, panoptic) trong một kiến trúc duy nhất dựa trên cơ chế \emph{mask classification}. Mô hình đạt kết quả SOTA trên COCO và là đại diện Transformer-based đối lập với baseline CNN (Mask R-CNN).
 
 \subsubsection{Kiến trúc chi tiết}
 
-\textbf{a) Sơ đồ kiến trúc}
-
-Mask2Former gồm ba thành phần nối tiếp: một backbone trích đặc trưng đa tỷ lệ, một \emph{pixel decoder} nâng độ phân giải đặc trưng, và một \emph{Transformer decoder} sinh dự đoán theo từng truy vấn (query). Điểm cốt lõi tạo nên hiệu năng của mô hình là \emph{masked attention}: ở mỗi lớp decoder, mỗi query chỉ chú ý (attend) vào vùng foreground do chính nó dự đoán ở lớp trước, giúp hội tụ nhanh hơn và định vị đối tượng tốt hơn so với cross-attention toàn cục. Luồng dữ liệu được tóm tắt trong Hình~\ref{fig:m2f_arch}.
+Mask2Former gồm ba thành phần: backbone trích đặc trưng đa tỷ lệ, \emph{pixel decoder} nâng độ phân giải đặc trưng, và \emph{Transformer decoder} sinh dự đoán theo từng query. Điểm cốt lõi là \emph{masked attention}: mỗi query chỉ attend vào vùng foreground do chính nó dự đoán ở lớp trước.
 
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
         node distance=0.55cm and 0.75cm,
         box/.style={draw, rounded corners, align=center, minimum height=1.05cm,
-                    text width=2.5cm, font=\small, fill=blue!6},
+                text width=2.5cm, font=\small, fill=blue!6},
         io/.style={draw, align=center, minimum height=1.05cm, text width=1.9cm,
-                   font=\small, fill=gray!12},
+                font=\small, fill=gray!12},
         outbox/.style={draw, rounded corners, align=center, minimum height=1.05cm,
-                    text width=2.2cm, font=\small, fill=green!8},
+                text width=2.2cm, font=\small, fill=green!8},
         arr/.style={-{Latex[length=2mm]}, thick}
-    ]
+        ]
         \node[io] (img) {Ảnh đầu vào\\$H\times W\times 3$};
-        \node[box, right=of img] (bb) {Backbone\\Swin-T/S\\(đặc trưng đa tỷ lệ)};
+        \node[box, right=of img] (bb) {Backbone\\Swin-T\\(đặc trưng đa tỷ lệ)};
         \node[box, right=of bb] (pd) {Pixel Decoder\\MSDeformAttn};
         \node[box, right=of pd] (dec) {Transformer Decoder\\$9$ lớp, masked attention\\$N{=}100$ query};
         \node[outbox, right=of dec] (cls) {Lớp bệnh\\(softmax)};
@@ -344,34 +336,21 @@ Mask2Former gồm ba thành phần nối tiếp: một backbone trích đặc tr
         \draw[arr] (dec) -- (cls);
         \draw[arr] (dec.south) |- (msk.west);
         \draw[arr] (pd.south) |- ([yshift=-0.18cm]msk.south west)
-                   node[midway, below, font=\scriptsize] {per-pixel embedding};
+        node[midway, below, font=\scriptsize] {per-pixel embedding};
     \end{tikzpicture}
-    \caption{Sơ đồ kiến trúc Mask2Former. Backbone Swin sinh đặc trưng đa tỷ lệ; pixel decoder (multi-scale deformable attention) tạo embedding theo pixel và đặc trưng phân giải cao; Transformer decoder dùng $N$ query học được, qua $9$ lớp masked attention để sinh, với mỗi query, một nhãn lớp (softmax) và một vector mask embedding. Tích vô hướng giữa mask embedding và per-pixel embedding cho ra mask logits, kích hoạt bằng sigmoid.}
+    \caption{Sơ đồ kiến trúc Mask2Former với backbone Swin-T.}
     \label{fig:m2f_arch}
 \end{figure}
 
-\textbf{b) Số lượng tham số}
+\paragraph{Số lượng tham số.}
+Nhóm sử dụng backbone Swin-T (tiny) với tổng khoảng \textbf{47M tham số}: Backbone $\approx$ 28M, Pixel decoder $\approx$ 10M, Transformer decoder $\approx$ 9M.
 
-Nhóm sử dụng hai backbone Swin Transformer ở hai cấu hình thử nghiệm. Tổng số tham số ước lượng theo checkpoint pre-trained của Hugging Face (\texttt{facebook/\allowbreak mask2former-\allowbreak swin-\{tiny,small\}-\allowbreak coco-instance}); con số chính xác có thể kiểm chứng bằng \texttt{sum(p.numel() for p in model.parameters())}. Backbone chiếm phần lớn dung lượng, trong khi pixel decoder và Transformer decoder tương đối nhẹ (Bảng~\ref{tab:m2f_params}).
+\paragraph{Hàm kích hoạt.}
+Mô hình dùng \textbf{GELU} trong MLP của Swin backbone và Transformer decoder, \textbf{ReLU} trong pixel decoder, kèm \textbf{LayerNorm} xuyên suốt. Đầu ra: nhánh phân loại dùng \textbf{softmax}, nhánh mask dùng \textbf{sigmoid}.
 
-\begin{table}[H]
-    \caption{Phân bố tham số của Mask2Former theo hai backbone được sử dụng}
-    \centering
-    \begin{tabular}{lrr}
-        \toprule
-        \textbf{Thành phần} & \textbf{Swin-T (baseline)} & \textbf{Swin-S (tuned)} \\
-        \midrule
-        Backbone (Swin)          & $\approx$ 28M  & $\approx$ 50M  \\
-        Pixel decoder (MSDeformAttn) & $\approx$ 10M & $\approx$ 10M \\
-        Transformer decoder      & $\approx$ 9M   & $\approx$ 9M   \\
-        \midrule
-        \textbf{Tổng}            & $\approx$ 47M  & $\approx$ 69M  \\
-        Dung lượng checkpoint (fp32) & 181{,}07 MB & 262{,}48 MB \\
-        \bottomrule
-    \end{tabular}
-    \label{tab:m2f_params}
-\end{table}
-
-\textbf{c) Hàm kích hoạt}
-
-Mô hình dùng \textbf{GELU} trong các khối MLP của Swin backbone và trong các lớp feed-forward của Transformer decoder, \textbf{ReLU} trong các lớp feed-forward của pixel decoder, kèm \textbf{LayerNorm} làm chuẩn hóa xuyên suốt các khối attention. Ở đầu ra, nhánh phân loại dùng \textbf{softmax} trên tập nhãn (cộng nhãn rỗng $\emptyset$), còn nhánh mask dùng \textbf{sigmoid} để đưa mask logits về xác suất foreground theo từng pixel.
+\subsubsection{Hàm mất mát}
+Mask2Former tối ưu hàm mất mát mask classification, ghép cặp dự đoán với ground-truth bằng \emph{bipartite matching} (thuật toán Hungarian):
+\[
+    \mathcal{L} = \lambda_{cls}\,\mathcal{L}_{cls} + \lambda_{ce}\,\mathcal{L}_{ce} + \lambda_{dice}\,\mathcal{L}_{dice},
+\]
+trong đó $\mathcal{L}_{cls}$ là cross-entropy cho nhãn lớp, $\mathcal{L}_{ce}$ (binary cross-entropy pixel) và $\mathcal{L}_{dice}$ giám sát chất lượng mask. Trọng số mặc định: $\lambda_{cls}{=}2$, $\lambda_{ce}{=}5$, $\lambda_{dice}{=}5$. BCE ổn định gradient ở mức pixel, trong khi Dice trực tiếp tối ưu độ chồng lấp và ít nhạy với mất cân bằng foreground/background.
