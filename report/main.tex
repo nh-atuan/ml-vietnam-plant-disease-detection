@@ -8,6 +8,10 @@
 % \usepackage{dirtree}
 \usepackage{tabularx}
 \usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, fit, backgrounds}
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning}
 
@@ -23,6 +27,9 @@
 % Thiết lập khoảng cách (skip) là 0.2cm cho tất cả các hình
 \captionsetup[figure]{skip=0.2cm}
 
+% Thiết lập khoảng cách giữa các dòng trong bảng (row spacing)
+\renewcommand{\arraystretch}{1.5}
+
 % Optional: graphic path
 % \graphicspath{PATH_TO_GRAPHIC_FOLDER}
 
@@ -35,7 +42,7 @@
 
 % Define course name, report name and report title.
 \newcommand{\coursename}{CSC14005 - Nhập môn học máy}
-\newcommand{\reportname}{Hệ thống chẩn đoán bệnh trên lá cây nông nghiệp đặc sản (Cà phê/Lúa) hỗ trợ nông dân}
+\newcommand{\reportname}{Hệ thống phân vùng thực thể chẩn đoán bệnh trên lá cây nông nghiệp đặc sản (Cà phê/Lúa) hỗ trợ nông dân}
 \newcommand{\reporttitle}{BÁO CÁO VỀ MÔ HÌNH}
 
 \newcommand{\studentname}{Nguyễn Hồ Anh Tuấn - 23120185 \\ Lê Xuân Trí - 23120099 \\ Đàm Tiến Đạt - 23120118 \\ Tống Thanh Phúc - 23120158\\ Dương Tuấn Anh - 23120208}
@@ -59,16 +66,16 @@ Trường Đại học Khoa học Tự nhiên - ĐHQG HCM\\
 
 \cleardoublepage
 \pagenumbering{roman}
-\pagestyle{empty} 
+\pagestyle{empty}
 
 \tableofcontents
 % \pagebreak
 % \thispagestyle{empty}
 
 \cleardoublepage
-\pagenumbering{arabic} 
+\pagenumbering{arabic}
 \pagestyle{plain}
-      
+
 \listoftables
 \addcontentsline{toc}{section}{Danh sách bảng}
 \pagebreak
