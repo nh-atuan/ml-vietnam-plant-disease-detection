@@ -147,3 +147,21 @@ User
 | **Tống Thanh Phúc** | DB Schema (5.5) | Load testing (6.6) | — |
 | **Dương Tuấn Anh** | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3), MLOps (6.4) | S6 |
 | **Nguyễn Hồ Anh Tuấn** | Model Export (5.1) | Integration Test (6.5) | — |
+
+---
+
+## CÁC RỦI RO HỆ THỐNG TIỀM ẨN & PHƯƠNG ÁN DỰ PHÒNG
+
+Trong quá trình chuẩn bị và thực hiện, cần lưu ý và thảo luận thống nhất phương án xử lý cho các rủi ro hệ thống sau đây:
+
+### 1. Rủi ro Export ONNX đối với các mô hình Segmentation phức tạp
+- Vấn đề: Các mô hình phân vùng thực thể (Instance Segmentation) như Mask R-CNN, RF-DETR, hay Mask2Former chứa nhiều toán tử custom hoặc xử lý dynamic shape phức tạp. Việc export sang ONNX và chạy trên ONNX Runtime có thể gặp lỗi không tương thích.
+- Phương án dự phòng: Cần thử nghiệm export sớm. Nếu lỗi không thể giải quyết, chuẩn bị phương án chạy trực tiếp bằng PyTorch CPU hoặc convert sang TorchScript (sử dụng `torch.jit`).
+
+### 2. Rủi ro quá tải RAM trên Cloud Server (Lỗi OOM - Out of Memory)
+- Vấn đề: Việc chạy đồng thời nhiều service (FastAPI + Model, Next.js, PostgreSQL, Redis, MinIO, MLflow) trên các cloud server miễn phí hoặc cấu hình thấp (1-2GB RAM) rất dễ gây crash hệ thống do tràn bộ nhớ.
+- Phương án dự phòng: Kích hoạt Swap file (tối thiểu 2GB-4GB) trên máy chủ Ubuntu trước khi chạy Docker Compose. Nếu RAM vẫn quá tải, cân nhắc tối giản hóa stack trên Production bằng cách tắt bớt MLflow UI, Redis hoặc MinIO (lưu file trực tiếp vào ổ cứng server).
+
+### 3. Độ trễ suy luận của mô hình SAM 3
+- Vấn đề: Mô hình SAM 3 rất nặng. Chạy suy luận trên CPU có thể tốn từ 2-10 giây cho một bức ảnh, gây nghẽn toàn bộ worker của FastAPI backend và làm nghẽn API.
+- Phương án dự phòng: Tích hợp mô hình SAM dưới dạng bất đồng bộ (sử dụng `BackgroundTasks` của FastAPI kết hợp cập nhật kết quả sau) hoặc sử dụng các phiên bản rút gọn nhẹ hơn như MobileSAM hoặc FastSAM để đảm bảo thời gian phản hồi.
