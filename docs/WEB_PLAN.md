@@ -4,7 +4,7 @@
 ---
 
 ## GIAI ĐOẠN CHUẨN BỊ (Trước khi thực hiện Phase 5 & 6)
-> **Kế hoạch chạy lại Notebook & Đo đạc Inference Time trên CPU**
+> **Kế hoạch chạy lại Notebook & Đo đạc Inference Time trên CPU** | **Deadline: 21/6**
 
 Trước khi bắt tay vào xây dựng ứng dụng (Phase 5) và triển khai (Phase 6), tất cả thành viên trong nhóm cần thực hiện một bước chuẩn bị bắt buộc nhằm đảm bảo mô hình hoạt động ổn định và sẵn sàng cho việc tích hợp vào hệ thống web:
 
@@ -28,31 +28,18 @@ Mỗi thành viên chịu trách nhiệm chạy lại **2 notebook huấn luyệ
 
 ---
 
-## Thông tin nhóm
-
-| STT | Họ và tên | MSSV |
-|-----|-----------|------|
-| 1 | Lê Xuân Trí | 23120099 |
-| 2 | Đàm Tiến Đạt | 23120118 |
-| 3 | Tống Thanh Phúc | 23120158 |
-| 4 | Dương Tuấn Anh | 23120208 |
-| 5 | Nguyễn Hồ Anh Tuấn | 23120185 |
-
-> **Giảng viên hướng dẫn:** Thầy Bùi Tiến Lên
-
----
-
 ## Tổng quan mốc thời gian (Web & DevOps Phase)
 
-| Mốc | Thời điểm | Phase | Nội dung yêu cầu nộp | Trạng thái |
-|-----|-----------|-------|----------------------|------------|
-| Tuần 10–12 | Ứng dụng | 5 | **Xây dựng Ứng dụng** – ONNX export, Backend FastAPI, Frontend Next.js | Chưa thực hiện |
-| Tuần 12–13 | DevOps | 6 | **Triển khai & DevOps** – Docker Compose, CI/CD, DuckDNS, URL công khai | Chưa thực hiện |
+| Deadline | Phase | Nội dung yêu cầu nộp | Trạng thái |
+|----------|-------|----------------------|------------|
+| 21/6 | Chuẩn bị | **Chạy lại Notebook & Đo đạc Inference Time trên CPU** | Chưa thực hiện |
+| 28/6 | 5 | **Xây dựng Ứng dụng** | Chưa thực hiện |
+| 5/7 | 6 | **Triển khai & DevOps** | Chưa thực hiện |
 
 ---
 
 ## PHASE 5 — Xây dựng Ứng dụng
-> **Tuần 10 → Tuần 12** | **Deadline: Sau Báo cáo tiến độ lần 2**
+> **Deadline: 28/6**
 
 ### Mục tiêu Phase 5
 - Export mô hình tốt nhất sang ONNX, đăng ký MLflow Model Registry
@@ -97,7 +84,7 @@ User
 ---
 
 ## PHASE 6 — Triển khai & DevOps
-> **Tuần 12 → Tuần 13** | **Deadline: Sau Báo cáo tiến độ lần 2**
+> **Deadline: 5/7**
 
 ### Mục tiêu Phase 6
 - Containerize toàn bộ hệ thống bằng Docker Compose
