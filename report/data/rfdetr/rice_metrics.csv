@@ -1,2 +1,0 @@
-domain,run,name,model_size,epochs,batch_size,grad_accum_steps,lr,lr_encoder,gradient_checkpointing,early_stopping,early_stopping_patience,mAP50_bbox,mAP50_95_bbox,mAP50_segm,mAP50_95_segm,mIoU,Dice,inference_ms_per_image,num_eval_images,checkpoint
-rice,train_lr1e4,train_lr1e4,nano,8,2,4,0.0001,0.00015,True,True,5,0.7356956698330718,0.7175527132923727,0.7038277754711219,0.6874400862284813,0.8132403665097949,0.8307914769470683,198.30617268489874,514,/kaggle/working/rf_detr_artifacts/rice/train_lr1e4/checkpoint_best_total.pth
