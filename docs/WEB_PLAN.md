@@ -73,6 +73,8 @@ User (Browser/Mobile)
 
 ## PHASE 6 — Triển khai & DevOps
 > **Deadline: 5/7**
+>
+> *Lưu ý cấu hình tài nguyên: Thường thì sẽ không bị quá tải/thiếu bộ nhớ vì YOLO rất nhẹ. Tuy nhiên, lúc setup cluster thì nên chọn machine type có khoảng 8GB RAM. Backend thì cấu hình Pod Limit cao khoảng 7GB để đảm bảo hoạt động mượt mà.*
 
 ### Mục tiêu Phase 6
 - Containerize toàn bộ các service của ứng dụng.
