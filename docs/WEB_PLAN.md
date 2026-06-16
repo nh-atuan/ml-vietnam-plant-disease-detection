@@ -3,6 +3,31 @@
 
 ---
 
+## GIAI ĐOẠN CHUẨN BỊ (Trước khi thực hiện Phase 5 & 6)
+> **Kế hoạch chạy lại Notebook & Đo đạc Inference Time trên CPU**
+
+Trước khi bắt tay vào xây dựng ứng dụng (Phase 5) và triển khai (Phase 6), tất cả thành viên trong nhóm cần thực hiện một bước chuẩn bị bắt buộc nhằm đảm bảo mô hình hoạt động ổn định và sẵn sàng cho việc tích hợp vào hệ thống web:
+
+### 1. Kế hoạch chạy lại Notebook
+Mỗi thành viên chịu trách nhiệm chạy lại **2 notebook huấn luyện** (ứng với tập dữ liệu Rice và Coffee) của mô hình mình phụ trách (đã được phân công từ Model Phase):
+*   **Lê Xuân Trí:** Mask R-CNN
+*   **Nguyễn Hồ Anh Tuấn:** YOLO26-seg
+*   **Tống Thanh Phúc:** RF-DETR
+*   **Đàm Tiến Đạt:** MobileSAM
+*   **Dương Tuấn Anh:** Mask2Former
+
+### 2. Đo đạc Inference Time trên CPU 
+
+**Đo thời gian suy luận (Inference Time) bắt buộc phải thực hiện trên CPU.**
+
+**Tại sao cần đo trên CPU?** Khi đưa mô hình lên web serving ở Phase 5 & 6 (sử dụng FastAPI và ONNX Runtime), hệ thống sẽ chạy chủ yếu trên môi trường CPU của server deploy để tiết kiệm chi phí và tài nguyên (thường không có GPU hoặc GPU bị giới hạn). Do đó, tốc độ suy luận thực tế trên CPU mới là chỉ số quyết định hiệu năng của ứng dụng.
+
+**Yêu cầu kỹ thuật:** Trong notebook chạy lại, cần bổ sung đoạn code đo thời gian xử lý trung bình trên CPU cho một mẫu ảnh (tính bằng mili-giây - ms) khi thực hiện dự đoán đầy đủ (từ tiền xử lý, chạy mô hình, đến hậu xử lý tạo mask).
+
+**Đầu ra:** Upload lạy 2 notebooks với ouput mới sau khi thực hiện. Ghi nhận và báo cáo cụ thể chỉ số này vào file README.md tương ứng để làm cơ sở so sánh chọn ra model tốt nhất và tối ưu hóa khi chuyển đổi sang định dạng ONNX.
+
+---
+
 ## Thông tin nhóm
 
 | STT | Họ và tên | MSSV |
