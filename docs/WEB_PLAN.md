@@ -110,12 +110,13 @@ User
 
 | # | Công việc | Người phụ trách | Output |
 |---|-----------|-----------------|--------|
-| 6.1 | **Docker Compose**: multi-service compose (frontend, backend, PostgreSQL, MinIO, Redis, Traefik), volume mounts, health checks, restart policies | **Tống Phúc** | `deployment/docker-compose.yml` hoàn chỉnh |
-| 6.2 | **CI/CD GitHub Actions**: workflow tự động lint, test, build Docker images, push registry, deploy | **Tống Phúc** | `.github/workflows/ci.yml` |
+| 6.1 | **Docker Compose**: multi-service compose (frontend, backend, PostgreSQL, MinIO, Redis, Traefik), volume mounts, health checks, restart policies | **Xuân Trí** | `deployment/docker-compose.yml` hoàn chỉnh |
+| 6.2 | **CI/CD GitHub Actions**: workflow tự động lint, test, build Docker images, push registry, deploy | **Xuân Trí** | `.github/workflows/ci.yml` |
 | 6.3 | **DuckDNS + Traefik**: cấu hình tên miền động, HTTPS auto (Let's Encrypt), reverse proxy routing | **Tuấn Anh** | `deployment/traefik/`, URL demo công khai |
-| 6.4 | **MLOps Dashboard**: tích hợp MLflow UI vào hệ thống deploy, model versioning & experiment comparison | **Tống Phúc** | MLflow service trong Docker Compose |
-| 6.5 | **Integration testing**: end-to-end test pipeline (upload ảnh → predict → verify response), load test cơ bản | **Anh Tuấn** | `tests/`, test scripts |
-| 6.6 | **SAM 3 Segmentation**: pseudo-mask generation cho ảnh nhiều lá, tích hợp optional vào API `/segment` | **Tuấn Anh** | `src/segmentation/`, endpoint bổ sung |
+| 6.4 | **MLOps Dashboard**: tích hợp MLflow UI vào hệ thống deploy, model versioning & experiment comparison | **Tuấn Anh** | MLflow service trong Docker Compose |
+| 6.5 | **Integration testing**: end-to-end test pipeline (upload ảnh → predict → verify response) | **Anh Tuấn** | `tests/`, test scripts |
+| 6.6 | **Load testing**: đo hiệu năng, load test cơ bản và chịu tải hệ thống | **Tống Phúc** | `tests/load/`, load test scripts & report |
+| 6.7 | **SAM 3 Segmentation**: pseudo-mask generation cho ảnh nhiều lá, tích hợp optional vào API `/segment` | **Đàm Đạt** | `src/segmentation/`, endpoint bổ sung |
 
 ### Stack triển khai
 
@@ -146,7 +147,7 @@ User
 | # | Ý tưởng sáng tạo | Phase | Người phụ trách | Giá trị mang lại |
 |---|-----------------|-------|-----------------|-----------------|
 | S3 | **Expert Knowledge Base** tiếng Việt: gợi ý xử lý bệnh theo luật chuyên gia, hành động cụ thể cho nông dân | 5 | **Xuân Trí** | Giá trị ứng dụng thực tiễn cao, bối cảnh Việt Nam |
-| S6 | **MLOps Dashboard**: tích hợp MLflow UI vào hệ thống deploy, theo dõi model versioning & experiment comparison trực tiếp | 6 | **Tống Phúc** | Quy trình MLOps chuyên nghiệp, dễ mở rộng |
+| S6 | **MLOps Dashboard**: tích hợp MLflow UI vào hệ thống deploy, theo dõi model versioning & experiment comparison trực tiếp | 6 | **Tuấn Anh** | Quy trình MLOps chuyên nghiệp, dễ mở rộng |
 
 ---
 
@@ -154,29 +155,8 @@ User
 
 | Thành viên | Phase 5 | Phase 6 | Sáng tạo |
 |-----------|---------|---------|----------|
-| **Lê Xuân Trí** | Knowledge Base (5.4) | — | S3 |
-| **Đàm Tiến Đạt** | Frontend (5.3) | — | — |
-| **Tống Thanh Phúc** | DB Schema (5.5) | Docker/CI-CD (6.1, 6.2), MLOps (6.4) | S6 |
-| **Dương Tuấn Anh** | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3), SAM 3 (6.6) | — |
+| **Lê Xuân Trí** | Knowledge Base (5.4) | Docker/CI-CD (6.1, 6.2) | S3 |
+| **Đàm Tiến Đạt** | Frontend (5.3) | SAM 3 (6.7) | — |
+| **Tống Thanh Phúc** | DB Schema (5.5) | Load testing (6.6) | — |
+| **Dương Tuấn Anh** | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3), MLOps (6.4) | S6 |
 | **Nguyễn Hồ Anh Tuấn** | Model Export (5.1) | Integration Test (6.5) | — |
-
----
-
-## Checklist skeleton theo output (Web & DevOps Phase)
-
-| Phase | Output chính | Skeleton trong repo |
-|---|---|---|
-| 5 | ONNX export, model metadata | `scripts/export_onnx.py`, `models/README.md`, `models/class_names.json` |
-| 5 | Backend, knowledge base, DB schema, API contract | `backend/app/`, `backend/app/knowledge/`, `backend/app/db/schema.sql`, `docs/api-spec.md` |
-| 5 | Frontend Next.js skeleton | `frontend/package.json`, `frontend/src/app/`, `frontend/Dockerfile` |
-| 6 | Docker Compose, CI/CD, Traefik, MLflow, tests, SAM 3 | `deployment/docker-compose.yml`, `.github/workflows/ci.yml`, `deployment/traefik/`, `tests/`, `src/segmentation/` |
-
----
-
-## Quy ước làm việc nhóm
-
-- **Git workflow:** feature branch theo task → PR → review trước khi merge vào `main`
-- **Họp nhóm:** ít nhất 1 lần/tuần để sync tiến độ, báo sớm blocker
-- **Môi trường:** dùng chung `requirements.txt`, tạo virtual env riêng
-- **Naming:** `notebooks/<phase>_<topic>_<author>.ipynb`; script đặt tên theo chức năng trong `src/`
-- **Tracking:** cập nhật trạng thái task trong file này hoặc GitHub Issues
