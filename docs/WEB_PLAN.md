@@ -1,30 +1,9 @@
 # KẾ HOẠCH PHÂN CÔNG ĐỒ ÁN CUỐI KỲ - WEB & DEVOPS PHASE
 ## Hệ thống phân vùng thực thể chẩn đoán bệnh trên lá cây nông nghiệp đặc sản cà phê và lúa
 
----
+## TRẠNG THÁI CHUẨN BỊ
 
-## GIAI ĐOẠN CHUẨN BỊ (Trước khi thực hiện Phase 5 & 6)
-> **Kế hoạch chạy lại Notebook & Đo đạc Inference Time trên CPU** | **Deadline: 21/6**
-
-Trước khi bắt tay vào xây dựng ứng dụng (Phase 5) và triển khai (Phase 6), tất cả thành viên trong nhóm cần thực hiện một bước chuẩn bị bắt buộc nhằm đảm bảo mô hình hoạt động ổn định và sẵn sàng cho việc tích hợp vào hệ thống web:
-
-### 1. Kế hoạch chạy lại Notebook
-Mỗi thành viên chịu trách nhiệm chạy lại **2 notebook huấn luyện** (ứng với tập dữ liệu Rice và Coffee) của mô hình mình phụ trách (đã được phân công từ Model Phase):
-*   **Lê Xuân Trí:** Mask R-CNN
-*   **Nguyễn Hồ Anh Tuấn:** YOLO26-seg
-*   **Tống Thanh Phúc:** RF-DETR
-*   **Đàm Tiến Đạt:** MobileSAM
-*   **Dương Tuấn Anh:** Mask2Former
-
-### 2. Đo đạc Inference Time trên CPU 
-
-**Đo thời gian suy luận (Inference Time) bắt buộc phải thực hiện trên CPU.**
-
-**Tại sao cần đo trên CPU?** Khi đưa mô hình lên web serving ở Phase 5 & 6 (sử dụng FastAPI và ONNX Runtime), hệ thống sẽ chạy chủ yếu trên môi trường CPU của server deploy để tiết kiệm chi phí và tài nguyên (thường không có GPU hoặc GPU bị giới hạn). Do đó, tốc độ suy luận thực tế trên CPU mới là chỉ số quyết định hiệu năng của ứng dụng.
-
-**Yêu cầu kỹ thuật:** Trong notebook chạy lại, cần bổ sung đoạn code đo thời gian xử lý trung bình trên CPU cho một mẫu ảnh (tính bằng mili-giây - ms) khi thực hiện dự đoán đầy đủ (từ tiền xử lý, chạy mô hình, đến hậu xử lý tạo mask).
-
-**Đầu ra:** Upload lạy 2 notebooks với ouput mới sau khi thực hiện. Ghi nhận và báo cáo cụ thể chỉ số này vào file README.md tương ứng để làm cơ sở so sánh chọn ra model tốt nhất và tối ưu hóa khi chuyển đổi sang định dạng ONNX.
+**Lựa chọn mô hình Deploy**: Thống nhất chọn **YOLO26-seg** (dựa trên YOLOv8-seg) làm mô hình chính thức để tích hợp vào ứng dụng.
 
 ---
 
@@ -32,9 +11,8 @@ Mỗi thành viên chịu trách nhiệm chạy lại **2 notebook huấn luyệ
 
 | Deadline | Phase | Nội dung yêu cầu nộp | Trạng thái |
 |----------|-------|----------------------|------------|
-| 21/6 | Chuẩn bị | **Chạy lại Notebook & Đo đạc Inference Time trên CPU** | Chưa thực hiện |
-| 28/6 | 5 | **Xây dựng Ứng dụng** | Chưa thực hiện |
-| 5/7 | 6 | **Triển khai & DevOps** | Chưa thực hiện |
+| 28/6 | 5 | **Xây dựng Ứng dụng (Frontend, Backend, Database)** | Chưa thực hiện |
+| 5/7 | 6 | **Triển khai & DevOps (K8s, CI/CD, Helm, Traefik)** | Chưa thực hiện |
 
 ---
 
@@ -42,44 +20,54 @@ Mỗi thành viên chịu trách nhiệm chạy lại **2 notebook huấn luyệ
 > **Deadline: 28/6**
 
 ### Mục tiêu Phase 5
-- Export mô hình tốt nhất sang ONNX, đăng ký MLflow Model Registry
-- Xây dựng Backend FastAPI với inference endpoint
-- Xây dựng Frontend Next.js + Tailwind CSS
-- Thiết kế database schema và API specification
-- Tích hợp Expert Knowledge Base tiếng Việt
+- Tối ưu hóa mô hình YOLO26-seg: Tune hoàn thiện, export sang ONNX và thực hiện Quantization.
+- Xây dựng Backend bằng FastAPI với các API `/predict`, `/auth`, `/history`.
+- Xây dựng Database bằng Python sử dụng **SQLModel** để kết nối DB, thực hiện các truy vấn lưu thông tin user, kết quả model, và URL ảnh trong MinIO. Thiết lập và cấu hình MinIO để lưu trữ ảnh người dùng.
+- Xây dựng Frontend: Dùng Next.js hoặc sử dụng Google AI Studio tạo prototype nhanh, sau đó đưa về local dùng Agent (như Antigravity/Codex/Claude Code) hỗ trợ gắn kết nối API giữa Frontend và Backend.
+- Tích hợp Expert Knowledge Base tiếng Việt cung cấp hướng dẫn xử lý bệnh.
 
-### Phân công công việc
+### Phân công công việc Phase 5
 
 | # | Công việc | Người phụ trách | Output |
 |---|-----------|-----------------|--------|
-| 5.1 | **Model Export & Registry**: export sang ONNX, benchmark inference ONNX vs PyTorch, đăng ký MLflow Model Registry, viết script tự động export | **Anh Tuấn** | `models/best_model.onnx`, `scripts/export_onnx.py`, MLflow Registry entry |
-| 5.2 | **Backend FastAPI**: REST API `/predict` (nhận ảnh → trả nhãn + top-k + confidence), kết nối PostgreSQL (log dự đoán), MinIO (lưu ảnh gốc), Redis (cache kết quả TTL 1h), Swagger docs | **Tuấn Anh** | `backend/app/`, Docker service backend |
-| 5.3 | **Frontend Next.js**: trang upload ảnh, hiển thị kết quả chẩn đoán (nhãn, confidence, top-k, gợi ý xử lý), giao diện mobile-first responsive | **Đàm Đạt** | `frontend/`, UI demo hoạt động |
-| 5.4 | **Expert Knowledge Base**: module gợi ý xử lý bệnh theo luật chuyên gia — tra bảng nhãn → hiển thị mô tả bệnh + biện pháp tiếng Việt, hành động cụ thể cho nông dân | **Xuân Trí** | `backend/app/knowledge/`, tích hợp vào API response |
-| 5.5 | **Database schema & API docs**: thiết kế PostgreSQL schema (predictions, images, users), viết OpenAPI spec, review API contracts giữa frontend–backend | **Tống Phúc** | Schema SQL, API specification |
+| 5.1 | **Model Preparation**: Tune hoàn thiện, export sang định dạng ONNX, thực hiện Quantization cho mô hình YOLO26-seg để tối ưu hóa suy luận trên CPU. | **Đàm Tiến Đạt** | `models/yolo26_quantized.onnx`, script export & quantize |
+| 5.2 | **Backend FastAPI**: Phát triển API FastAPI (`/predict`, login/register, `/history`), tích hợp logic gọi model qua ONNX Runtime và kết nối database. | **Nguyễn Hồ Anh Tuấn** | `backend/app/`, Dockerfile backend |
+| 5.3 | **Database & MinIO**: Viết code Python dùng SQLModel kết nối DB + viết truy vấn (lưu thông tin user, kết quả model, URL ảnh trong MinIO) + Setup cài đặt MinIO để lưu ảnh người dùng. | **Tống Thanh Phúc** | SQLModel schemas, DB queries, MinIO configuration |
+| 5.4 | **Frontend App**: Phát triển giao diện (Next.js hoặc prototype từ Google AI Studio mang về local dùng Agent sửa code kết nối backend), hỗ trợ giao diện mobile-first trực quan. | **Dương Tuấn Anh** | `frontend/`, UI demo kết nối backend |
+| 5.5 | **Expert Knowledge Base & API Specs**: Thiết kế module gợi ý xử lý bệnh theo luật chuyên gia (tiếng Việt), xây dựng tài liệu Swagger/OpenAPI spec cho toàn hệ thống. | **Lê Xuân Trí** | `backend/app/knowledge/`, OpenAPI documentation |
+
+## USE CASES CỦA ỨNG DỤNG
+
+Ứng dụng hướng đến trải nghiệm người dùng cuối trực quan và đơn giản:
+1. **Đăng ký & Đăng nhập**: Người dùng đăng ký tài khoản mới và đăng nhập để quản lý lịch sử chẩn đoán.
+2. **Chẩn đoán & Gợi ý xử lý**:
+   - Người dùng chụp ảnh trực tiếp từ camera hoặc tải ảnh lá cây lên.
+   - Hệ thống chạy mô hình YOLO26-seg dự đoán bệnh.
+   - Hiển thị kết quả chẩn đoán kèm gợi ý cách xử lý/phòng ngừa phù hợp (Expert Knowledge Base).
+3. **Xem lại lịch sử**: Người dùng xem lại toàn bộ ảnh đã chụp cùng kết quả chẩn đoán và gợi ý xử lý của hệ thống trước đó.
+
+---
 
 ### Kiến trúc hệ thống
 
 ```
-User
- └─→ Frontend (Next.js + Tailwind)
-        └─→ POST /predict → Backend (FastAPI)
-                              ├── MinIO      ← lưu ảnh gốc
-                              ├── Redis      ← cache kết quả (TTL 1h)
-                              ├── ONNX Runtime ← inference model
-                              ├── Knowledge Base ← gợi ý xử lý bệnh
-                              └── PostgreSQL ← log dự đoán
+User (Browser/Mobile)
+  └─→ Frontend (Next.js / AI Studio Prototype)
+         └─→ API Request (Auth/Predict/History) → Backend (FastAPI)
+                                                     ├── MinIO (Lưu ảnh người dùng)
+                                                     ├── ONNX Runtime (Chạy model YOLO26-seg quantized)
+                                                     ├── Knowledge Base (Luật chuyên gia tiếng Việt)
+                                                     └── Database (PostgreSQL/MySQL qua SQLModel)
 ```
 
 ### Kết quả cần đạt cuối Phase 5
 
 | Hạng mục | Mô tả |
 |----------|-------|
-| ONNX Model | Export thành công, inference < 500ms/ảnh trên CPU |
-| Backend API | FastAPI ổn định, `/predict` trả kết quả đúng, có Swagger docs |
-| Frontend | Giao diện đẹp, responsive, demo được trên điện thoại |
-| Knowledge Base | Hiển thị gợi ý xử lý phù hợp cho từng loại bệnh (tiếng Việt) |
-| DB Schema | PostgreSQL schema hoàn chỉnh, migration scripts |
+| ONNX Model | YOLO26-seg được quantize thành công, inference tốc độ cao trên CPU |
+| Backend API | FastAPI chạy ổn định với đầy đủ các endpoint yêu cầu, có Swagger docs |
+| Database & MinIO | SQLModel kết nối trơn tru, lưu thông tin đầy đủ, MinIO lưu ảnh thành công |
+| Frontend | Giao diện thân thiện, tương tác tốt với backend, hiển thị kết quả chẩn đoán & gợi ý xử lý |
 
 ---
 
@@ -87,45 +75,44 @@ User
 > **Deadline: 5/7**
 
 ### Mục tiêu Phase 6
-- Containerize toàn bộ hệ thống bằng Docker Compose
-- Thiết lập CI/CD với GitHub Actions
-- Deploy lên cloud có URL công khai (DuckDNS + Traefik)
-- Tích hợp MLOps Dashboard 
-- Integration testing end-to-end
+- Containerize toàn bộ các service của ứng dụng.
+- Thiết lập Kubernetes cluster (thực hiện thủ công cho đơn giản hoặc dùng Terraform).
+- Xây dựng CI/CD pipeline bằng GitHub Actions: tự động chạy test -> build Docker image -> deploy lên K8s thông qua Helm Chart.
+- Thiết lập DuckDNS + Traefik/Nginx để định tuyến request từ ngoài internet vào ứng dụng.
+- Thực hiện E2E integration testing và load testing.
 
-### Phân công công việc
+### Phân công công việc Phase 6
 
 | # | Công việc | Người phụ trách | Output |
 |---|-----------|-----------------|--------|
-| 6.1 | **Docker Compose**: multi-service compose (frontend, backend, PostgreSQL, MinIO, Redis, Traefik), volume mounts, health checks, restart policies | **Xuân Trí** | `deployment/docker-compose.yml` hoàn chỉnh |
-| 6.2 | **CI/CD GitHub Actions**: workflow tự động lint, test, build Docker images, push registry, deploy | **Xuân Trí** | `.github/workflows/ci.yml` |
-| 6.3 | **DuckDNS + Traefik**: cấu hình tên miền động, HTTPS auto (Let's Encrypt), reverse proxy routing | **Tuấn Anh** | `deployment/traefik/`, URL demo công khai |
-| 6.4 | **MLOps Dashboard**: tích hợp MLflow UI vào hệ thống deploy, model versioning & experiment comparison | **Tuấn Anh** | MLflow service trong Docker Compose |
-| 6.5 | **Integration testing**: end-to-end test pipeline (upload ảnh → predict → verify response) | **Anh Tuấn** | `tests/`, test scripts |
-| 6.6 | **Load testing**: đo hiệu năng, load test cơ bản và chịu tải hệ thống | **Tống Phúc** | `tests/load/`, load test scripts & report |
-| 6.7 | **SAM 3 Segmentation**: pseudo-mask generation cho ảnh nhiều lá, tích hợp optional vào API `/segment` | **Đàm Đạt** | `src/segmentation/`, endpoint bổ sung |
+| 6.1 | **Kubernetes Setup**: Cài đặt cụm Kubernetes cluster (thủ công cho đơn giản hoặc dùng Terraform nếu thành thạo) để quản lý container. | **Lê Xuân Trí** | Kubernetes cluster cấu hình thành công |
+| 6.2 | **CI/CD Pipeline**: Viết GitHub Actions workflow tự động chạy test, build Docker images và đẩy lên registry. | **Lê Xuân Trí** | `.github/workflows/ci.yml` |
+| 6.3 | **Helm Chart Deployment**: Tạo Helm Chart cho các service (Frontend, Backend, DB, MinIO) để deploy tự động lên Kubernetes cluster. | **Lê Xuân Trí** | `deployment/helm/` |
+| 6.4 | **DuckDNS & Traefik/Nginx Ingress**: Cấu hình tên miền động DuckDNS và cài đặt Traefik/Nginx Ingress để định tuyến request HTTPS từ user đến app. | **Lê Xuân Trí** | Cấu hình Ingress, tên miền hoạt động |
+| 6.5 | **Model Serving on K8s**: Tối ưu hóa việc deploy mô hình YOLO26-seg quantized trên K8s, tích hợp ONNX Runtime trong backend pod. | **Đàm Tiến Đạt** | Deployment config cho Model serving |
+| 6.6 | **Integration & Load Testing**: Viết và chạy test tích hợp E2E (login -> upload ảnh -> nhận kết quả) cùng kịch bản load test kiểm tra độ chịu tải. | **Nguyễn Hồ Anh Tuấn** & **Tống Thanh Phúc** | `tests/`, test reports |
+| 6.7 | **Database & Storage Scaling**: Cấu hình persistent volume cho Database và MinIO trên cụm Kubernetes, đảm bảo tính toàn vẹn dữ liệu. | **Tống Thanh Phúc** & **Dương Tuấn Anh** | K8s PVC configs |
 
 ### Stack triển khai
 
 | Thành phần | Vai trò |
 |---|---|
-| Docker | Containerize toàn bộ services |
-| Kubernetes | Tuỳ chọn mở rộng theo proposal nếu nhóm có đủ thời gian/hạ tầng; Docker Compose vẫn là baseline demo |
-| Traefik | Reverse proxy, routing, HTTPS |
-| DuckDNS | Tên miền động cho URL demo công khai |
-| GitHub Actions | CI/CD tự động build & deploy |
-| ONNX Runtime | Inference tối ưu tốc độ |
-| MLflow Model Registry | Quản lý phiên bản mô hình |
+| Kubernetes | Quản lý và điều phối các containers của hệ thống |
+| Helm Chart | Đóng gói và deploy ứng dụng lên Kubernetes dễ dàng |
+| GitHub Actions | CI/CD tự động hóa quy trình test, build và deploy |
+| Traefik / Nginx | Ingress controller điều hướng traffic và cấu hình HTTPS SSL |
+| DuckDNS | Cung cấp tên miền miễn phí ánh xạ tới IP của cluster |
+| Docker | Đóng gói các dịch vụ thành image |
+| ONNX Runtime | Engine chạy mô hình YOLO26-seg đã quantize trên CPU |
 
 ### Kết quả cần đạt cuối Phase 6
 
 | Hạng mục | Mô tả |
 |----------|-------|
-| Docker Compose | `docker compose up` → toàn bộ hệ thống hoạt động |
-| CI/CD | Push code → auto build & deploy |
-| URL công khai | Demo truy cập được từ internet qua DuckDNS |
-| MLOps | MLflow UI accessible, model versions tracked |
-| Tests | E2E test pass, basic load test report |
+| Kubernetes Cluster | Các pods (FastAPI, Frontend, DB, MinIO) chạy ổn định trên K8s |
+| CI/CD & Helm | Chỉ cần push code mới -> Tự động hóa build & deploy lên K8s qua Helm |
+| URL truy cập | Người dùng truy cập app bình thường thông qua domain DuckDNS có HTTPS |
+| Verification | Hệ thống vượt qua các bài kiểm tra E2E và chịu tải cơ bản |
 
 ---
 
@@ -133,35 +120,17 @@ User
 
 | # | Ý tưởng sáng tạo | Phase | Người phụ trách | Giá trị mang lại |
 |---|-----------------|-------|-----------------|-----------------|
-| S3 | **Expert Knowledge Base** tiếng Việt: gợi ý xử lý bệnh theo luật chuyên gia, hành động cụ thể cho nông dân | 5 | **Xuân Trí** | Giá trị ứng dụng thực tiễn cao, bối cảnh Việt Nam |
-| S6 | **MLOps Dashboard**: tích hợp MLflow UI vào hệ thống deploy, theo dõi model versioning & experiment comparison trực tiếp | 6 | **Tuấn Anh** | Quy trình MLOps chuyên nghiệp, dễ mở rộng |
+| S1 | **Expert Knowledge Base** tiếng Việt: luật chuyên gia động, gợi ý trực quan giải pháp phòng bệnh phù hợp cho nông dân | 5 | **Lê Xuân Trí** | Giá trị ứng dụng thực tiễn cao, hỗ trợ người nông dân trực tiếp |
+| S2 | **Triển khai GitOps/DevOps nâng cao**: Sử dụng Kubernetes kết hợp Helm Chart và CI/CD hoàn chỉnh trên môi trường Cloud | 6 | **Lê Xuân Trí** | Mô hình triển khai doanh nghiệp thực tế, dễ nâng cấp và mở rộng |
 
 ---
 
-## Tổng hợp công việc (Web & DevOps Phase)
+## Tổng hợp phân công công việc (Web & DevOps Phase)
 
-| Thành viên | Phase 5 | Phase 6 | Sáng tạo |
-|-----------|---------|---------|----------|
-| **Lê Xuân Trí** | Knowledge Base (5.4) | Docker/CI-CD (6.1, 6.2) | S3 |
-| **Đàm Tiến Đạt** | Frontend (5.3) | SAM 3 (6.7) | — |
-| **Tống Thanh Phúc** | DB Schema (5.5) | Load testing (6.6) | — |
-| **Dương Tuấn Anh** | Backend FastAPI (5.2) | DuckDNS/Traefik (6.3), MLOps (6.4) | S6 |
-| **Nguyễn Hồ Anh Tuấn** | Model Export (5.1) | Integration Test (6.5) | — |
-
----
-
-## CÁC RỦI RO HỆ THỐNG TIỀM ẨN & PHƯƠNG ÁN DỰ PHÒNG
-
-Trong quá trình chuẩn bị và thực hiện, cần lưu ý và thảo luận thống nhất phương án xử lý cho các rủi ro hệ thống sau đây:
-
-### 1. Rủi ro Export ONNX đối với các mô hình Segmentation phức tạp
-- Vấn đề: Các mô hình phân vùng thực thể (Instance Segmentation) như Mask R-CNN, RF-DETR, hay Mask2Former chứa nhiều toán tử custom hoặc xử lý dynamic shape phức tạp. Việc export sang ONNX và chạy trên ONNX Runtime có thể gặp lỗi không tương thích.
-- Phương án dự phòng: Cần thử nghiệm export sớm. Nếu lỗi không thể giải quyết, chuẩn bị phương án chạy trực tiếp bằng PyTorch CPU hoặc convert sang TorchScript (sử dụng `torch.jit`).
-
-### 2. Rủi ro quá tải RAM trên Cloud Server (Lỗi OOM - Out of Memory)
-- Vấn đề: Việc chạy đồng thời nhiều service (FastAPI + Model, Next.js, PostgreSQL, Redis, MinIO, MLflow) trên các cloud server miễn phí hoặc cấu hình thấp (1-2GB RAM) rất dễ gây crash hệ thống do tràn bộ nhớ.
-- Phương án dự phòng: Kích hoạt Swap file (tối thiểu 2GB-4GB) trên máy chủ Ubuntu trước khi chạy Docker Compose. Nếu RAM vẫn quá tải, cân nhắc tối giản hóa stack trên Production bằng cách tắt bớt MLflow UI, Redis hoặc MinIO (lưu file trực tiếp vào ổ cứng server).
-
-### 3. Độ trễ suy luận của mô hình SAM 3
-- Vấn đề: Mô hình SAM 3 rất nặng. Chạy suy luận trên CPU có thể tốn từ 2-10 giây cho một bức ảnh, gây nghẽn toàn bộ worker của FastAPI backend và làm nghẽn API.
-- Phương án dự phòng: Tích hợp mô hình SAM dưới dạng bất đồng bộ (sử dụng `BackgroundTasks` của FastAPI kết hợp cập nhật kết quả sau) hoặc sử dụng các phiên bản rút gọn nhẹ hơn như MobileSAM hoặc FastSAM để đảm bảo thời gian phản hồi.
+| Thành viên | Phase 5 (Xây dựng Ứng dụng) | Phase 6 (Triển khai & DevOps) | Vai trò chính |
+|-----------|-------------------------|---------------------------|--------------|
+| **Lê Xuân Trí** | Expert Knowledge Base & API Specs (5.5) | K8s Setup, CI/CD, Helm, Traefik (6.1, 6.2, 6.3, 6.4) | **DevOps & Knowledge Lead** |
+| **Đàm Tiến Đạt** | Model Prep (Tune, ONNX, Quantize) (5.1) | Model Serving on K8s (6.5) | **Machine Learning Engineer** |
+| **Tống Thanh Phúc** | Database SQLModel & MinIO (5.3) | Load Testing & Storage Scaling (6.6, 6.7) | **Database & QC Engineer** |
+| **Dương Tuấn Anh** | Frontend App Integration (5.4) | Storage Scaling & Logs (6.7) | **Frontend Developer** |
+| **Nguyễn Hồ Anh Tuấn** | Backend FastAPI Development (5.2) | Integration Testing (6.6) | **Backend & QC Developer** |
