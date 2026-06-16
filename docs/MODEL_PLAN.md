@@ -21,7 +21,7 @@
 
 | Mốc | Thời điểm | Phase | Nội dung yêu cầu nộp | Trạng thái |
 |-----|-----------|-------|----------------------|------------|
-| Tuần 7–9 | Training | 3+4 | **Lựa chọn, Huấn luyện, Đánh giá & Tinh chỉnh** – 5 model segmentation trên Kaggle GPU, push HuggingFace Hub, báo cáo tiến độ lần 2 (dự kiến 24/5) | Đang thực hiện |
+| Tuần 7–9 | Training | 3+4 | **Lựa chọn, Huấn luyện, Đánh giá & Tinh chỉnh** – 5 model segmentation trên Kaggle GPU, push HuggingFace Hub, báo cáo tiến độ lần 2 (dự kiến 24/5) | Đã hoàn thành |
 
 ---
 
