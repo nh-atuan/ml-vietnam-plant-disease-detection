@@ -20,7 +20,7 @@ def upload_folder_to_hf(hf_repo_id: str, artifacts_dir: str, target_domain: str)
         repo_id=hf_repo_id,
         repo_type="model",
         folder_path=str(artifacts_dir),
-        commit_message=f"Add YOLO26-seg Phase 3 {target_domain} artifacts",
+        commit_message=f"Add YOLO26-seg x Ray Tune {target_domain} artifacts",
         token=token,
     )
     print(f"Uploaded artifacts to https://huggingface.co/{hf_repo_id}")

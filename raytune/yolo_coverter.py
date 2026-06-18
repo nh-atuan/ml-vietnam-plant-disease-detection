@@ -240,6 +240,6 @@ def convert_to_yolo(
         raise RuntimeError(f"No converted samples for {target_domain}. First skipped examples: {skipped[:10]}")
 
     skipped_df = pd.DataFrame(skipped, columns=["sample_id", "reason"])
-    skipped_df.to_csv(artifacts_dir / "conversion_skipped.csv", index=False)
-    converted.to_csv(artifacts_dir / "converted_manifest.csv", index=False)
+    skipped_df.to_csv(artifacts_dir / f"{target_domain}_conversion_skipped.csv", index=False)
+    converted.to_csv(artifacts_dir / f"{target_domain}_converted_manifest.csv", index=False)
     return converted
