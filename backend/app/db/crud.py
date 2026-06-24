@@ -3,22 +3,26 @@ CRUD (Create, Read, Update, Delete) operations using SQLModel.
 """
 from typing import List, Optional
 import uuid
-from passlib.context import CryptContext
+import bcrypt
 from sqlmodel import Session, select
 from backend.app.db.orm_models import User, Image, Prediction
 
-# Setup CryptContext for password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
 def hash_password(password: str) -> str:
     """Hash a password using bcrypt."""
-    return pwd_context.hash(password)
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return hashed.decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plain password against its hashed representation."""
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"),
+            hashed_password.encode("utf-8")
+        )
+    except Exception:
+        return False
 
 
 # --- User CRUD ---
