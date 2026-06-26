@@ -8,8 +8,16 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     MODEL_PATH: str = "/models/best_model.onnx"
     CLASS_NAMES_PATH: str = "/models/class_names.json"
+    MODEL_INPUT_SIZE: int = 640
+    MODEL_VERSION: str = "yolo26-seg-onnx"
+
+    # Authentication
+    SECRET_KEY: str = "change-me-in-production"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
+    JWT_ALGORITHM: str = "HS256"
 
     # PostgreSQL configuration
+    DATABASE_URL: str | None = None
     POSTGRES_HOST: str = "postgres"
     POSTGRES_PORT: int = 5432
     POSTGRES_DB: str = "plant_disease"
@@ -32,6 +40,8 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         """Returns the PostgreSQL connection string."""
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
         return (
             f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"

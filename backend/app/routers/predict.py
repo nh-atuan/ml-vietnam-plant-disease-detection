@@ -1,42 +1,130 @@
 """
-Predict Router — Endpoint /predict cho chẩn đoán bệnh.
-
-Phụ trách: Đàm Tiến Đạt
-Phase 5, Task 5.2
-
-TODO:
-- [ ] POST /predict: nhận file ảnh → trả nhãn + top-k + confidence
-- [ ] Tích hợp InferenceService (ONNX Runtime)
-- [ ] Tích hợp KnowledgeBase (gợi ý xử lý)
-- [ ] Lưu ảnh vào MinIO, log kết quả vào PostgreSQL
-- [ ] Cache kết quả vào Redis (TTL 1h)
+Prediction endpoint for plant disease diagnosis.
 """
 
-from fastapi import APIRouter, UploadFile, File
+import time
+from functools import lru_cache
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from sqlmodel import Session
+
+from backend.app.config import settings
+from backend.app.db import crud, get_session
+from backend.app.db.orm_models import User
+from backend.app.knowledge.knowledge_base import KnowledgeBase
+from backend.app.models.schemas import PredictionResponse, TopKPrediction
+from backend.app.security import get_optional_current_user
+from backend.app.services.inference import InferenceService
+from backend.app.services.storage import StorageService
 
 router = APIRouter(tags=["prediction"])
 
 
-@router.post("/predict")
-async def predict(file: UploadFile = File(...)):
-    """
-    Nhận ảnh lá cây, trả về kết quả chẩn đoán.
+@lru_cache
+def get_inference_service() -> InferenceService:
+    class_names = InferenceService.load_class_names(settings.CLASS_NAMES_PATH)
+    return InferenceService(settings.MODEL_PATH, class_names, settings.MODEL_INPUT_SIZE)
 
-    Response:
-    {
-        "prediction": "BrownSpot",
-        "confidence": 0.92,
-        "top_k": [
-            {"label": "BrownSpot", "confidence": 0.92},
-            {"label": "LeafBlast", "confidence": 0.05},
-            ...
-        ],
-        "recommendation": {
-            "name_vi": "Đốm nâu",
-            "treatments": [...],
-            ...
-        }
-    }
-    """
-    # TODO: Implement
-    raise NotImplementedError("predict endpoint")
+
+@lru_cache
+def get_storage_service() -> StorageService:
+    return StorageService(
+        endpoint=settings.MINIO_ENDPOINT,
+        access_key=settings.MINIO_ACCESS_KEY,
+        secret_key=settings.MINIO_SECRET_KEY,
+        bucket=settings.MINIO_BUCKET,
+        secure=settings.MINIO_SECURE,
+    )
+
+
+@lru_cache
+def get_knowledge_base() -> KnowledgeBase | None:
+    try:
+        return KnowledgeBase()
+    except NotImplementedError:
+        return None
+
+
+@router.post("/predict", response_model=PredictionResponse)
+async def predict(
+    file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+    current_user: User | None = Depends(get_optional_current_user),
+):
+    """Receive a leaf image, run ONNX inference, save metadata, and return top-k predictions."""
+    if file.content_type and not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Uploaded file must be an image")
+
+    image_bytes = await file.read()
+    if not image_bytes:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Uploaded file is empty")
+
+    try:
+        inference = get_inference_service()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Inference service unavailable: {exc}",
+        ) from exc
+
+    started_at = time.perf_counter()
+    try:
+        top_k = inference.predict(image_bytes, top_k=5)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Inference failed: {exc}",
+        ) from exc
+    latency_ms = (time.perf_counter() - started_at) * 1000
+
+    prediction, confidence = top_k[0]
+    top_k_payload = [{"label": label, "confidence": score} for label, score in top_k]
+    recommendation = None
+    knowledge_base = get_knowledge_base()
+    if knowledge_base is not None:
+        recommendation = knowledge_base.format_recommendation(prediction, confidence)
+
+    try:
+        storage = get_storage_service()
+        object_key = storage.upload_image(
+            image_bytes,
+            filename=file.filename or "leaf.jpg",
+            content_type=file.content_type or "image/jpeg",
+        )
+        image_url = storage.get_url(object_key)
+        image = crud.create_image_record(
+            session=session,
+            object_key=object_key,
+            user_id=current_user.id if current_user else None,
+            original_filename=file.filename,
+            content_type=file.content_type,
+            size_bytes=len(image_bytes),
+        )
+        prediction_record = crud.create_prediction_record(
+            session=session,
+            image_id=image.id,
+            user_id=current_user.id if current_user else None,
+            predicted_label=prediction,
+            confidence=confidence,
+            top_k=top_k_payload,
+            recommendation=recommendation,
+            model_version=settings.MODEL_VERSION,
+            latency_ms=latency_ms,
+        )
+    except Exception as exc:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Storage or database unavailable: {exc}",
+        ) from exc
+
+    return PredictionResponse(
+        prediction=prediction,
+        confidence=confidence,
+        top_k=[TopKPrediction(**item) for item in top_k_payload],
+        recommendation=recommendation,
+        image_id=str(image.id),
+        image_url=image_url,
+        prediction_id=str(prediction_record.id),
+        latency_ms=latency_ms,
+    )

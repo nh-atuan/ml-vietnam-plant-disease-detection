@@ -1,10 +1,10 @@
 """
 Pydantic Schemas — Request/Response models.
 """
+import uuid
 from datetime import datetime
-from typing import List, Optional
-from pydantic import BaseModel, Field
 
+from pydantic import BaseModel, Field
 
 # --- Prediction Schemas ---
 
@@ -16,18 +16,20 @@ class TopKPrediction(BaseModel):
 class DiseaseRecommendation(BaseModel):
     name_vi: str
     name_en: str
-    description: Optional[str] = None
-    treatments: List[str] = Field(default_factory=list)
-    severity: Optional[str] = None
+    description: str | None = None
+    treatments: list[str] = Field(default_factory=list)
+    severity: str | None = None
 
 
 class PredictionResponse(BaseModel):
     prediction: str
     confidence: float
-    top_k: List[TopKPrediction]
-    recommendation: Optional[DiseaseRecommendation] = None
-    image_id: Optional[str] = None
-    image_url: Optional[str] = None
+    top_k: list[TopKPrediction]
+    recommendation: DiseaseRecommendation | None = None
+    image_id: str | None = None
+    image_url: str | None = None
+    prediction_id: str | None = None
+    latency_ms: float | None = None
 
 
 # --- User & Auth Schemas ---
@@ -39,7 +41,7 @@ class UserCreate(BaseModel):
 
 
 class UserResponse(BaseModel):
-    id: str
+    id: uuid.UUID
     username: str
     email: str
     is_active: bool
@@ -66,9 +68,9 @@ class HistoryItem(BaseModel):
     image_id: str
     predicted_label: str
     confidence: float
-    top_k: List[TopKPrediction]
-    recommendation: Optional[DiseaseRecommendation] = None
-    image_url: Optional[str] = None
+    top_k: list[TopKPrediction]
+    recommendation: DiseaseRecommendation | None = None
+    image_url: str | None = None
     created_at: datetime
 
     class Config:
@@ -76,7 +78,7 @@ class HistoryItem(BaseModel):
 
 
 class HistoryResponse(BaseModel):
-    items: List[HistoryItem]
+    items: list[HistoryItem]
     total: int
     page: int
     page_size: int
