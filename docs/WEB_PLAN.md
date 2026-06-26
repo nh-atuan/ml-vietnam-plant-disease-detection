@@ -17,7 +17,7 @@
 ---
 
 ## PHASE 5 — Xây dựng Ứng dụng
-> **Deadline: 28/6**
+> **Deadline: 5/7**
 
 ### Mục tiêu Phase 5
 - Tối ưu hóa mô hình YOLO26-seg: Tune hoàn thiện, export sang ONNX và thực hiện Quantization.
@@ -72,7 +72,7 @@ User (Browser/Mobile)
 ---
 
 ## PHASE 6 — Triển khai & DevOps
-> **Deadline: 5/7**
+> **Deadline: 12/7**
 >
 > *Lưu ý cấu hình tài nguyên: Thường thì sẽ không bị quá tải/thiếu bộ nhớ vì YOLO rất nhẹ. Tuy nhiên, lúc setup cluster thì nên chọn machine type có khoảng 8GB RAM. Backend thì cấu hình Pod Limit cao khoảng 7GB để đảm bảo hoạt động mượt mà.*
 
