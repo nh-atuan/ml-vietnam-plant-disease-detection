@@ -33,7 +33,7 @@ def run_train(
     data_yaml: Path,
     device: str,
 ) -> dict:
-    model = YOLO(config["model"])
+    model = YOLO(config["model"], task="segment")
     args = {**common_args, **{k: v for k, v in config.items() if k not in {"model"}}}
     args["data"] = str(data_yaml)
     args["device"] = device
@@ -146,24 +146,25 @@ def mean_iou_dice(
     )
 
 
-def evaluate_test_set(
+def evaluate_split_set(
     ckpt: Path,
     df: pd.DataFrame,
     domain_classes: list[str],
     data_yaml: Path,
     imgsz: int = 640,
     device: str = "cpu",
+    split: str = "test",
 ) -> tuple[dict, pd.DataFrame]:
-    model = YOLO(str(ckpt))
+    model = YOLO(str(ckpt), task="segment")
 
-    # Run standard validation on test split using YOLO to get mAP@50 and mAP@50:95
-    val_metrics = model.val(data=str(data_yaml), split="test", imgsz=imgsz, device=device, plots=True, verbose=False)
+    # Run standard validation on split using YOLO to get mAP@50 and mAP@50:95
+    val_metrics = model.val(data=str(data_yaml), split=split, imgsz=imgsz, device=device, plots=True, verbose=False, task="segment")
     yolo_metrics = extract_ultralytics_metrics(val_metrics)
 
-    test_df = df[df["split"] == "test"].copy()
+    split_df = df[df["split"] == split].copy()
     rows = []
 
-    for _, row in test_df.iterrows():
+    for _, row in split_df.iterrows():
         image_path = Path(row["image_path_yolo"])
         image = Image.open(image_path).convert("RGB")
         width, height = image.size
@@ -201,7 +202,7 @@ def evaluate_test_set(
         "Dice": float(score_df["Dice"].mean()) if not score_df.empty else 0.0,
         "mAP50_mask": yolo_metrics["mAP50_mask"],
         "mAP50_95_mask": yolo_metrics["mAP50_95_mask"],
-        "n_test_images": int(len(score_df)),
+        "n_images": int(len(score_df)),
     }
 
     for class_name in domain_classes:
@@ -213,13 +214,34 @@ def evaluate_test_set(
     return summary, score_df
 
 
+def evaluate_test_set(
+    ckpt: Path,
+    df: pd.DataFrame,
+    domain_classes: list[str],
+    data_yaml: Path,
+    imgsz: int = 640,
+    device: str = "cpu",
+) -> tuple[dict, pd.DataFrame]:
+    summary, score_df = evaluate_split_set(
+        ckpt=ckpt,
+        df=df,
+        domain_classes=domain_classes,
+        data_yaml=data_yaml,
+        imgsz=imgsz,
+        device=device,
+        split="test",
+    )
+    summary["n_test_images"] = summary.pop("n_images")
+    return summary, score_df
+
+
 def benchmark_cpu_latency(
     ckpt: Path,
     df: pd.DataFrame,
     imgsz: int = 640,
     n_images: int = 50,
 ) -> float:
-    model = YOLO(str(ckpt))
+    model = YOLO(str(ckpt), task="segment")
     test_paths = [Path(p) for p in df[df["split"] == "test"]["image_path_yolo"].head(n_images)]
     if not test_paths:
         return float("nan")
