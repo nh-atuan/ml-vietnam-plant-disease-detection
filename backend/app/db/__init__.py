@@ -1,8 +1,8 @@
 """
 Database schema and migration helpers for the backend service.
 """
-from backend.app.db.database import get_session, init_db, engine
-from backend.app.db.orm_models import User, Image, Prediction
+from backend.app.db.database import engine, get_session, init_db
+from backend.app.db.orm_models import Image, Prediction, User
 
 __all__ = [
     "get_session",
@@ -10,5 +10,5 @@ __all__ = [
     "engine",
     "User",
     "Image",
-    "Prediction"
+    "Prediction",
 ]

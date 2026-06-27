@@ -1,8 +1,10 @@
 """
 Database connection and session helper functions using SQLModel.
 """
-from typing import Generator
+from collections.abc import Generator
+
 from sqlmodel import Session, SQLModel, create_engine
+
 from backend.app.config import settings
 
 # In production we might want pool settings, but for dev and simplicity,
@@ -20,7 +22,7 @@ def init_db() -> None:
     """
     # Import ORM models so they are registered with SQLModel.metadata
     from backend.app.db import orm_models  # noqa: F401
-    
+
     SQLModel.metadata.create_all(engine)
 
 
