@@ -1,30 +1,24 @@
 """
 FastAPI Backend — Main application entry point.
-
-Phụ trách: Đàm Tiến Đạt
-Phase 5, Task 5.2
-
-Cách chạy:
-    uvicorn backend.app.main:app --reload
-
-TODO:
-- [ ] Kết nối PostgreSQL (log dự đoán)
-- [ ] Kết nối MinIO (lưu ảnh upload)
-- [ ] Kết nối Redis (cache kết quả, TTL 1h)
-- [ ] Include router predict
-- [ ] CORS middleware
-- [ ] Health check endpoint
 """
 
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from backend.app.config import settings
 from backend.app.db import init_db
+from backend.app.routers import knowledge, predict
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database tables on startup
+    if settings.SKIP_DB_INIT:
+        yield
+        return
+
     try:
         init_db()
         print("Database initialized successfully.")
@@ -49,9 +43,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(knowledge.router, prefix="/api/v1")
+app.include_router(predict.router, prefix="/api/v1")
+
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "ok"}
-
