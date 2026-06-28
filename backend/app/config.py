@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     APP_ENV: str = "development"
+    SKIP_DB_INIT: bool = False
     MODEL_PATH: str = "/models/best_model.onnx"
     CLASS_NAMES_PATH: str = "/models/class_names.json"
 

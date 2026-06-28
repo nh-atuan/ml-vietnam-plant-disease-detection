@@ -2,32 +2,59 @@
 Pydantic Schemas — Request/Response models.
 """
 from datetime import datetime
-from typing import List, Optional
-from pydantic import BaseModel, Field
 
+from pydantic import BaseModel, ConfigDict, Field
 
 # --- Prediction Schemas ---
+
 
 class TopKPrediction(BaseModel):
     label: str
     confidence: float
 
 
+class KnowledgeSource(BaseModel):
+    title: str
+    url: str
+
+
 class DiseaseRecommendation(BaseModel):
+    label: str | None = None
+    crop: str | None = None
     name_vi: str
     name_en: str
-    description: Optional[str] = None
-    treatments: List[str] = Field(default_factory=list)
-    severity: Optional[str] = None
+    description: str | None = None
+    symptoms: list[str] = Field(default_factory=list)
+    causes: list[str] = Field(default_factory=list)
+    treatments: list[str] = Field(default_factory=list)
+    prevention: list[str] = Field(default_factory=list)
+    severity: str | None = None
+    sources: list[KnowledgeSource] = Field(default_factory=list)
+    confidence: float | None = None
+    confidence_note: str | None = None
+    advisory: str | None = None
+
+
+class KnowledgeListItem(BaseModel):
+    label: str
+    crop: str
+    name_vi: str
+    name_en: str
+    severity: str
+
+
+class KnowledgeListResponse(BaseModel):
+    items: list[KnowledgeListItem]
+    total: int
 
 
 class PredictionResponse(BaseModel):
     prediction: str
     confidence: float
-    top_k: List[TopKPrediction]
-    recommendation: Optional[DiseaseRecommendation] = None
-    image_id: Optional[str] = None
-    image_url: Optional[str] = None
+    top_k: list[TopKPrediction]
+    recommendation: DiseaseRecommendation | None = None
+    image_id: str | None = None
+    image_url: str | None = None
 
 
 # --- User & Auth Schemas ---
@@ -39,14 +66,13 @@ class UserCreate(BaseModel):
 
 
 class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     username: str
     email: str
     is_active: bool
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class LoginRequest(BaseModel):
@@ -62,21 +88,20 @@ class TokenResponse(BaseModel):
 # --- History Schemas ---
 
 class HistoryItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     image_id: str
     predicted_label: str
     confidence: float
-    top_k: List[TopKPrediction]
-    recommendation: Optional[DiseaseRecommendation] = None
-    image_url: Optional[str] = None
+    top_k: list[TopKPrediction]
+    recommendation: DiseaseRecommendation | None = None
+    image_url: str | None = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class HistoryResponse(BaseModel):
-    items: List[HistoryItem]
+    items: list[HistoryItem]
     total: int
     page: int
     page_size: int

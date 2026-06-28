@@ -3,11 +3,14 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Plant Disease Detection",
-  description: "Upload leaf images and view plant disease predictions."
+  description: "Upload leaf images and view plant disease predictions.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {

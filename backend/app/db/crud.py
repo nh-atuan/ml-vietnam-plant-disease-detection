@@ -1,11 +1,13 @@
 """
 CRUD (Create, Read, Update, Delete) operations using SQLModel.
 """
-from typing import List, Optional
 import uuid
+
 import bcrypt
 from sqlmodel import Session, select
-from backend.app.db.orm_models import User, Image, Prediction
+
+from backend.app.db.orm_models import Image, Prediction, User
+
 
 def hash_password(password: str) -> str:
     """Hash a password using bcrypt."""
@@ -17,10 +19,7 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plain password against its hashed representation."""
     try:
-        return bcrypt.checkpw(
-            plain_password.encode("utf-8"),
-            hashed_password.encode("utf-8")
-        )
+        return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
     except Exception:
         return False
 
@@ -30,24 +29,20 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def create_user(session: Session, username: str, email: str, password: str) -> User:
     """Create a new user with hashed password."""
     hashed_pwd = hash_password(password)
-    db_user = User(
-        username=username,
-        email=email,
-        hashed_password=hashed_pwd
-    )
+    db_user = User(username=username, email=email, hashed_password=hashed_pwd)
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
     return db_user
 
 
-def get_user_by_username(session: Session, username: str) -> Optional[User]:
+def get_user_by_username(session: Session, username: str) -> User | None:
     """Retrieve a user by their username."""
     statement = select(User).where(User.username == username)
     return session.exec(statement).first()
 
 
-def get_user_by_id(session: Session, user_id: uuid.UUID) -> Optional[User]:
+def get_user_by_id(session: Session, user_id: uuid.UUID) -> User | None:
     """Retrieve a user by their ID."""
     return session.get(User, user_id)
 
@@ -57,10 +52,10 @@ def get_user_by_id(session: Session, user_id: uuid.UUID) -> Optional[User]:
 def create_image_record(
     session: Session,
     object_key: str,
-    user_id: Optional[uuid.UUID] = None,
-    original_filename: Optional[str] = None,
-    content_type: Optional[str] = None,
-    size_bytes: Optional[int] = None
+    user_id: uuid.UUID | None = None,
+    original_filename: str | None = None,
+    content_type: str | None = None,
+    size_bytes: int | None = None,
 ) -> Image:
     """Save upload metadata for an image."""
     db_image = Image(
@@ -68,7 +63,7 @@ def create_image_record(
         object_key=object_key,
         original_filename=original_filename,
         content_type=content_type,
-        size_bytes=size_bytes
+        size_bytes=size_bytes,
     )
     session.add(db_image)
     session.commit()
@@ -76,7 +71,7 @@ def create_image_record(
     return db_image
 
 
-def get_image_by_id(session: Session, image_id: uuid.UUID) -> Optional[Image]:
+def get_image_by_id(session: Session, image_id: uuid.UUID) -> Image | None:
     """Retrieve an image record by its ID."""
     return session.get(Image, image_id)
 
@@ -88,11 +83,11 @@ def create_prediction_record(
     image_id: uuid.UUID,
     predicted_label: str,
     confidence: float,
-    top_k: List[dict],
-    user_id: Optional[uuid.UUID] = None,
-    recommendation: Optional[dict] = None,
-    model_version: Optional[str] = None,
-    latency_ms: Optional[float] = None
+    top_k: list[dict],
+    user_id: uuid.UUID | None = None,
+    recommendation: dict | None = None,
+    model_version: str | None = None,
+    latency_ms: float | None = None,
 ) -> Prediction:
     """Save prediction details."""
     db_prediction = Prediction(
@@ -103,7 +98,7 @@ def create_prediction_record(
         top_k=top_k,
         recommendation=recommendation,
         model_version=model_version,
-        latency_ms=latency_ms
+        latency_ms=latency_ms,
     )
     session.add(db_prediction)
     session.commit()
@@ -115,8 +110,8 @@ def get_predictions_by_user(
     session: Session,
     user_id: uuid.UUID,
     skip: int = 0,
-    limit: int = 10
-) -> List[Prediction]:
+    limit: int = 10,
+) -> list[Prediction]:
     """Retrieve history of predictions for a given user with pagination."""
     statement = (
         select(Prediction)
@@ -128,6 +123,6 @@ def get_predictions_by_user(
     return list(session.exec(statement).all())
 
 
-def get_prediction_detail(session: Session, prediction_id: uuid.UUID) -> Optional[Prediction]:
+def get_prediction_detail(session: Session, prediction_id: uuid.UUID) -> Prediction | None:
     """Retrieve detailed prediction log by ID."""
     return session.get(Prediction, prediction_id)
