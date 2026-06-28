@@ -38,11 +38,16 @@ jobs:
 
       - name: Lint
         run: |
-          uv run ruff check scripts/export_onnx.py src/segmentation tests backend/app/db backend/app/knowledge backend/app/routers backend/app/main.py backend/app/models/schemas.py
+          uv run ruff check scripts/export_onnx.py scripts/export_openapi.py src/segmentation tests backend/app/db backend/app/knowledge backend/app/routers backend/app/main.py backend/app/models/schemas.py
 
       - name: Test
         run: |
           uv run pytest tests
+
+      - name: Verify OpenAPI Spec is Up-to-Date
+        run: |
+          uv run python scripts/export_openapi.py
+          git diff --exit-code docs/openapi.json || (echo "Lỗi: File docs/openapi.json chưa đồng bộ với code mới nhất! Hãy chạy scripts/export_openapi.py và commit lại." && exit 1)
 
   # TODO: Thêm job build-and-deploy
   # build-docker:

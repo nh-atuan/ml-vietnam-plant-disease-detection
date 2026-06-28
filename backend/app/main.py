@@ -27,11 +27,32 @@ async def lifespan(app: FastAPI):
     yield
 
 
+tags_metadata = [
+    {
+        "name": "knowledge",
+        "description": "Cơ sở tri thức chuyên gia (tiếng Việt) về các loại bệnh trên lá cây lúa và cà phê.",
+    },
+    {
+        "name": "prediction",
+        "description": "Chẩn đoán bệnh trên lá cây nông nghiệp bằng mô hình YOLO26-seg (ONNX).",
+    },
+    {
+        "name": "auth",
+        "description": "Quản lý tài khoản người dùng, đăng ký, đăng nhập và phân quyền.",
+    },
+    {
+        "name": "history",
+        "description": "Xem lại lịch sử các lần tải ảnh chẩn đoán bệnh và khuyến nghị tương ứng.",
+    },
+]
+
+
 app = FastAPI(
     title="Plant Disease Detection API",
     description="Hệ thống chẩn đoán bệnh trên lá cây nông nghiệp (Cà phê / Lúa)",
     version="0.1.0",
     lifespan=lifespan,
+    openapi_tags=tags_metadata,
 )
 
 # CORS configuration
