@@ -48,6 +48,26 @@ def get_knowledge_base() -> KnowledgeBase | None:
         return None
 
 
+async def read_valid_image(file: UploadFile) -> bytes:
+    """Validate and read an uploaded leaf image."""
+    if file.content_type and file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Uploaded file must be an image")
+
+    image_bytes = await file.read()
+    if not image_bytes:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Uploaded file is empty")
+    if len(image_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="Uploaded file is too large")
+    return image_bytes
+
+
+def build_recommendation(prediction: str, confidence: float) -> dict | None:
+    knowledge_base = get_knowledge_base()
+    if knowledge_base is None:
+        return None
+    return knowledge_base.format_recommendation(prediction, confidence)
+
+
 @router.post("/predict", response_model=PredictionResponse)
 async def predict(
     file: UploadFile = File(...),
@@ -55,12 +75,7 @@ async def predict(
     current_user: User | None = Depends(get_optional_current_user),
 ):
     """Receive a leaf image, run ONNX inference, save metadata, and return top-k predictions."""
-    if file.content_type and not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Uploaded file must be an image")
-
-    image_bytes = await file.read()
-    if not image_bytes:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Uploaded file is empty")
+    image_bytes = await read_valid_image(file)
 
     try:
         inference = get_inference_service()
@@ -82,10 +97,7 @@ async def predict(
 
     prediction, confidence = top_k[0]
     top_k_payload = [{"label": label, "confidence": score} for label, score in top_k]
-    recommendation = None
-    knowledge_base = get_knowledge_base()
-    if knowledge_base is not None:
-        recommendation = knowledge_base.format_recommendation(prediction, confidence)
+    recommendation = build_recommendation(prediction, confidence)
 
     try:
         storage = get_storage_service()

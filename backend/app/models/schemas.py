@@ -4,7 +4,7 @@ Pydantic Schemas — Request/Response models.
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # --- Prediction Schemas ---
 
@@ -25,8 +25,20 @@ class DiseaseRecommendation(BaseModel):
     name_vi: str
     name_en: str
     description: str | None = None
+    symptoms: list[str] = Field(default_factory=list)
+    causes: list[str] = Field(default_factory=list)
     treatments: list[str] = Field(default_factory=list)
+    prevention: list[str] = Field(default_factory=list)
     severity: str | None = None
+    sources: list[KnowledgeSource] = Field(default_factory=list)
+    confidence: float | None = None
+    confidence_note: str | None = None
+    advisory: str | None = None
+
+
+class KnowledgeListResponse(BaseModel):
+    items: list[DiseaseRecommendation]
+    total: int
 
 
 class PredictionResponse(BaseModel):

@@ -7,8 +7,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.app.config import settings
 from backend.app.db import init_db
-from backend.app.routers import auth, history, predict
+from backend.app.routers import auth, history, knowledge, predict
 
 
 @asynccontextmanager
@@ -64,7 +65,6 @@ app.add_middleware(
 )
 
 app.include_router(knowledge.router, prefix="/api/v1")
-app.include_router(predict.router, prefix="/api/v1")
 
 
 @app.get("/health")
