@@ -65,15 +65,12 @@ app.add_middleware(
 )
 
 app.include_router(knowledge.router, prefix="/api/v1")
+app.include_router(auth.router, prefix="/api/v1")
+app.include_router(predict.router, prefix="/api/v1")
+app.include_router(history.router, prefix="/api/v1")
 
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "ok"}
-
-
-app.include_router(auth.router, prefix="/api/v1")
-app.include_router(predict.router, prefix="/api/v1")
-app.include_router(history.router, prefix="/api/v1")
-
