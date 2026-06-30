@@ -20,12 +20,12 @@ except ImportError as e:
 
 
 def export_openapi() -> None:
-    """Generate and write the OpenAPI schema to docs/openapi.json."""
+    """Generate and write the OpenAPI schema to docs/api/openapi.json."""
     openapi_schema = app.openapi()
-    
-    docs_dir = os.path.join(PROJECT_ROOT, "docs")
+
+    docs_dir = os.path.join(PROJECT_ROOT, "docs", "api")
     os.makedirs(docs_dir, exist_ok=True)
-    
+
     output_path = os.path.join(docs_dir, "openapi.json")
     with open(output_path, "w", encoding="utf-8") as file:
         json.dump(openapi_schema, file, indent=2, ensure_ascii=False)

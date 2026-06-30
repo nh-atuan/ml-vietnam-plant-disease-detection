@@ -11,7 +11,7 @@ Khi khởi chạy server backend cục bộ (`uvicorn backend.app.main:app --rel
 *   **ReDoc:** `http://localhost:8000/redoc` (Giao diện đọc tài liệu chuyên sâu).
 
 File đặc tả OpenAPI Spec (JSON) tĩnh được lưu tại:
-*   [openapi.json](file:///home/pearspringmind/Studying/HCMUS/Machine%20Learning/Lab/ml-vietnam-plant-disease-detection/docs/openapi.json)
+*   [openapi.json](./openapi.json)
 
 ---
 

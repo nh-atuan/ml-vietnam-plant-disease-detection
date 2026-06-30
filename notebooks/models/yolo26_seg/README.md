@@ -1,7 +1,7 @@
 # YOLO26-seg Phase 3
 
 Owner: Nguyen Ho Anh Tuan  
-Task: Phase 3, item 3.2 in `docs/PLAN.md`
+Task: Phase 3, item 3.2 in `docs/plans/MODEL_PLAN.md`
 
 This folder contains the Kaggle notebooks for training, evaluating, and uploading the YOLO26 segmentation model separately for the rice and coffee leaf disease datasets.
 
