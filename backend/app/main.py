@@ -1,19 +1,5 @@
 """
 FastAPI Backend — Main application entry point.
-
-Phụ trách: Đàm Tiến Đạt
-Phase 5, Task 5.2
-
-Cách chạy:
-    uvicorn backend.app.main:app --reload
-
-TODO:
-- [ ] Kết nối PostgreSQL (log dự đoán)
-- [ ] Kết nối MinIO (lưu ảnh upload)
-- [ ] Kết nối Redis (cache kết quả, TTL 1h)
-- [ ] Include router predict
-- [ ] CORS middleware
-- [ ] Health check endpoint
 """
 
 from contextlib import asynccontextmanager
@@ -28,6 +14,10 @@ from backend.app.routers import auth, history, predict
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database tables on startup
+    if settings.SKIP_DB_INIT:
+        yield
+        return
+
     try:
         init_db()
         print("Database initialized successfully.")
@@ -36,11 +26,32 @@ async def lifespan(app: FastAPI):
     yield
 
 
+tags_metadata = [
+    {
+        "name": "knowledge",
+        "description": "Cơ sở tri thức chuyên gia (tiếng Việt) về các loại bệnh trên lá cây lúa và cà phê.",
+    },
+    {
+        "name": "prediction",
+        "description": "Chẩn đoán bệnh trên lá cây nông nghiệp bằng mô hình YOLO26-seg (ONNX).",
+    },
+    {
+        "name": "auth",
+        "description": "Quản lý tài khoản người dùng, đăng ký, đăng nhập và phân quyền.",
+    },
+    {
+        "name": "history",
+        "description": "Xem lại lịch sử các lần tải ảnh chẩn đoán bệnh và khuyến nghị tương ứng.",
+    },
+]
+
+
 app = FastAPI(
     title="Plant Disease Detection API",
     description="Hệ thống chẩn đoán bệnh trên lá cây nông nghiệp (Cà phê / Lúa)",
     version="0.1.0",
     lifespan=lifespan,
+    openapi_tags=tags_metadata,
 )
 
 # CORS configuration
@@ -51,6 +62,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(knowledge.router, prefix="/api/v1")
+app.include_router(predict.router, prefix="/api/v1")
 
 
 @app.get("/health")

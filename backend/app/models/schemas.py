@@ -8,12 +8,20 @@ from pydantic import BaseModel, Field
 
 # --- Prediction Schemas ---
 
+
 class TopKPrediction(BaseModel):
     label: str
     confidence: float
 
 
+class KnowledgeSource(BaseModel):
+    title: str
+    url: str
+
+
 class DiseaseRecommendation(BaseModel):
+    label: str | None = None
+    crop: str | None = None
     name_vi: str
     name_en: str
     description: str | None = None
@@ -47,9 +55,6 @@ class UserResponse(BaseModel):
     is_active: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 class LoginRequest(BaseModel):
     username: str = Field(..., examples=["farmer_john"])
@@ -64,6 +69,8 @@ class TokenResponse(BaseModel):
 # --- History Schemas ---
 
 class HistoryItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     image_id: str
     predicted_label: str
@@ -72,9 +79,6 @@ class HistoryItem(BaseModel):
     recommendation: DiseaseRecommendation | None = None
     image_url: str | None = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class HistoryResponse(BaseModel):

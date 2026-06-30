@@ -18,6 +18,9 @@ from backend.app.services.inference import InferenceService
 from backend.app.services.storage import StorageService
 
 router = APIRouter(tags=["prediction"])
+knowledge_base = KnowledgeBase()
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
 
 @lru_cache

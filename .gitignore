@@ -224,3 +224,6 @@ report/appendix/*.aux
 report/content/*.aux
 report/ref/*.aux
 report/outputs
+
+.agents/
+skills-lock.json

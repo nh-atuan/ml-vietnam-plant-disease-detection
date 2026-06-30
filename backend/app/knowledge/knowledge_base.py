@@ -1,65 +1,189 @@
-"""
-Expert Knowledge Base — Gợi ý xử lý bệnh theo luật chuyên gia.
+"""Expert Knowledge Base - rule-based Vietnamese disease recommendations."""
 
-Phụ trách: Lê Xuân Trí (Sáng tạo S3)
-Phase 5, Task 5.4
-
-TODO:
-- [ ] Load disease database từ diseases.json
-- [ ] Tra bảng nhãn → trả về mô tả bệnh + biện pháp xử lý (tiếng Việt)
-- [ ] Cung cấp hành động cụ thể cho nông dân
-- [ ] Tích hợp vào API response của FastAPI
-"""
+from __future__ import annotations
 
 import json
 import os
-from typing import Dict, Any, Optional
+from copy import deepcopy
+from typing import Any
 
-
-# Đường dẫn đến file dữ liệu bệnh
 DISEASES_DB_PATH = os.path.join(os.path.dirname(__file__), "diseases.json")
+REQUIRED_LABELS = {
+    "Healthy",
+    "BrownSpot",
+    "Hispa",
+    "LeafBlast",
+    "LeafMiner",
+    "PowderyMildew",
+    "Rust",
+    "AlgalLeafSpot",
+}
+REQUIRED_FIELDS = {
+    "label",
+    "name_vi",
+    "name_en",
+    "crop",
+    "description",
+    "symptoms",
+    "causes",
+    "treatments",
+    "prevention",
+    "severity",
+    "sources",
+}
+ALLOWED_SEVERITIES = {"none", "low", "medium", "high"}
+ADVISORY_TEXT = (
+    "Khuyến nghị chỉ mang tính tham khảo từ ảnh đầu vào; cần đối chiếu thực địa và hỏi cán bộ bảo vệ thực vật "
+    "địa phương trước khi dùng thuốc hoặc can thiệp quy mô lớn."
+)
 
 
 class KnowledgeBase:
-    """
-    Module tra cứu thông tin bệnh cây trồng.
-
-    Cung cấp:
-    - Tên bệnh (tiếng Việt + tiếng Anh)
-    - Mô tả triệu chứng
-    - Nguyên nhân gây bệnh
-    - Biện pháp xử lý / phòng ngừa
-    - Mức độ nghiêm trọng
-    """
+    """Lookup table for disease descriptions and farmer-facing recommendations."""
 
     def __init__(self, db_path: str = DISEASES_DB_PATH):
-        # TODO: Load diseases.json
-        raise NotImplementedError
+        self.db_path = db_path
+        self._diseases = self._load_diseases(db_path)
 
-    def get_disease_info(self, disease_label: str) -> Optional[Dict[str, Any]]:
-        """
-        Tra cứu thông tin bệnh theo nhãn dự đoán.
+    def list_diseases(self) -> list[dict[str, Any]]:
+        """Return compact metadata for all diseases in stable label order."""
+        return [
+            {
+                "label": disease["label"],
+                "crop": disease["crop"],
+                "name_vi": disease["name_vi"],
+                "name_en": disease["name_en"],
+                "severity": disease["severity"],
+            }
+            for _, disease in sorted(self._diseases.items())
+        ]
 
-        Args:
-            disease_label: Nhãn bệnh từ model (vd: "BrownSpot", "LeafBlast")
+    def get_disease_info(self, disease_label: str) -> dict[str, Any] | None:
+        """Return full disease information for a model label."""
+        disease = self._diseases.get(disease_label)
+        if disease is None:
+            return None
+        return deepcopy(disease)
 
-        Returns:
-            Dict chứa: name_vi, name_en, description, symptoms,
-                       causes, treatments, severity, prevention
-        """
-        # TODO: Implement lookup
-        raise NotImplementedError
+    def format_recommendation(self, disease_label: str, confidence: float) -> dict[str, Any]:
+        """Format disease data for the prediction API response."""
+        self._validate_confidence(confidence)
+        disease = self.get_disease_info(disease_label)
+        confidence_note = self._confidence_note(confidence)
 
-    def format_recommendation(self, disease_label: str, confidence: float) -> Dict[str, Any]:
-        """
-        Format gợi ý xử lý để trả về cho frontend.
+        if disease is None:
+            return {
+                "label": disease_label,
+                "crop": None,
+                "name_vi": "Chưa có dữ liệu khuyến nghị",
+                "name_en": disease_label,
+                "description": "Nhãn dự đoán chưa có trong cơ sở tri thức chuyên gia.",
+                "symptoms": [],
+                "causes": [],
+                "treatments": [
+                    "Chụp lại ảnh rõ hơn ở cả mặt trên và mặt dưới lá.",
+                    "Đối chiếu triệu chứng ngoài thực địa và hỏi cán bộ bảo vệ thực vật địa phương.",
+                ],
+                "prevention": [
+                    "Theo dõi thêm các cây xung quanh trước khi quyết định xử lý.",
+                    "Không tự ý dùng thuốc khi hệ thống chưa nhận diện được nhãn bệnh.",
+                ],
+                "severity": "medium",
+                "sources": [],
+                "confidence": confidence,
+                "confidence_note": confidence_note,
+                "advisory": ADVISORY_TEXT,
+            }
 
-        Args:
-            disease_label: Nhãn bệnh
-            confidence: Độ tin cậy dự đoán
+        disease["confidence"] = confidence
+        disease["confidence_note"] = confidence_note
+        disease["advisory"] = ADVISORY_TEXT
+        return disease
 
-        Returns:
-            Dict sẵn sàng serialize JSON cho API response
-        """
-        # TODO: Implement
-        raise NotImplementedError
+    @staticmethod
+    def _validate_confidence(confidence: float) -> None:
+        if not isinstance(confidence, int | float) or not 0 <= confidence <= 1:
+            raise ValueError("Prediction confidence must be a number between 0 and 1.")
+
+    @staticmethod
+    def _confidence_note(confidence: float) -> str:
+        if confidence < 0.6:
+            return (
+                "Độ tin cậy thấp; nên chụp lại ảnh rõ hơn, đủ sáng và đối chiếu thêm "
+                "triệu chứng ngoài thực địa trước khi xử lý."
+            )
+        return "Kết quả có độ tin cậy tương đối; cần đối chiếu với triệu chứng thực tế trên ruộng hoặc vườn."
+
+    @classmethod
+    def _load_diseases(cls, db_path: str) -> dict[str, dict[str, Any]]:
+        if not os.path.exists(db_path):
+            raise FileNotFoundError(f"Knowledge base file not found: {db_path}")
+
+        with open(db_path, encoding="utf-8") as file:
+            payload = json.load(file)
+
+        diseases = payload.get("diseases")
+        if not isinstance(diseases, dict):
+            raise ValueError("Knowledge base must contain a 'diseases' object.")
+
+        cls._validate_diseases(diseases)
+        return deepcopy(diseases)
+
+    @classmethod
+    def _validate_diseases(cls, diseases: dict[str, Any]) -> None:
+        labels = set(diseases)
+        missing_labels = REQUIRED_LABELS - labels
+        extra_labels = labels - REQUIRED_LABELS
+        if missing_labels:
+            raise ValueError(f"Knowledge base missing labels: {sorted(missing_labels)}")
+        if extra_labels:
+            raise ValueError(f"Knowledge base has unsupported labels: {sorted(extra_labels)}")
+
+        for label, disease in diseases.items():
+            if not isinstance(disease, dict):
+                raise ValueError(f"Disease record for {label} must be an object.")
+            cls._validate_disease_record(label, disease)
+
+    @classmethod
+    def _validate_disease_record(cls, label: str, disease: dict[str, Any]) -> None:
+        missing_fields = REQUIRED_FIELDS - set(disease)
+        if missing_fields:
+            raise ValueError(f"Disease record {label} missing fields: {sorted(missing_fields)}")
+        if disease["label"] != label:
+            raise ValueError(f"Disease record {label} has mismatched label field: {disease['label']}")
+        if disease["severity"] not in ALLOWED_SEVERITIES:
+            raise ValueError(f"Disease record {label} has invalid severity: {disease['severity']}")
+
+        for field in REQUIRED_FIELDS:
+            value = disease[field]
+            if cls._is_empty(value):
+                raise ValueError(f"Disease record {label} has empty field: {field}")
+            if cls._contains_todo(value):
+                raise ValueError(f"Disease record {label} still contains placeholder text in field: {field}")
+
+        for field in ("symptoms", "causes", "treatments", "prevention"):
+            if not isinstance(disease[field], list) or not all(isinstance(item, str) for item in disease[field]):
+                raise ValueError(f"Disease record {label} field {field} must be a list of strings.")
+
+        if not isinstance(disease["sources"], list) or not disease["sources"]:
+            raise ValueError(f"Disease record {label} field sources must be a non-empty list.")
+        for source in disease["sources"]:
+            if not isinstance(source, dict) or not isinstance(source.get("title"), str) or not source.get("title"):
+                raise ValueError(f"Disease record {label} has an invalid source entry.")
+            url = source.get("url")
+            if not isinstance(url, str) or not url.startswith(("http://", "https://")):
+                raise ValueError(f"Disease record {label} has an invalid source URL.")
+
+    @staticmethod
+    def _is_empty(value: Any) -> bool:
+        return value is None or value == "" or value == []
+
+    @classmethod
+    def _contains_todo(cls, value: Any) -> bool:
+        if isinstance(value, str):
+            return "TODO" in value.upper()
+        if isinstance(value, list):
+            return any(cls._contains_todo(item) for item in value)
+        if isinstance(value, dict):
+            return any(cls._contains_todo(item) for item in value.values())
+        return False
