@@ -267,6 +267,6 @@ results = tuner.fit()
 
 - **Git workflow:** feature branch theo task → PR → review trước khi merge vào `main`
 - **Họp nhóm:** ít nhất 1 lần/tuần để sync tiến độ, báo sớm blocker
-- **Môi trường:** dùng chung `requirements.txt`, tạo virtual env riêng
+- **Môi trường:** dùng chung `pyproject.toml` và `uv.lock`, tạo virtual env riêng bằng `uv sync`
 - **Naming:** `notebooks/<phase>_<topic>_<author>.ipynb`; script đặt tên theo chức năng trong `src/`
 - **Tracking:** cập nhật trạng thái task trong file này hoặc GitHub Issues
