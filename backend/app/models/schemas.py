@@ -1,6 +1,7 @@
 """
 Pydantic Schemas — Request/Response models.
 """
+import uuid
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -35,16 +36,8 @@ class DiseaseRecommendation(BaseModel):
     advisory: str | None = None
 
 
-class KnowledgeListItem(BaseModel):
-    label: str
-    crop: str
-    name_vi: str
-    name_en: str
-    severity: str
-
-
 class KnowledgeListResponse(BaseModel):
-    items: list[KnowledgeListItem]
+    items: list[DiseaseRecommendation]
     total: int
 
 
@@ -55,6 +48,8 @@ class PredictionResponse(BaseModel):
     recommendation: DiseaseRecommendation | None = None
     image_id: str | None = None
     image_url: str | None = None
+    prediction_id: str | None = None
+    latency_ms: float | None = None
 
 
 # --- User & Auth Schemas ---
@@ -66,9 +61,7 @@ class UserCreate(BaseModel):
 
 
 class UserResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: str
+    id: uuid.UUID
     username: str
     email: str
     is_active: bool

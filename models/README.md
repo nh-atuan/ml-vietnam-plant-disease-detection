@@ -4,7 +4,7 @@ Phase 5 output owned by Nguyễn Hồ Anh Tuấn.
 
 Expected files:
 
-- `best_model.onnx`: final ONNX model selected after Phase 4 evaluation.
+- `yolo26_quantized.onnx`: quantized YOLO26-seg ONNX model used by the backend by default.
 - `class_names.json`: ordered class labels used by the inference service.
 - `model_card.md`: short notes about metrics, input size, normalization, and export command.
 
