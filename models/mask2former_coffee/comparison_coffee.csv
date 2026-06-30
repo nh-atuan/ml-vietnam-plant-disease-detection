@@ -1,3 +1,0 @@
-run,mAP@50,mAP@50:95,mIoU,Dice,inference_ms,eval_samples,backbone,image_size,batch_size,lr,aug_level
-run1_baseline,0.9200184345245361,0.8997905850410461,0.886988945045068,0.8998632311216626,62.87962795490619,577,facebook/mask2former-swin-tiny-coco-instance,384,4,5e-05,light
-run2_tuned,0.12614715099334717,0.12228600680828094,0.7374233555706529,0.7508548780128443,107.75692971572622,577,facebook/mask2former-swin-small-coco-instance,512,2,0.0001,strong
