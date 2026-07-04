@@ -1,136 +1,176 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-
-import { API_BASE_URL, PredictionResponse, predictImage } from "@/lib/api";
+import React, { useState } from "react";
+import { User, LogIn, LogOut, Loader2 } from "lucide-react";
+import ImageUploader from "../components/ImageUploader";
+import PredictionResult from "../components/PredictionResult";
+import TopKList from "../components/TopKList";
+import RecommendationCard from "../components/RecommendationCard";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import EmptyState from "../components/ui/EmptyState";
+import TabNav, { TabId } from "../components/TabNav";
+import AuthModal from "../components/AuthModal";
+import KnowledgeList from "../components/KnowledgeList";
+import KnowledgeDetail from "../components/KnowledgeDetail";
+import HistoryList from "../components/HistoryList";
+import { usePrediction } from "../hooks/usePrediction";
+import { useAuth } from "../hooks/useAuth";
 
 export default function Home() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [prediction, setPrediction] = useState<PredictionResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const auth = useAuth();
+  const {
+    selectedFile,
+    prediction,
+    error,
+    isSubmitting,
+    handleFileSelect,
+    handleSubmit,
+  } = usePrediction();
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setPrediction(null);
+  const [activeTab, setActiveTab] = useState<TabId>("diagnosis");
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [selectedDisease, setSelectedDisease] = useState<string | null>(null);
 
-    if (!selectedFile) {
-      setError("Vui lòng chọn một ảnh lá cây trước khi gửi.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const result = await predictImage(selectedFile);
-      setPrediction(result);
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Không thể gửi ảnh để dự đoán.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  const handlePredictSubmit = () => {
+    // Pass auth token if available to associate with history
+    handleSubmit(auth.token || undefined);
+  };
 
   return (
-    <main className="min-h-screen px-4 py-6 sm:px-8">
+    <main className="min-h-screen px-4 py-6 sm:px-8 bg-[#f7f9f6]">
       <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <div className="flex flex-col gap-2 border-b border-stone-200 pb-4">
-          <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            Cà phê / Lúa
-          </p>
-          <h1 className="text-3xl font-semibold text-stone-950 sm:text-4xl">
-            Chẩn đoán bệnh trên lá cây
-          </h1>
-          <p className="max-w-2xl text-base text-stone-700">
-            Dành cho ảnh lá lúa và cà phê trong điều kiện thực địa tại Việt Nam.
-          </p>
+        
+        {/* Header Title Block & Auth Area */}
+        <div className="flex flex-col gap-4 border-b border-stone-200 pb-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div className="space-y-1">
+              <p className="text-sm font-medium uppercase tracking-wider text-healthy-700">
+                Cà phê / Lúa
+              </p>
+              <h1 className="text-3xl font-bold text-stone-900 sm:text-4xl">
+                Chẩn đoán bệnh trên lá cây
+              </h1>
+              <p className="max-w-2xl text-xs text-stone-500">
+                Dự đoán và nhận khuyến nghị điều trị cho bệnh trên lá cây lúa và cà phê 
+                trong điều kiện thực địa tại Việt Nam.
+              </p>
+            </div>
+
+            {/* Auth Section */}
+            <div className="flex items-center self-start sm:self-center">
+              {auth.isLoading ? (
+                <div className="flex items-center gap-1.5 text-xs text-stone-400 bg-white border border-stone-100 px-3 py-1.5 rounded-lg">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Đang xác thực...
+                </div>
+              ) : auth.user ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 text-xs text-stone-750 bg-white border border-stone-200 px-3 py-1.5 rounded-lg shadow-sm">
+                    <User className="w-3.5 h-3.5 text-healthy-700" />
+                    <span className="font-semibold">{auth.user.username}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={auth.logout}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:text-danger-700 bg-white hover:bg-danger-50 border border-stone-200 hover:border-danger-200 rounded-lg transition-all shadow-sm focus:outline-none"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    Đăng xuất
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-700 bg-white border border-stone-200 hover:bg-stone-50 hover:text-stone-900 rounded-lg transition-all shadow-sm focus:outline-none"
+                >
+                  <LogIn className="w-3.5 h-3.5 text-healthy-700" />
+                  Đăng nhập
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-          <form className="rounded-lg border border-dashed border-emerald-300 bg-white p-5 shadow-sm" onSubmit={handleSubmit}>
-            <label className="flex min-h-72 cursor-pointer flex-col items-center justify-center gap-3 rounded-md bg-emerald-50 px-4 text-center transition hover:bg-emerald-100">
-              <span className="text-lg font-medium text-stone-950">Chọn hoặc kéo ảnh lá cây</span>
-              <span className="text-sm text-stone-600">PNG, JPG hoặc WEBP</span>
-              <input
-                className="sr-only"
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                onChange={(event) => {
-                  setSelectedFile(event.target.files?.[0] ?? null);
-                  setError(null);
-                }}
-              />
-              {selectedFile ? (
-                <span className="max-w-full break-all text-sm font-medium text-emerald-800">{selectedFile.name}</span>
-              ) : null}
-            </label>
-            <button
-              className="mt-4 w-full rounded-md bg-emerald-700 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-stone-400"
-              disabled={isSubmitting}
-              type="submit"
-            >
-              {isSubmitting ? "Đang gửi ảnh..." : "Gửi ảnh để dự đoán"}
-            </button>
-            {error ? (
-              <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>
-            ) : null}
-          </form>
+        {/* Tab Navigation */}
+        <TabNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-          <aside className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">Kết quả</h2>
-            <dl className="mt-4 grid gap-3 text-sm">
-              <div className="flex justify-between gap-4">
-                <dt className="text-stone-600">API</dt>
-                <dd className="break-all text-right font-medium text-stone-900">{API_BASE_URL}</dd>
+        {/* Tab Panels */}
+        <div className="mt-2">
+          {/* TAB 1: DIAGNOSIS */}
+          {activeTab === "diagnosis" && (
+            <div className="grid gap-6 lg:grid-cols-[1fr_1fr] items-start">
+              {/* Left Column: Upload */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-bold text-stone-850">Tải ảnh lên</h2>
+                <ImageUploader
+                  selectedFile={selectedFile}
+                  onFileSelect={handleFileSelect}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handlePredictSubmit}
+                  error={error}
+                />
               </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-stone-600">Nhãn</dt>
-                <dd className="text-right font-medium text-stone-900">
-                  {prediction?.recommendation?.name_vi ?? prediction?.prediction ?? "Chưa có dự đoán"}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-stone-600">Confidence</dt>
-                <dd className="font-medium text-stone-900">
-                  {prediction ? `${Math.round(prediction.confidence * 100)}%` : "--"}
-                </dd>
-              </div>
-            </dl>
 
-            {prediction?.top_k?.length ? (
-              <div className="mt-5 border-t border-stone-200 pt-4">
-                <h3 className="text-sm font-semibold text-stone-950">Top dự đoán</h3>
-                <ul className="mt-2 grid gap-2 text-sm text-stone-700">
-                  {prediction.top_k.map((item) => (
-                    <li className="flex justify-between gap-3" key={item.label}>
-                      <span>{item.label}</span>
-                      <span className="font-medium text-stone-900">{Math.round(item.confidence * 100)}%</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
+              {/* Right Column: Result */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-bold text-stone-850">Kết quả chẩn đoán</h2>
+                
+                {isSubmitting && (
+                  <div className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm">
+                    <LoadingSpinner />
+                  </div>
+                )}
 
-            {prediction?.recommendation ? (
-              <section className="mt-5 border-t border-stone-200 pt-4">
-                <h3 className="text-sm font-semibold text-stone-950">Khuyến nghị xử lý</h3>
-                {prediction.recommendation.confidence_note ? (
-                  <p className="mt-2 text-sm text-amber-800">{prediction.recommendation.confidence_note}</p>
-                ) : null}
-                <p className="mt-2 text-sm text-stone-700">{prediction.recommendation.description}</p>
-                <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-stone-700">
-                  {prediction.recommendation.treatments.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-                {prediction.recommendation.advisory ? (
-                  <p className="mt-3 text-xs text-stone-500">{prediction.recommendation.advisory}</p>
-                ) : null}
-              </section>
-            ) : null}
-          </aside>
+                {!isSubmitting && !prediction && (
+                  <EmptyState
+                    title="Chưa có dữ liệu chẩn đoán"
+                    description="Hãy chọn hoặc chụp ảnh một chiếc lá cây (lúa hoặc cà phê) bên cột trái để bắt đầu phân tích bệnh."
+                  />
+                )}
+
+                {!isSubmitting && prediction && (
+                  <div className="space-y-4">
+                    <PredictionResult prediction={prediction} />
+                    <TopKList topK={prediction.top_k} />
+                    <RecommendationCard recommendation={prediction.recommendation} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: KNOWLEDGE BASE */}
+          {activeTab === "knowledge" && (
+            <div>
+              {selectedDisease ? (
+                <KnowledgeDetail
+                  diseaseLabel={selectedDisease}
+                  onBack={() => setSelectedDisease(null)}
+                />
+              ) : (
+                <KnowledgeList onSelectDisease={setSelectedDisease} />
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: PERSONAL HISTORY */}
+          {activeTab === "history" && (
+            <HistoryList
+              token={auth.token}
+              onLoginPrompt={() => setIsAuthModalOpen(true)}
+            />
+          )}
         </div>
+
       </section>
+
+      {/* Auth Modal Overlay */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        auth={auth}
+      />
     </main>
   );
 }
