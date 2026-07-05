@@ -172,6 +172,17 @@ The frontend SHALL provide a mobile-first layout usable on phone, tablet, and de
 - **WHEN** viewed on a desktop-width screen
 - **THEN** image/result and recommendation panels use available space in a grid layout
 
+### Requirement: Theme and Typography Support
+The frontend SHALL fully support Light and Dark modes using semantic color tokens and utilize a Vietnamese-optimized font for correct diacritic rendering.
+
+#### Scenario: Dark Mode UI
+- **WHEN** the user switches to Dark Mode
+- **THEN** all UI components (Sidebar, Forms, Cards, Loaders) use semantic CSS variables (e.g., `bg-interactive-active`, `text-text-secondary`) instead of hardcoded colors to maintain readability and contrast
+
+#### Scenario: Vietnamese Typography
+- **WHEN** Vietnamese text is rendered (e.g., headings, disease names)
+- **THEN** it uses the `Be Vietnam Pro` font to ensure correct diacritics and a polished display, falling back to `Inter` for body text
+
 ### Requirement: Accessible and polished UI states
 The frontend SHALL include accessible labels, keyboard focus, loading/error/empty states, and a balanced visual system.
 

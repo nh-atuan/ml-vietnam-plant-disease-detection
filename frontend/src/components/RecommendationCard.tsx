@@ -1,20 +1,74 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { DiseaseRecommendation } from "../lib/api";
+import { ChevronDown, ChevronUp, AlertCircle, BookOpen, ShieldCheck, HeartPulse, HelpCircle } from "lucide-react";
 
 interface RecommendationCardProps {
   recommendation?: DiseaseRecommendation | null;
 }
 
+interface AccordionSectionProps {
+  title: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  icon: React.ComponentType<any>;
+  children: React.ReactNode;
+}
+
+function AccordionSection({ title, isOpen, onToggle, icon: Icon, children }: AccordionSectionProps) {
+  return (
+    <div className="border border-surface-border/50 rounded-xl overflow-hidden bg-background/50 dark:bg-black/10 transition-all duration-300 shadow-sm">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-sidebar dark:hover:bg-zinc-800/50 transition-colors focus:outline-none"
+      >
+        <div className="flex items-center gap-3">
+          <Icon className="w-5 h-5 text-claude-orange" />
+          <span className="text-sm font-display font-semibold text-foreground tracking-wide">{title}</span>
+        </div>
+        {isOpen ? (
+          <ChevronUp className="w-5 h-5 text-claude-muted" />
+        ) : (
+          <ChevronDown className="w-5 h-5 text-claude-muted" />
+        )}
+      </button>
+      {isOpen && (
+        <div className="p-5 border-t border-surface-border/50 bg-background/30 dark:bg-black/20 text-sm text-claude-muted leading-relaxed animate-in fade-in duration-200">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function RecommendationCard({ recommendation }: RecommendationCardProps) {
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    description: true,
+    symptoms: true,
+    treatments: true,
+  });
+
+  const toggleSection = (section: string) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
   if (!recommendation) {
     return (
-      <div className="w-full p-6 bg-white border border-stone-200 rounded-xl shadow-sm text-center py-10 space-y-2">
-        <p className="text-stone-500 font-medium">Chưa có khuyến nghị chuyên gia</p>
-        <p className="text-xs text-stone-400 max-w-sm mx-auto">
-          Mô hình không nhận diện được bệnh cụ thể hoặc nhãn này chưa có trong cơ sở tri thức chuyên gia.
-        </p>
+      <div className="w-full p-8 text-center py-12 space-y-4">
+        <div className="mx-auto w-12 h-12 rounded-full bg-surface-sidebar flex items-center justify-center text-claude-muted">
+          <AlertCircle className="w-6 h-6" />
+        </div>
+        <div className="space-y-2">
+          <p className="text-foreground font-display font-semibold text-lg">Chưa có khuyến nghị chuyên gia</p>
+          <p className="text-sm text-claude-muted max-w-sm mx-auto">
+            Nhãn phân loại này chưa có dữ liệu hỗ trợ tư vấn từ chuyên gia bảo vệ thực vật.
+          </p>
+        </div>
       </div>
     );
   }
@@ -32,83 +86,103 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
   } = recommendation;
 
   return (
-    <div className="w-full p-6 bg-white border border-stone-200 rounded-xl shadow-sm space-y-6">
-      <div className="border-b border-stone-100 pb-3">
-        <h4 className="text-sm font-semibold uppercase tracking-wider text-stone-400">
-          Khuyến nghị kỹ thuật chuyên gia
+    <div className="w-full space-y-6">
+      <div className="border-b border-surface-border/50 pb-4">
+        <h4 className="text-xs font-display font-bold uppercase tracking-widest text-claude-orange/80">
+          Tư vấn kỹ thuật chuyên nghiệp
         </h4>
-        <h3 className="text-xl font-bold text-stone-800 mt-1">
+        <h3 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-2">
           {name_vi}
         </h3>
         {name_en && (
-          <p className="text-xs text-stone-400 italic mt-0.5">{name_en}</p>
+          <p className="text-sm text-claude-muted italic mt-1">{name_en}</p>
         )}
       </div>
 
-      {description && (
-        <div className="space-y-1">
-          <h5 className="text-sm font-semibold text-stone-700">Mô tả bệnh</h5>
-          <p className="text-sm text-stone-600 leading-relaxed">{description}</p>
-        </div>
-      )}
+      <div className="space-y-3">
+        {description && (
+          <AccordionSection
+            title="Mô tả chi tiết"
+            isOpen={!!openSections.description}
+            onToggle={() => toggleSection("description")}
+            icon={BookOpen}
+          >
+            <p className="leading-relaxed">{description}</p>
+          </AccordionSection>
+        )}
 
-      {symptoms.length > 0 && (
-        <div className="space-y-1.5">
-          <h5 className="text-sm font-semibold text-stone-700">Triệu chứng nhận biết</h5>
-          <ul className="list-disc pl-5 text-sm text-stone-600 space-y-1">
-            {symptoms.map((item, idx) => (
-              <li key={idx} className="leading-relaxed">{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {symptoms.length > 0 && (
+          <AccordionSection
+            title="Triệu chứng điển hình"
+            isOpen={!!openSections.symptoms}
+            onToggle={() => toggleSection("symptoms")}
+            icon={HelpCircle}
+          >
+            <ul className="list-disc pl-5 space-y-1.5">
+              {symptoms.map((item, idx) => (
+                <li key={idx} className="leading-relaxed">{item}</li>
+              ))}
+            </ul>
+          </AccordionSection>
+        )}
 
-      {causes.length > 0 && (
-        <div className="space-y-1.5">
-          <h5 className="text-sm font-semibold text-stone-700">Nguyên nhân dịch bệnh</h5>
-          <ul className="list-disc pl-5 text-sm text-stone-600 space-y-1">
-            {causes.map((item, idx) => (
-              <li key={idx} className="leading-relaxed">{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {causes.length > 0 && (
+          <AccordionSection
+            title="Nguyên nhân phát sinh"
+            isOpen={!!openSections.causes}
+            onToggle={() => toggleSection("causes")}
+            icon={AlertCircle}
+          >
+            <ul className="list-disc pl-5 space-y-1.5">
+              {causes.map((item, idx) => (
+                <li key={idx} className="leading-relaxed">{item}</li>
+              ))}
+            </ul>
+          </AccordionSection>
+        )}
 
-      {treatments.length > 0 && (
-        <div className="space-y-1.5">
-          <h5 className="text-sm font-semibold text-healthy-700 bg-healthy-50 px-2 py-1 rounded border border-healthy-100/50">
-            Biện pháp xử lý & Điều trị
-          </h5>
-          <ul className="list-decimal pl-5 text-sm text-stone-700 space-y-1.5 font-medium">
-            {treatments.map((item, idx) => (
-              <li key={idx} className="leading-relaxed">{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {treatments.length > 0 && (
+          <AccordionSection
+            title="Biện pháp xử lý & Điều trị"
+            isOpen={!!openSections.treatments}
+            onToggle={() => toggleSection("treatments")}
+            icon={HeartPulse}
+          >
+            <ul className="list-decimal pl-5 space-y-2 font-medium text-claude-text">
+              {treatments.map((item, idx) => (
+                <li key={idx} className="leading-relaxed">{item}</li>
+              ))}
+            </ul>
+          </AccordionSection>
+        )}
 
-      {prevention.length > 0 && (
-        <div className="space-y-1.5">
-          <h5 className="text-sm font-semibold text-stone-700">Cách phòng ngừa chủ động</h5>
-          <ul className="list-disc pl-5 text-sm text-stone-600 space-y-1">
-            {prevention.map((item, idx) => (
-              <li key={idx} className="leading-relaxed">{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {prevention.length > 0 && (
+          <AccordionSection
+            title="Phòng bệnh chủ động"
+            isOpen={!!openSections.prevention}
+            onToggle={() => toggleSection("prevention")}
+            icon={ShieldCheck}
+          >
+            <ul className="list-disc pl-5 space-y-1.5">
+              {prevention.map((item, idx) => (
+                <li key={idx} className="leading-relaxed">{item}</li>
+              ))}
+            </ul>
+          </AccordionSection>
+        )}
+      </div>
 
       {advisory && (
-        <div className="p-3 border-l-4 border-warning-500 bg-warning-50/40 text-warning-700 rounded-r-lg text-xs leading-relaxed">
-          <span className="font-semibold">Khuyến cáo: </span>
+        <div className="p-3.5 border-l-4 border-warning-500/50 bg-warning-50 dark:bg-warning-500/10 text-warning-700 dark:text-warning-400 dark:text-orange-200 rounded-r-xl text-xs leading-relaxed font-semibold">
+          <span className="font-bold">Khuyến cáo khẩn: </span>
           {advisory}
         </div>
       )}
 
       {sources.length > 0 && (
-        <div className="pt-4 border-t border-stone-100 space-y-1.5">
-          <h5 className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
-            Nguồn tài liệu tham khảo
+        <div className="pt-4 border-t border-surface-border/50 space-y-2">
+          <h5 className="text-[10px] font-bold text-claude-muted uppercase tracking-wider">
+            Nguồn học liệu đối chiếu
           </h5>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
             {sources.map((src, idx) => (
@@ -117,7 +191,7 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
                 href={src.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-healthy-700 hover:text-healthy-500 hover:underline transition-colors font-medium"
+                className="text-claude-orange hover:text-amber-800 hover:underline transition-colors font-semibold"
               >
                 {src.title}
               </a>

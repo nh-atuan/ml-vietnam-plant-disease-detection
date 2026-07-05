@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { Upload, Camera, X } from "lucide-react";
+import { Camera, X, Paperclip, Send, Image as ImageIcon } from "lucide-react";
 import { ALLOWED_IMAGE_TYPES, MAX_FILE_SIZE_BYTES } from "../lib/constants";
 
 interface ImageUploaderProps {
@@ -45,7 +45,6 @@ export default function ImageUploader({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     validateAndSelectFile(file);
-    // Reset inputs so the same file can be selected again if reset
     if (e.target) e.target.value = "";
   };
 
@@ -77,93 +76,120 @@ export default function ImageUploader({
   };
 
   const handleReset = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Avoid triggering label click if nested
+    e.stopPropagation();
     onFileSelect(null, null);
   };
 
-  // Helper to format file size
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  // Create preview URL if file exists
   const previewUrl = selectedFile ? URL.createObjectURL(selectedFile) : null;
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-3">
+      {/* Prompt Bar Area */}
       <div
-        className={`relative flex flex-col items-center justify-center min-h-[320px] p-6 border-2 border-dashed rounded-xl transition-all duration-200 ${
-          isDragActive
-            ? "border-emerald-500 bg-emerald-50/50"
-            : "border-stone-200 bg-stone-50/50 hover:bg-stone-50"
-        } ${selectedFile ? "border-solid bg-white" : ""}`}
+        className={`relative flex flex-col bg-background/50 dark:bg-black/20 border border-surface-border rounded-2xl shadow-sm transition-all duration-300 p-4 focus-within:border-claude-orange focus-within:ring-2 focus-within:ring-claude-orange/20 ${
+          isDragActive ? "border-claude-orange bg-claude-orange/5 dark:bg-claude-orange/10 scale-[1.02]" : "hover:border-zinc-300 dark:hover:border-zinc-600"
+        }`}
         onDragEnter={handleDrag}
         onDragOver={handleDrag}
         onDragLeave={handleDrag}
         onDrop={handleDrop}
       >
-        {selectedFile && previewUrl ? (
-          <div className="relative w-full flex flex-col items-center gap-4">
-            <div className="relative w-full max-h-[260px] flex justify-center items-center overflow-hidden rounded-lg bg-stone-100">
+        {/* Attachment Thumbnail Previews */}
+        {selectedFile && previewUrl && (
+          <div className="flex items-center gap-4 bg-surface dark:bg-zinc-800/50 border border-surface-border p-3 rounded-xl w-full mb-3 animate-in fade-in zoom-in-95 duration-300">
+            <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-surface-border bg-black/5 flex-shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
-                alt="Leaf preview"
-                className="max-w-full max-h-[260px] object-contain transition-transform duration-200 hover:scale-[1.02]"
+                alt="Upload preview"
+                className="w-full h-full object-cover"
               />
-              <button
-                type="button"
-                onClick={handleReset}
-                className="absolute top-2 right-2 p-1.5 rounded-full bg-stone-900/80 text-white hover:bg-stone-900 transition-colors focus:ring-2 focus:ring-healthy-500 focus:outline-none"
-                aria-label="Hủy chọn ảnh"
-              >
-                <X className="w-4 h-4" />
-              </button>
             </div>
-            <div className="w-full text-center px-4">
-              <p className="text-sm font-semibold text-stone-800 truncate" title={selectedFile.name}>
+            <div className="flex-1 min-w-0 pr-2">
+              <p className="text-sm font-semibold text-foreground truncate" title={selectedFile.name}>
                 {selectedFile.name}
               </p>
-              <p className="text-xs text-stone-500 mt-0.5">
+              <p className="text-xs text-claude-muted font-medium mt-0.5">
                 {formatFileSize(selectedFile.size)}
               </p>
             </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center text-center gap-4 py-8">
-            <div className="p-4 rounded-full bg-healthy-50 text-healthy-700">
-              <Upload className="w-8 h-8" />
-            </div>
-            <div>
-              <p className="text-base font-semibold text-stone-800">
-                Kéo thả hoặc chọn ảnh lá cây để chẩn đoán
-              </p>
-              <p className="text-xs text-stone-500 mt-1">
-                Hỗ trợ PNG, JPG, WEBP lên đến 10 MB
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 justify-center">
-              <button
-                type="button"
-                onClick={triggerFileSelect}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-stone-700 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 hover:text-stone-900 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-healthy-500"
-              >
-                <Upload className="w-4 h-4" />
-                Chọn file ảnh
-              </button>
-              <button
-                type="button"
-                onClick={triggerCameraSelect}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-stone-700 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 hover:text-stone-900 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-healthy-500"
-              >
-                <Camera className="w-4 h-4" />
-                Chụp ảnh
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+              aria-label="Remove file"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         )}
+
+        {/* Text Input area (styled placeholder) */}
+        <div className="flex-1">
+          {!selectedFile ? (
+            <div 
+              onClick={triggerFileSelect}
+              className="w-full text-center sm:text-left text-sm text-claude-muted py-4 px-2 cursor-pointer font-medium select-none flex flex-col sm:flex-row items-center gap-2"
+            >
+              <ImageIcon className="w-5 h-5 opacity-50" />
+              Kéo thả hoặc nhấp để chọn ảnh lá cây (Cà phê / Lúa)
+            </div>
+          ) : (
+            <div className="w-full text-center sm:text-left text-sm text-foreground py-3 px-2 font-medium">
+              Sẵn sàng để chẩn đoán
+            </div>
+          )}
+        </div>
+
+        {/* Action Row */}
+        <div className="flex items-center justify-between border-t border-surface-border/50 pt-2.5 mt-1">
+          <div className="flex items-center gap-1">
+            {/* Attachment buttons */}
+            <button
+              type="button"
+              onClick={triggerFileSelect}
+              className="p-1.5 rounded-lg text-claude-muted hover:text-claude-text hover:bg-interactive-hover dark:hover:bg-stone-800 transition-all"
+              title="Đính kèm ảnh từ thiết bị"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={triggerCameraSelect}
+              className="p-1.5 rounded-lg text-claude-muted hover:text-claude-text hover:bg-interactive-hover dark:hover:bg-stone-800 transition-all"
+              title="Chụp ảnh trực tiếp"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Submit button */}
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={isSubmitting || !selectedFile}
+            className={`p-2 rounded-xl text-white shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-claude-orange/20 ${
+              isSubmitting
+                ? "bg-stone-300 dark:bg-stone-700 cursor-not-allowed text-stone-500"
+                : selectedFile
+                ? "bg-claude-orange hover:bg-amber-700"
+                : "bg-stone-200 dark:bg-stone-800 text-stone-400 dark:text-stone-600 cursor-not-allowed"
+            }`}
+            title="Bắt đầu chẩn đoán"
+          >
+            {isSubmitting ? (
+              <span className="w-4 h-4 block border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+          </button>
+        </div>
 
         {/* Hidden inputs */}
         <input
@@ -183,18 +209,10 @@ export default function ImageUploader({
         />
       </div>
 
-      <button
-        type="button"
-        onClick={onSubmit}
-        disabled={isSubmitting || !selectedFile}
-        className="w-full inline-flex items-center justify-center px-4 py-3 text-sm font-semibold text-white bg-healthy-700 hover:bg-healthy-500 rounded-lg shadow-sm disabled:bg-stone-300 disabled:text-stone-500 disabled:cursor-not-allowed transition-all focus:outline-none focus:ring-2 focus:ring-healthy-500 focus:ring-offset-2"
-      >
-        {isSubmitting ? "Đang xử lý chẩn đoán..." : "Gửi ảnh để chẩn đoán"}
-      </button>
-
+      {/* Errors */}
       {error && (
-        <div className="p-3 border border-danger-500/10 bg-danger-50 text-danger-700 rounded-lg text-sm flex gap-2 items-start animate-fadeIn">
-          <span className="font-semibold">Lỗi:</span>
+        <div className="p-3 border border-danger-500/10 bg-danger-50 dark:bg-danger-500/10 text-danger-700 dark:text-danger-400 rounded-xl text-xs font-medium flex gap-2 items-start animate-in fade-in duration-200">
+          <span className="font-bold flex-shrink-0">Lỗi:</span>
           <span>{error}</span>
         </div>
       )}

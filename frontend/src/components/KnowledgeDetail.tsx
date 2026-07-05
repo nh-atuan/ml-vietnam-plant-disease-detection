@@ -37,7 +37,7 @@ export default function KnowledgeDetail({ diseaseLabel, onBack }: KnowledgeDetai
 
   if (isLoading) {
     return (
-      <div className="bg-white border border-stone-200 rounded-xl p-8 shadow-sm">
+      <div className="bg-surface-raised border border-surface-border rounded-2xl p-8 shadow-sm animate-pulse">
         <LoadingSpinner />
       </div>
     );
@@ -49,9 +49,9 @@ export default function KnowledgeDetail({ diseaseLabel, onBack }: KnowledgeDetai
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-1 text-sm font-semibold text-stone-600 hover:text-stone-900 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-claude-text bg-surface-raised border border-surface-border rounded-xl hover:bg-interactive-hover transition-all shadow-sm focus:outline-none"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-3.5 h-3.5" />
           Quay lại danh sách
         </button>
         <ErrorMessage message={error} onRetry={loadDiseaseDetail} />
@@ -64,7 +64,7 @@ export default function KnowledgeDetail({ diseaseLabel, onBack }: KnowledgeDetai
       <button
         type="button"
         onClick={onBack}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-700 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 hover:text-stone-900 transition-all shadow-sm focus:outline-none"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-claude-text bg-surface-raised border border-surface-border rounded-xl hover:bg-interactive-hover transition-all shadow-sm focus:outline-none"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
         Quay lại danh sách

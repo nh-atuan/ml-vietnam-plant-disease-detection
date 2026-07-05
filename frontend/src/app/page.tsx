@@ -1,20 +1,23 @@
 "use client";
 
 import React, { useState } from "react";
-import { User, LogIn, LogOut, Loader2 } from "lucide-react";
 import ImageUploader from "../components/ImageUploader";
 import PredictionResult from "../components/PredictionResult";
 import TopKList from "../components/TopKList";
 import RecommendationCard from "../components/RecommendationCard";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
-import TabNav, { TabId } from "../components/TabNav";
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
 import AuthModal from "../components/AuthModal";
 import KnowledgeList from "../components/KnowledgeList";
 import KnowledgeDetail from "../components/KnowledgeDetail";
 import HistoryList from "../components/HistoryList";
 import { usePrediction } from "../hooks/usePrediction";
 import { useAuth } from "../hooks/useAuth";
+import { TabId } from "../components/TabNav";
+import { BentoGrid, BentoGridItem } from "../components/layout/BentoGrid";
+import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from "../components/animations/Animations";
 
 export default function Home() {
   const auth = useAuth();
@@ -30,147 +33,212 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>("diagnosis");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedDisease, setSelectedDisease] = useState<string | null>(null);
+  
+  const [theme, setTheme] = React.useState<"light" | "dark">("light");
+
+  React.useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark") || 
+                   localStorage.getItem("theme") === "dark";
+    setTheme(isDark ? "dark" : "light");
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
   const handlePredictSubmit = () => {
-    // Pass auth token if available to associate with history
     handleSubmit(auth.token || undefined);
   };
 
+  const getActiveTabLabel = () => {
+    switch (activeTab) {
+      case "diagnosis":
+        return "Chẩn đoán Dashboard";
+      case "knowledge":
+        return "Cơ sở tri thức";
+      case "history":
+        return "Lịch sử cá nhân";
+      default:
+        return "Dashboard";
+    }
+  };
+
   return (
-    <main className="min-h-screen px-4 py-6 sm:px-8 bg-[#f7f9f6]">
-      <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        
-        {/* Header Title Block & Auth Area */}
-        <div className="flex flex-col gap-4 border-b border-stone-200 pb-4">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-            <div className="space-y-1">
-              <p className="text-sm font-medium uppercase tracking-wider text-healthy-700">
-                Cà phê / Lúa
-              </p>
-              <h1 className="text-3xl font-bold text-stone-900 sm:text-4xl">
-                Chẩn đoán bệnh trên lá cây
-              </h1>
-              <p className="max-w-2xl text-xs text-stone-500">
-                Dự đoán và nhận khuyến nghị điều trị cho bệnh trên lá cây lúa và cà phê 
-                trong điều kiện thực địa tại Việt Nam.
-              </p>
-            </div>
+    <div className={`min-h-screen bg-background flex flex-col lg:flex-row ${theme === "dark" ? "dark" : ""}`}>
+      {/* Sidebar navigation */}
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        user={auth.user}
+        isLoading={auth.isLoading}
+        logout={auth.logout}
+        onLoginClick={() => setIsAuthModalOpen(true)}
+      />
 
-            {/* Auth Section */}
-            <div className="flex items-center self-start sm:self-center">
-              {auth.isLoading ? (
-                <div className="flex items-center gap-1.5 text-xs text-stone-400 bg-white border border-stone-100 px-3 py-1.5 rounded-lg">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Đang xác thực...
-                </div>
-              ) : auth.user ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1.5 text-xs text-stone-750 bg-white border border-stone-200 px-3 py-1.5 rounded-lg shadow-sm">
-                    <User className="w-3.5 h-3.5 text-healthy-700" />
-                    <span className="font-semibold">{auth.user.username}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={auth.logout}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:text-danger-700 bg-white hover:bg-danger-50 border border-stone-200 hover:border-danger-200 rounded-lg transition-all shadow-sm focus:outline-none"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    Đăng xuất
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-700 bg-white border border-stone-200 hover:bg-stone-50 hover:text-stone-900 rounded-lg transition-all shadow-sm focus:outline-none"
-                >
-                  <LogIn className="w-3.5 h-3.5 text-healthy-700" />
-                  Đăng nhập
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* Main layout container */}
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 pb-16 lg:pb-0 min-h-screen">
+        <Header 
+          activeTabLabel={getActiveTabLabel()} 
+          theme={theme}
+          onThemeToggle={toggleTheme}
+        />
 
-        {/* Tab Navigation */}
-        <TabNav activeTab={activeTab} onTabChange={setActiveTab} />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="max-w-6xl mx-auto w-full">
+            
+            {activeTab === "diagnosis" && (
+              <StaggerContainer className="flex flex-col gap-8 pb-10">
+                {!prediction && !isSubmitting ? (
+                  <StaggerItem>
+                    <div className="flex flex-col items-center justify-center text-center py-12 md:py-20">
+                      <h2 className="text-5xl md:text-6xl font-display font-bold text-foreground tracking-tight leading-[1.1]">
+                        Bắt đầu chẩn đoán
+                      </h2>
+                      <p className="mt-4 text-claude-muted font-sans max-w-lg">
+                        Tải lên hình ảnh lá cây bị bệnh để AI của chúng tôi phân tích và đưa ra giải pháp chăm sóc.
+                      </p>
+                      <div className="w-full max-w-2xl mt-12">
+                        <div className="glass-panel rounded-3xl p-8 premium-shadow">
+                          <ImageUploader
+                            onSubmit={handlePredictSubmit}
+                            onFileSelect={handleFileSelect}
+                            selectedFile={selectedFile}
+                            isSubmitting={isSubmitting}
+                            error={error}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </StaggerItem>
+                ) : (
+                  <StaggerContainer className="w-full">
+                    <BentoGrid className="grid-cols-1 md:grid-cols-3 md:auto-rows-[auto]">
+                      
+                      {/* Original Image Cell */}
+                      <StaggerItem className="col-span-1 md:col-span-1">
+                        <div className="glass-panel p-6 rounded-2xl h-full flex flex-col premium-shadow">
+                          <h3 className="text-sm font-display font-bold uppercase tracking-widest text-claude-muted mb-4">
+                            Ảnh đã tải lên
+                          </h3>
+                          {selectedFile && (
+                            <div className="relative rounded-xl overflow-hidden flex-1 bg-surface-raised border border-surface-border">
+                              <img
+                                src={URL.createObjectURL(selectedFile)}
+                                alt="Uploaded leaf"
+                                className="w-full h-full object-cover absolute inset-0"
+                              />
+                            </div>
+                          )}
+                          {!isSubmitting && (
+                            <div className="mt-4 pt-4 border-t border-surface-border">
+                              <ImageUploader
+                                selectedFile={selectedFile}
+                                onFileSelect={handleFileSelect}
+                                isSubmitting={isSubmitting}
+                                onSubmit={handlePredictSubmit}
+                                error={error}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </StaggerItem>
 
-        {/* Tab Panels */}
-        <div className="mt-2">
-          {/* TAB 1: DIAGNOSIS */}
-          {activeTab === "diagnosis" && (
-            <div className="grid gap-6 lg:grid-cols-[1fr_1fr] items-start">
-              {/* Left Column: Upload */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-bold text-stone-850">Tải ảnh lên</h2>
-                <ImageUploader
-                  selectedFile={selectedFile}
-                  onFileSelect={handleFileSelect}
-                  isSubmitting={isSubmitting}
-                  onSubmit={handlePredictSubmit}
-                  error={error}
-                />
-              </div>
+                      {/* AI Result Cell */}
+                      <StaggerItem className="col-span-1 md:col-span-2 space-y-4">
+                        {isSubmitting ? (
+                          <div className="glass-panel rounded-2xl p-12 flex flex-col items-center justify-center gap-4 h-full premium-shadow">
+                            <LoadingSpinner />
+                            <p className="text-lg font-display font-medium text-foreground">Đang phân tích dữ liệu...</p>
+                          </div>
+                        ) : (
+                          prediction && (
+                            <div className="flex flex-col gap-4 h-full">
+                              <div className="glass-panel rounded-2xl p-6 premium-shadow">
+                                <h3 className="text-sm font-display font-bold uppercase tracking-widest text-claude-muted mb-4">
+                                  Kết quả phân tích
+                                </h3>
+                                <PredictionResult prediction={prediction} />
+                              </div>
+                              <div className="glass-panel rounded-2xl p-6 premium-shadow">
+                                <h3 className="text-sm font-display font-bold uppercase tracking-widest text-claude-muted mb-4">
+                                  Độ tin cậy & Lựa chọn khác
+                                </h3>
+                                <TopKList topK={prediction.top_k} />
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </StaggerItem>
 
-              {/* Right Column: Result */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-bold text-stone-850">Kết quả chẩn đoán</h2>
-                
-                {isSubmitting && (
-                  <div className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm">
-                    <LoadingSpinner />
-                  </div>
+                      {/* Recommendation Cell spans full width */}
+                      {!isSubmitting && prediction && (
+                        <StaggerItem className="col-span-1 md:col-span-3 mt-4">
+                          <div className="glass-panel rounded-2xl p-6 premium-shadow">
+                             <RecommendationCard recommendation={prediction.recommendation} />
+                          </div>
+                        </StaggerItem>
+                      )}
+                    </BentoGrid>
+                  </StaggerContainer>
                 )}
+              </StaggerContainer>
+            )}
 
-                {!isSubmitting && !prediction && (
-                  <EmptyState
-                    title="Chưa có dữ liệu chẩn đoán"
-                    description="Hãy chọn hoặc chụp ảnh một chiếc lá cây (lúa hoặc cà phê) bên cột trái để bắt đầu phân tích bệnh."
+            {activeTab === "knowledge" && (
+              <FadeIn className="space-y-4 pb-10">
+                {selectedDisease ? (
+                  <div className="glass-panel rounded-3xl p-6 premium-shadow">
+                    <KnowledgeDetail
+                      diseaseLabel={selectedDisease}
+                      onBack={() => setSelectedDisease(null)}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-display font-bold text-foreground mb-6">
+                      Cơ sở tri thức bệnh cây trồng
+                    </h2>
+                    <div className="glass-panel rounded-3xl p-6 premium-shadow">
+                      <KnowledgeList onSelectDisease={setSelectedDisease} />
+                    </div>
+                  </>
+                )}
+              </FadeIn>
+            )}
+
+            {activeTab === "history" && (
+              <SlideUp className="space-y-4 pb-10">
+                <h2 className="text-2xl font-display font-bold text-foreground mb-6">
+                  Lịch sử chẩn đoán cá nhân
+                </h2>
+                <div className="glass-panel rounded-3xl p-6 premium-shadow">
+                  <HistoryList
+                    token={auth.token}
+                    onLoginPrompt={() => setIsAuthModalOpen(true)}
                   />
-                )}
+                </div>
+              </SlideUp>
+            )}
+            
+          </div>
+        </main>
+      </div>
 
-                {!isSubmitting && prediction && (
-                  <div className="space-y-4">
-                    <PredictionResult prediction={prediction} />
-                    <TopKList topK={prediction.top_k} />
-                    <RecommendationCard recommendation={prediction.recommendation} />
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: KNOWLEDGE BASE */}
-          {activeTab === "knowledge" && (
-            <div>
-              {selectedDisease ? (
-                <KnowledgeDetail
-                  diseaseLabel={selectedDisease}
-                  onBack={() => setSelectedDisease(null)}
-                />
-              ) : (
-                <KnowledgeList onSelectDisease={setSelectedDisease} />
-              )}
-            </div>
-          )}
-
-          {/* TAB 3: PERSONAL HISTORY */}
-          {activeTab === "history" && (
-            <HistoryList
-              token={auth.token}
-              onLoginPrompt={() => setIsAuthModalOpen(true)}
-            />
-          )}
-        </div>
-
-      </section>
-
-      {/* Auth Modal Overlay */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         auth={auth}
       />
-    </main>
+    </div>
   );
 }

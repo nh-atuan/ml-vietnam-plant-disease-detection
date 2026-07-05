@@ -2,6 +2,7 @@
 
 import React from "react";
 import { PredictionResponse } from "../lib/api";
+import { motion } from "framer-motion";
 
 interface PredictionResultProps {
   prediction: PredictionResponse;
@@ -21,35 +22,35 @@ export default function PredictionResult({ prediction }: PredictionResultProps) 
   const confidenceNote = recommendation?.confidence_note;
 
   return (
-    <div className="w-full p-5 bg-white border border-stone-200 rounded-xl shadow-sm space-y-4">
-      <div className="flex flex-col gap-1 border-b border-stone-100 pb-3">
-        <span className="text-xs font-semibold uppercase tracking-wider text-stone-400">
-          Kết quả chẩn đoán
+    <div className="w-full space-y-6">
+      <div className="flex flex-col gap-2 border-b border-surface-border/50 pb-5">
+        <span className="text-xs font-display font-bold uppercase tracking-[0.2em] text-claude-orange/80">
+          Chẩn đoán chính xác nhất
         </span>
-        <h3 className="text-2xl font-bold text-stone-900 leading-tight">
+        <h3 className="text-4xl md:text-5xl font-display font-bold text-foreground leading-tight mt-1">
           {diseaseNameVi}
         </h3>
         {recommendation?.name_en && (
-          <p className="text-sm text-stone-500 italic">
+          <p className="text-sm font-sans text-claude-muted italic mt-1">
             {recommendation.name_en}
           </p>
         )}
-        <div className="mt-1 flex flex-wrap gap-2 items-center">
-          <code className="text-xs px-2 py-0.5 bg-stone-100 text-stone-600 rounded">
+        <div className="mt-4 flex flex-wrap gap-2 items-center">
+          <code className="text-xs font-mono px-2.5 py-1 bg-surface-sidebar border border-surface-border text-foreground rounded-md shadow-sm">
             Nhãn: {rawLabel}
           </code>
           {recommendation?.crop && (
-            <span className="text-xs px-2 py-0.5 bg-healthy-50 text-healthy-700 font-medium rounded-full border border-healthy-100/50">
+            <span className="text-xs px-2.5 py-1 bg-surface-raised border border-surface-border text-claude-muted font-semibold rounded-md shadow-sm">
               Cây trồng: {recommendation.crop === "rice" ? "Lúa" : recommendation.crop === "coffee" ? "Cà phê" : recommendation.crop}
             </span>
           )}
           {recommendation?.severity && (
-            <span className={`text-xs px-2 py-0.5 font-medium rounded-full border ${
+            <span className={`text-xs px-2.5 py-1 font-semibold rounded-md border shadow-sm ${
               recommendation.severity.toLowerCase() === "high" || recommendation.severity.toLowerCase() === "severe"
-                ? "bg-danger-50 text-danger-700 border-danger-100/50"
+                ? "bg-danger-50 text-danger-700 border-danger-500/20 dark:bg-danger-900/20 dark:text-danger-400"
                 : recommendation.severity.toLowerCase() === "medium" || recommendation.severity.toLowerCase() === "moderate"
-                ? "bg-warning-50 text-warning-700 border-warning-100/50"
-                : "bg-healthy-50 text-healthy-700 border-healthy-100/50"
+                ? "bg-warning-50 text-warning-700 border-warning-500/20 dark:bg-warning-900/20 dark:text-warning-400"
+                : "bg-healthy-50 text-healthy-700 border-healthy-500/20 dark:bg-healthy-900/20 dark:text-healthy-400"
             }`}>
               Mức độ: {recommendation.severity === "high" || recommendation.severity === "severe" ? "Nặng" : recommendation.severity === "medium" || recommendation.severity === "moderate" ? "Trung bình" : "Nhẹ"}
             </span>
@@ -58,29 +59,39 @@ export default function PredictionResult({ prediction }: PredictionResultProps) 
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col p-3 bg-stone-50 rounded-lg">
-          <span className="text-xs text-stone-500 font-medium">Độ tin cậy</span>
-          <span className="text-3xl font-extrabold text-healthy-700 mt-1">
+        <div className="flex flex-col p-4 bg-background/50 dark:bg-black/20 border border-surface-border rounded-2xl relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-claude-orange/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <span className="text-xs text-claude-muted font-display font-medium uppercase tracking-wider relative z-10">Độ tin cậy</span>
+          <span className="text-4xl font-bold font-display text-claude-orange mt-2 relative z-10">
             {confidencePercent}%
           </span>
+          <div className="w-full bg-surface-border/50 h-1.5 rounded-full mt-4 overflow-hidden relative z-10">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${confidencePercent}%` }}
+              transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+              className="h-full bg-claude-orange rounded-full"
+            />
+          </div>
         </div>
 
-        <div className="flex flex-col p-3 bg-stone-50 rounded-lg justify-center">
-          <span className="text-xs text-stone-500 font-medium">Thời gian xử lý</span>
-          <span className="text-lg font-bold text-stone-800 mt-1">
+        <div className="flex flex-col p-4 bg-background/50 dark:bg-black/20 border border-surface-border rounded-2xl justify-center">
+          <span className="text-xs text-claude-muted font-display font-medium uppercase tracking-wider">Thời gian xử lý</span>
+          <span className="text-2xl font-bold font-display text-foreground mt-2">
             {latency_ms ? `${latency_ms.toFixed(0)} ms` : "--"}
           </span>
         </div>
       </div>
 
       {confidenceNote && (
-        <div className="p-3 bg-warning-50/75 border border-warning-100/50 text-warning-700 rounded-lg text-xs font-medium">
-          💡 {confidenceNote}
+        <div className="p-4 bg-warning-50 dark:bg-warning-900/10 border border-warning-500/20 text-warning-800 dark:text-warning-400 rounded-2xl text-sm font-medium flex gap-3 items-start shadow-sm">
+          <span className="text-xl">💡</span>
+          <span className="pt-0.5">{confidenceNote}</span>
         </div>
       )}
 
       {prediction_id && (
-        <div className="text-[10px] text-stone-400 text-right font-mono truncate">
+        <div className="text-[10px] text-claude-muted/50 font-mono text-right pt-2">
           ID: {prediction_id}
         </div>
       )}

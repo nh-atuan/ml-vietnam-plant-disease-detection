@@ -5,6 +5,8 @@ import { fetchKnowledgeList, DiseaseRecommendation } from "../lib/api";
 import LoadingSpinner from "./ui/LoadingSpinner";
 import ErrorMessage from "./ui/ErrorMessage";
 import EmptyState from "./ui/EmptyState";
+import { BookOpen } from "lucide-react";
+import { BentoGrid, BentoGridItem } from "./layout/BentoGrid";
 
 interface KnowledgeListProps {
   onSelectDisease: (label: string) => void;
@@ -34,7 +36,7 @@ export default function KnowledgeList({ onSelectDisease }: KnowledgeListProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-white border border-stone-200 rounded-xl p-8 shadow-sm">
+      <div className="bg-background/50 border border-surface-border rounded-3xl p-12 flex items-center justify-center shadow-sm min-h-[400px]">
         <LoadingSpinner />
       </div>
     );
@@ -59,51 +61,45 @@ export default function KnowledgeList({ onSelectDisease }: KnowledgeListProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-bold text-stone-850">Cơ sở tri thức bệnh cây</h3>
-        <p className="text-xs text-stone-500 mt-0.5">
-          Danh sách các loại bệnh trên lúa và cà phê được hệ thống hỗ trợ chẩn đoán
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
+    <div className="space-y-6">
+      <BentoGrid className="md:auto-rows-[16rem]">
         {diseases.map((disease) => {
           const { label, name_vi, name_en, crop, severity, description } = disease;
-
+          
           return (
             <div
               key={label}
               onClick={() => label && onSelectDisease(label)}
-              className="p-5 bg-white border border-stone-200 rounded-xl hover:border-healthy-500 hover:shadow-md cursor-pointer transition-all duration-200 space-y-3 flex flex-col justify-between"
+              className="row-span-1 rounded-2xl group hover:shadow-2xl transition duration-300 p-6 bg-background/50 dark:bg-black/20 border border-surface-border cursor-pointer flex flex-col justify-between overflow-hidden relative"
             >
-              <div className="space-y-1">
+              <div className="absolute inset-0 bg-gradient-to-br from-claude-orange/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10 space-y-2">
                 <div className="flex justify-between items-start gap-2">
-                  <h4 className="font-bold text-stone-900 leading-snug">
+                  <h4 className="font-display font-bold text-foreground text-xl leading-snug group-hover:text-claude-orange transition-colors">
                     {name_vi}
                   </h4>
                 </div>
                 {name_en && (
-                  <p className="text-xs text-stone-400 italic">{name_en}</p>
+                  <p className="text-sm font-sans text-claude-muted italic">{name_en}</p>
                 )}
                 {description && (
-                  <p className="text-xs text-stone-600 line-clamp-2 mt-1.5 leading-relaxed">
+                  <p className="text-sm text-claude-muted line-clamp-2 mt-2 leading-relaxed">
                     {description}
                   </p>
                 )}
               </div>
 
-              <div className="flex gap-2 pt-2 border-t border-stone-50">
-                <span className="text-[10px] px-2 py-0.5 bg-healthy-50 text-healthy-700 font-semibold rounded-full border border-healthy-100/50">
+              <div className="relative z-10 flex gap-2 pt-4 border-t border-surface-border/50">
+                <span className="text-xs px-2.5 py-1 bg-surface-raised border border-surface-border text-foreground font-semibold rounded-md shadow-sm">
                   {crop === "rice" ? "Lúa" : crop === "coffee" ? "Cà phê" : crop}
                 </span>
                 {severity && (
-                  <span className={`text-[10px] px-2 py-0.5 font-semibold rounded-full border ${
+                  <span className={`text-xs px-2.5 py-1 font-semibold rounded-md border shadow-sm ${
                     severity.toLowerCase() === "high" || severity.toLowerCase() === "severe"
-                      ? "bg-danger-50 text-danger-700 border-danger-100/50"
+                      ? "bg-danger-50 text-danger-700 border-danger-500/20 dark:bg-danger-900/20 dark:text-danger-400"
                       : severity.toLowerCase() === "medium" || severity.toLowerCase() === "moderate"
-                      ? "bg-warning-50 text-warning-700 border-warning-100/50"
-                      : "bg-healthy-50 text-healthy-700 border-healthy-100/50"
+                      ? "bg-warning-50 text-warning-700 border-warning-500/20 dark:bg-warning-900/20 dark:text-warning-400"
+                      : "bg-healthy-50 text-healthy-700 border-healthy-500/20 dark:bg-healthy-900/20 dark:text-healthy-400"
                   }`}>
                     {severity === "high" || severity === "severe" ? "Nặng" : severity === "medium" || severity === "moderate" ? "Trung bình" : "Nhẹ"}
                   </span>
@@ -112,7 +108,7 @@ export default function KnowledgeList({ onSelectDisease }: KnowledgeListProps) {
             </div>
           );
         })}
-      </div>
+      </BentoGrid>
     </div>
   );
 }
