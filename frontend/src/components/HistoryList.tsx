@@ -91,7 +91,7 @@ export default function HistoryList({ token, onLoginPrompt }: HistoryListProps) 
         <button
           type="button"
           onClick={onLoginPrompt}
-          className="inline-flex items-center gap-1.5 px-4.5 py-2.5 text-xs font-semibold text-white bg-claude-orange hover:bg-amber-700 rounded-lg shadow-sm transition-all focus:outline-none"
+          className="inline-flex items-center gap-1.5 px-4.5 py-2.5 text-xs font-semibold text-claude-orange-text bg-claude-orange hover:bg-claude-orange-hover rounded-lg shadow-sm transition-all focus:outline-none"
         >
           Đăng nhập ngay
         </button>

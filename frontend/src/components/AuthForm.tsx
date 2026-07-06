@@ -140,11 +140,11 @@ export default function AuthForm({ onSuccess, auth }: AuthFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-2.5 text-sm font-semibold text-white bg-claude-orange hover:bg-amber-700 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed rounded-xl shadow-sm transition-all focus:outline-none"
+          className="w-full py-2.5 text-sm font-semibold text-claude-orange-text bg-claude-orange hover:bg-claude-orange-hover disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed rounded-xl shadow-sm transition-all focus:outline-none"
         >
           {isSubmitting ? (
             <div className="flex items-center justify-center gap-1.5">
-              <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="w-3.5 h-3.5 border-2 border-claude-orange-text/30 border-t-claude-orange-text rounded-full animate-spin" />
               Đang xử lý...
             </div>
           ) : isLoginMode ? (

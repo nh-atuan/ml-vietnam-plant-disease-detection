@@ -191,7 +191,7 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
                 href={src.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-claude-orange hover:text-amber-800 hover:underline transition-colors font-semibold"
+                className="text-claude-orange hover:text-claude-orange-hover hover:underline transition-colors font-semibold"
               >
                 {src.title}
               </a>

@@ -174,17 +174,17 @@ export default function ImageUploader({
             type="button"
             onClick={onSubmit}
             disabled={isSubmitting || !selectedFile}
-            className={`p-2 rounded-xl text-white shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-claude-orange/20 ${
+            className={`p-2 rounded-xl shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-claude-orange/20 ${
               isSubmitting
-                ? "bg-stone-300 dark:bg-stone-700 cursor-not-allowed text-stone-500"
+                ? "bg-stone-300 dark:bg-stone-700 cursor-not-allowed text-stone-500 text-stone-400"
                 : selectedFile
-                ? "bg-claude-orange hover:bg-amber-700"
+                ? "bg-claude-orange hover:bg-claude-orange-hover text-claude-orange-text"
                 : "bg-stone-200 dark:bg-stone-800 text-stone-400 dark:text-stone-600 cursor-not-allowed"
             }`}
             title="Bắt đầu chẩn đoán"
           >
             {isSubmitting ? (
-              <span className="w-4 h-4 block border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="w-4 h-4 block border-2 border-claude-orange-text/30 border-t-claude-orange-text rounded-full animate-spin" />
             ) : (
               <Send className="w-4 h-4" />
             )}

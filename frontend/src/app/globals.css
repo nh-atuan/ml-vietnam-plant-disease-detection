@@ -14,15 +14,17 @@
     
     --color-claude-text: #27272a; /* zinc-800 */
     --color-claude-muted: #71717a; /* zinc-500 */
-    --color-claude-orange: #f97316; /* orange-500 */
+    --color-claude-orange: #09090b; /* zinc-950 (black) */
+    --color-claude-orange-hover: #27272a; /* zinc-800 */
+    --color-claude-orange-text: #ffffff; /* white */
 
     /* Interactive state tokens */
-    --color-interactive-hover: #f1efe7; /* warm hover bg */
-    --color-interactive-active: #eceae2; /* active/selected tab bg */
-    --color-text-secondary: #6b6a65; /* secondary icon/text */
-    --color-text-tertiary: #8e8d88; /* tertiary/separator text */
-    --color-surface-hover: #fcfbf9; /* subtle hover surface */
-    --color-border-hover: #cbc9c0; /* hover border accent */
+    --color-interactive-hover: #f4f4f5; /* zinc-100 */
+    --color-interactive-active: #e4e4e7; /* zinc-200 */
+    --color-text-secondary: #71717a; /* zinc-500 */
+    --color-text-tertiary: #a1a1aa; /* zinc-400 */
+    --color-surface-hover: #fafafa; /* zinc-50 */
+    --color-border-hover: #d4d4d8; /* zinc-300 */
     --color-input-bg: #ffffff; /* input background */
     --color-input-disabled: #fafaf9; /* disabled input bg */
   }
@@ -38,7 +40,9 @@
     
     --color-claude-text: #f4f4f5; /* zinc-100 */
     --color-claude-muted: #a1a1aa; /* zinc-400 */
-    --color-claude-orange: #ea580c; /* orange-600 */
+    --color-claude-orange: #ffffff; /* white */
+    --color-claude-orange-hover: #e4e4e7; /* zinc-200 */
+    --color-claude-orange-text: #09090b; /* black */
 
     /* Interactive state tokens — dark */
     --color-interactive-hover: #27272a; /* zinc-800 */

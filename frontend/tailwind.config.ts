@@ -24,6 +24,11 @@ const config: Config = {
         "border-hover": "var(--color-border-hover)",
         "input-bg": "var(--color-input-bg)",
         "input-disabled": "var(--color-input-disabled)",
+        "claude-orange": "var(--color-claude-orange)",
+        "claude-orange-hover": "var(--color-claude-orange-hover)",
+        "claude-orange-text": "var(--color-claude-orange-text)",
+        "claude-text": "var(--color-claude-text)",
+        "claude-muted": "var(--color-claude-muted)",
         healthy: {
           50: "#f0fdf4",
           500: "#16a34a",
