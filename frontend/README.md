@@ -1,42 +1,66 @@
 # Frontend — Plant Disease Detection Web App
 
-**Phụ trách:** Dương Tuấn Anh  
-**Phase:** 5, Task 5.3
+Ứng dụng web chẩn đoán bệnh trên lá cây lúa và cà phê tại Việt Nam, xây dựng trên nền tảng Next.js (App Router), React 19 và Tailwind CSS.
 
-## Stack
-- Next.js + Tailwind CSS
-- Mobile-first responsive design
+---
 
-## Chức năng chính
-1. **Upload ảnh** lá cây (drag & drop hoặc chọn file / chụp camera)
-2. **Hiển thị kết quả** chẩn đoán:
-   - Nhãn bệnh (tiếng Việt)
-   - Độ tin cậy (confidence %)
-   - Top-k dự đoán khác
-3. **Gợi ý xử lý** bệnh từ Knowledge Base
-4. **Lịch sử** chẩn đoán gần đây
+## ✨ Các Chức Năng Chính
 
-## Khởi tạo project
+1. **🔬 Phân tích chẩn đoán bệnh lá cây**:
+   - Tải ảnh lên qua cơ chế kéo thả (Drag & Drop) hoặc chọn tệp.
+   - Hỗ trợ chụp ảnh trực tiếp từ camera của thiết bị di động.
+   - Kiểm tra và xác thực file ảnh phía client (dung lượng tối đa 10 MB, định dạng JPEG, PNG, WEBP).
+   
+2. **🛡️ Kiểm định kết quả & Độ tin cậy (Trust Signals)**:
+   - Hiển thị tỷ lệ độ tin cậy rõ nét dưới dạng phần trăm lớn.
+   - So sánh trực quan các nhãn bệnh thay thế qua biểu đồ thanh tỉ lệ (Top-K predictions).
+   - Tự động hiển thị cảnh cáo (cận kề) nếu khoảng cách tin cậy của top 1 và top 2 nhỏ hơn 10%.
+   
+3. **📚 Cơ sở tri thức (Knowledge Base)**:
+   - Tra cứu trực tiếp danh sách bệnh được hệ thống hỗ trợ mà không cần chẩn đoán trước.
+   - Xem chi tiết về triệu chứng bệnh, nguyên nhân, biện pháp điều trị, cách phòng ngừa và nguồn tài liệu tham khảo chính thức.
+   
+4. **📋 Lịch sử chẩn đoán cá nhân**:
+   - Đăng ký và đăng nhập tài khoản người dùng (sử dụng Token JWT lưu trữ tại localStorage).
+   - Tự động đồng bộ và lưu trữ lịch sử chẩn đoán khi người dùng đăng nhập.
+   - Xem danh sách lịch sử phân trang trực quan kèm hình ảnh thu nhỏ.
+
+---
+
+## 🛠️ Hướng Dẫn Cài Đặt & Khởi Chạy
+
+### 1. Cấu hình biến môi trường
+Tạo file cấu hình `.env.local` từ file mẫu:
 ```bash
-npx -y create-next-app@latest ./ --typescript --tailwind --eslint --app --src-dir
+cp .env.example .env.local
+```
+Mặc định Next.js sẽ kết nối tới API Backend chạy tại địa chỉ `http://localhost:8000/api/v1`. Bạn có thể cập nhật giá trị `NEXT_PUBLIC_API_BASE_URL` trong file `.env.local` nếu server chạy ở địa chỉ khác.
+
+### 2. Cài đặt thư viện
+Chạy lệnh sau tại thư mục `frontend`:
+```bash
+npm install
 ```
 
-## API endpoint
+### 3. Khởi chạy ứng dụng ở chế độ phát triển
+```bash
+npm run dev
 ```
-POST /api/v1/predict
-Content-Type: multipart/form-data
-Body: file (image)
+Mở trình duyệt truy cập: `http://localhost:3000`.
 
-Response: PredictionResponse (xem backend/app/models/schemas.py)
+### 4. Build sản phẩm (Production)
+Kiểm tra tính đúng đắn của kiểu dữ liệu và tối ưu hóa trước khi triển khai:
+```bash
+npm run build
 ```
 
-## TODO
-- [ ] Khởi tạo Next.js project
-- [ ] Thiết kế UI/UX (Figma hoặc wireframe)
-- [ ] Component: ImageUploader (drag & drop + camera)
-- [ ] Component: PredictionResult (hiển thị kết quả)
-- [ ] Component: DiseaseInfo (gợi ý xử lý)
-- [ ] Component: HistoryList (lịch sử chẩn đoán)
-- [ ] Responsive layout (mobile-first)
-- [ ] Kết nối API backend
-- [ ] Dockerfile cho frontend
+### 5. Chạy Unit Test
+Kiểm tra hoạt động của tầng giao tiếp API bằng Vitest:
+```bash
+npm run test
+```
+
+---
+
+## ⚠️ Giới hạn kỹ thuật hiện tại
+* **Segmentation Overlay**: Hiện tại ứng dụng chưa hỗ trợ vẽ đè vùng phát hiện bệnh (bounding box/segmentation mask) lên ảnh gốc do API Backend hiện hành chưa trả về tọa độ pixel hình học. Giao diện xem ảnh đã được thiết kế sẵn một vùng chứa (extension point) để dễ dàng tích hợp chức năng vẽ đè này khi Backend nâng cấp mô hình phân đoạn (ví dụ YOLO26-seg).

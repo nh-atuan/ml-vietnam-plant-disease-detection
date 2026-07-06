@@ -1,136 +1,244 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-
-import { API_BASE_URL, PredictionResponse, predictImage } from "@/lib/api";
+import React, { useState } from "react";
+import ImageUploader from "../components/ImageUploader";
+import PredictionResult from "../components/PredictionResult";
+import TopKList from "../components/TopKList";
+import RecommendationCard from "../components/RecommendationCard";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import EmptyState from "../components/ui/EmptyState";
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
+import AuthModal from "../components/AuthModal";
+import KnowledgeList from "../components/KnowledgeList";
+import KnowledgeDetail from "../components/KnowledgeDetail";
+import HistoryList from "../components/HistoryList";
+import { usePrediction } from "../hooks/usePrediction";
+import { useAuth } from "../hooks/useAuth";
+import { TabId } from "../components/TabNav";
+import { BentoGrid, BentoGridItem } from "../components/layout/BentoGrid";
+import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from "../components/animations/Animations";
 
 export default function Home() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [prediction, setPrediction] = useState<PredictionResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const auth = useAuth();
+  const {
+    selectedFile,
+    prediction,
+    error,
+    isSubmitting,
+    handleFileSelect,
+    handleSubmit,
+  } = usePrediction();
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setPrediction(null);
+  const [activeTab, setActiveTab] = useState<TabId>("diagnosis");
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [selectedDisease, setSelectedDisease] = useState<string | null>(null);
+  
+  const [theme, setTheme] = React.useState<"light" | "dark">("light");
 
-    if (!selectedFile) {
-      setError("Vui lòng chọn một ảnh lá cây trước khi gửi.");
-      return;
+  React.useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark") || 
+                   localStorage.getItem("theme") === "dark";
+    setTheme(isDark ? "dark" : "light");
+    if (isDark) {
+      document.documentElement.classList.add("dark");
     }
+  }, []);
 
-    setIsSubmitting(true);
-    try {
-      const result = await predictImage(selectedFile);
-      setPrediction(result);
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Không thể gửi ảnh để dự đoán.");
-    } finally {
-      setIsSubmitting(false);
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
     }
-  }
+  };
+
+  const handlePredictSubmit = () => {
+    handleSubmit(auth.token || undefined);
+  };
+
+  const getActiveTabLabel = () => {
+    switch (activeTab) {
+      case "diagnosis":
+        return "Chẩn đoán Dashboard";
+      case "knowledge":
+        return "Cơ sở tri thức";
+      case "history":
+        return "Lịch sử cá nhân";
+      default:
+        return "Dashboard";
+    }
+  };
 
   return (
-    <main className="min-h-screen px-4 py-6 sm:px-8">
-      <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <div className="flex flex-col gap-2 border-b border-stone-200 pb-4">
-          <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            Cà phê / Lúa
-          </p>
-          <h1 className="text-3xl font-semibold text-stone-950 sm:text-4xl">
-            Chẩn đoán bệnh trên lá cây
-          </h1>
-          <p className="max-w-2xl text-base text-stone-700">
-            Dành cho ảnh lá lúa và cà phê trong điều kiện thực địa tại Việt Nam.
-          </p>
-        </div>
+    <div className={`min-h-screen bg-background flex flex-col lg:flex-row ${theme === "dark" ? "dark" : ""}`}>
+      {/* Sidebar navigation */}
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        user={auth.user}
+        isLoading={auth.isLoading}
+        logout={auth.logout}
+        onLoginClick={() => setIsAuthModalOpen(true)}
+      />
 
-        <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-          <form className="rounded-lg border border-dashed border-emerald-300 bg-white p-5 shadow-sm" onSubmit={handleSubmit}>
-            <label className="flex min-h-72 cursor-pointer flex-col items-center justify-center gap-3 rounded-md bg-emerald-50 px-4 text-center transition hover:bg-emerald-100">
-              <span className="text-lg font-medium text-stone-950">Chọn hoặc kéo ảnh lá cây</span>
-              <span className="text-sm text-stone-600">PNG, JPG hoặc WEBP</span>
-              <input
-                className="sr-only"
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                onChange={(event) => {
-                  setSelectedFile(event.target.files?.[0] ?? null);
-                  setError(null);
-                }}
-              />
-              {selectedFile ? (
-                <span className="max-w-full break-all text-sm font-medium text-emerald-800">{selectedFile.name}</span>
-              ) : null}
-            </label>
-            <button
-              className="mt-4 w-full rounded-md bg-emerald-700 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-stone-400"
-              disabled={isSubmitting}
-              type="submit"
-            >
-              {isSubmitting ? "Đang gửi ảnh..." : "Gửi ảnh để dự đoán"}
-            </button>
-            {error ? (
-              <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>
-            ) : null}
-          </form>
+      {/* Main layout container */}
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 pb-16 lg:pb-0 min-h-screen">
+        <Header 
+          activeTabLabel={getActiveTabLabel()} 
+          theme={theme}
+          onThemeToggle={toggleTheme}
+        />
 
-          <aside className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">Kết quả</h2>
-            <dl className="mt-4 grid gap-3 text-sm">
-              <div className="flex justify-between gap-4">
-                <dt className="text-stone-600">API</dt>
-                <dd className="break-all text-right font-medium text-stone-900">{API_BASE_URL}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-stone-600">Nhãn</dt>
-                <dd className="text-right font-medium text-stone-900">
-                  {prediction?.recommendation?.name_vi ?? prediction?.prediction ?? "Chưa có dự đoán"}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-stone-600">Confidence</dt>
-                <dd className="font-medium text-stone-900">
-                  {prediction ? `${Math.round(prediction.confidence * 100)}%` : "--"}
-                </dd>
-              </div>
-            </dl>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="max-w-6xl mx-auto w-full">
+            
+            {activeTab === "diagnosis" && (
+              <StaggerContainer className="flex flex-col gap-8 pb-10">
+                {!prediction && !isSubmitting ? (
+                  <StaggerItem>
+                    <div className="flex flex-col items-center justify-center text-center py-12 md:py-20">
+                      <h2 className="text-5xl md:text-6xl font-display font-bold text-foreground tracking-tight leading-[1.1]">
+                        Bắt đầu chẩn đoán
+                      </h2>
+                      <p className="mt-4 text-claude-muted font-sans max-w-lg">
+                        Tải lên hình ảnh lá cây bị bệnh để AI của chúng tôi phân tích và đưa ra giải pháp chăm sóc.
+                      </p>
+                      <div className="w-full max-w-2xl mt-12">
+                        <div className="glass-panel rounded-3xl p-8 premium-shadow">
+                          <ImageUploader
+                            onSubmit={handlePredictSubmit}
+                            onFileSelect={handleFileSelect}
+                            selectedFile={selectedFile}
+                            isSubmitting={isSubmitting}
+                            error={error}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </StaggerItem>
+                ) : (
+                  <StaggerContainer className="w-full">
+                    <BentoGrid className="grid-cols-1 md:grid-cols-3 md:auto-rows-[auto]">
+                      
+                      {/* Original Image Cell */}
+                      <StaggerItem className="col-span-1 md:col-span-1">
+                        <div className="glass-panel p-6 rounded-2xl h-full flex flex-col premium-shadow">
+                          <h3 className="text-sm font-display font-bold uppercase tracking-widest text-claude-muted mb-4">
+                            Ảnh đã tải lên
+                          </h3>
+                          {selectedFile && (
+                            <div className="relative rounded-xl overflow-hidden flex-1 bg-surface-raised border border-surface-border">
+                              <img
+                                src={URL.createObjectURL(selectedFile)}
+                                alt="Uploaded leaf"
+                                className="w-full h-full object-cover absolute inset-0"
+                              />
+                            </div>
+                          )}
+                          {!isSubmitting && (
+                            <div className="mt-4 pt-4 border-t border-surface-border">
+                              <ImageUploader
+                                selectedFile={selectedFile}
+                                onFileSelect={handleFileSelect}
+                                isSubmitting={isSubmitting}
+                                onSubmit={handlePredictSubmit}
+                                error={error}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </StaggerItem>
 
-            {prediction?.top_k?.length ? (
-              <div className="mt-5 border-t border-stone-200 pt-4">
-                <h3 className="text-sm font-semibold text-stone-950">Top dự đoán</h3>
-                <ul className="mt-2 grid gap-2 text-sm text-stone-700">
-                  {prediction.top_k.map((item) => (
-                    <li className="flex justify-between gap-3" key={item.label}>
-                      <span>{item.label}</span>
-                      <span className="font-medium text-stone-900">{Math.round(item.confidence * 100)}%</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
+                      {/* AI Result Cell */}
+                      <StaggerItem className="col-span-1 md:col-span-2 space-y-4">
+                        {isSubmitting ? (
+                          <div className="glass-panel rounded-2xl p-12 flex flex-col items-center justify-center gap-4 h-full premium-shadow">
+                            <LoadingSpinner />
+                            <p className="text-lg font-display font-medium text-foreground">Đang phân tích dữ liệu...</p>
+                          </div>
+                        ) : (
+                          prediction && (
+                            <div className="flex flex-col gap-4 h-full">
+                              <div className="glass-panel rounded-2xl p-6 premium-shadow">
+                                <h3 className="text-sm font-display font-bold uppercase tracking-widest text-claude-muted mb-4">
+                                  Kết quả phân tích
+                                </h3>
+                                <PredictionResult prediction={prediction} />
+                              </div>
+                              <div className="glass-panel rounded-2xl p-6 premium-shadow">
+                                <h3 className="text-sm font-display font-bold uppercase tracking-widest text-claude-muted mb-4">
+                                  Độ tin cậy & Lựa chọn khác
+                                </h3>
+                                <TopKList topK={prediction.top_k} />
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </StaggerItem>
 
-            {prediction?.recommendation ? (
-              <section className="mt-5 border-t border-stone-200 pt-4">
-                <h3 className="text-sm font-semibold text-stone-950">Khuyến nghị xử lý</h3>
-                {prediction.recommendation.confidence_note ? (
-                  <p className="mt-2 text-sm text-amber-800">{prediction.recommendation.confidence_note}</p>
-                ) : null}
-                <p className="mt-2 text-sm text-stone-700">{prediction.recommendation.description}</p>
-                <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-stone-700">
-                  {prediction.recommendation.treatments.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-                {prediction.recommendation.advisory ? (
-                  <p className="mt-3 text-xs text-stone-500">{prediction.recommendation.advisory}</p>
-                ) : null}
-              </section>
-            ) : null}
-          </aside>
-        </div>
-      </section>
-    </main>
+                      {/* Recommendation Cell spans full width */}
+                      {!isSubmitting && prediction && (
+                        <StaggerItem className="col-span-1 md:col-span-3 mt-4">
+                          <div className="glass-panel rounded-2xl p-6 premium-shadow">
+                             <RecommendationCard recommendation={prediction.recommendation} />
+                          </div>
+                        </StaggerItem>
+                      )}
+                    </BentoGrid>
+                  </StaggerContainer>
+                )}
+              </StaggerContainer>
+            )}
+
+            {activeTab === "knowledge" && (
+              <FadeIn className="space-y-4 pb-10">
+                {selectedDisease ? (
+                  <div className="glass-panel rounded-3xl p-6 premium-shadow">
+                    <KnowledgeDetail
+                      diseaseLabel={selectedDisease}
+                      onBack={() => setSelectedDisease(null)}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-display font-bold text-foreground mb-6">
+                      Cơ sở tri thức bệnh cây trồng
+                    </h2>
+                    <div className="glass-panel rounded-3xl p-6 premium-shadow">
+                      <KnowledgeList onSelectDisease={setSelectedDisease} />
+                    </div>
+                  </>
+                )}
+              </FadeIn>
+            )}
+
+            {activeTab === "history" && (
+              <SlideUp className="space-y-4 pb-10">
+                <h2 className="text-2xl font-display font-bold text-foreground mb-6">
+                  Lịch sử chẩn đoán cá nhân
+                </h2>
+                <div className="glass-panel rounded-3xl p-6 premium-shadow">
+                  <HistoryList
+                    token={auth.token}
+                    onLoginPrompt={() => setIsAuthModalOpen(true)}
+                  />
+                </div>
+              </SlideUp>
+            )}
+            
+          </div>
+        </main>
+      </div>
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        auth={auth}
+      />
+    </div>
   );
 }
