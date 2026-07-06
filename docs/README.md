@@ -24,6 +24,7 @@ Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu th
 
 - [NOTES.md](notes/NOTES.md): ghi chú tổng hợp trong quá trình làm đồ án.
 - [MODEL_NOTES.md](notes/MODEL_NOTES.md): ghi chú riêng về mô hình và tài liệu tham khảo.
+- [DEVELOPMENT.md](notes/DEVELOPMENT.md): hướng dẫn cài đặt và khởi chạy hệ thống web ở local.
 
 ## Yêu cầu đề bài
 

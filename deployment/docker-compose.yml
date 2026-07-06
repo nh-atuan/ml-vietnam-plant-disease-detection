@@ -155,4 +155,4 @@ volumes:
   mlflow_data:
 
 # Lưu ý: models được mount từ host (MODELS_DIR env var)
-# Xem DEVELOPMENT.md để biết cách cấu hình
+# Xem docs/notes/DEVELOPMENT.md để biết cách cấu hình
