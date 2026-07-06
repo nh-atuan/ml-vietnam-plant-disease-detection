@@ -11,7 +11,7 @@
 
 | Deadline | Phase | Nội dung yêu cầu nộp | Trạng thái |
 |----------|-------|----------------------|------------|
-| 28/6 | 5 | **Xây dựng Ứng dụng (Frontend, Backend, Database)** | Chưa thực hiện |
+| 28/6 | 5 | **Xây dựng Ứng dụng (Frontend, Backend, Database)** | Hoàn thành |
 | 5/7 | 6 | **Triển khai & DevOps (K8s, CI/CD, Helm, Traefik)** | Chưa thực hiện |
 
 ---
