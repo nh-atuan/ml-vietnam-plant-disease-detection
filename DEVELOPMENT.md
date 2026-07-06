@@ -1,10 +1,10 @@
-# 🌿 Hướng dẫn Cài đặt & Chạy Web (Development)
+# Hướng dẫn Cài đặt & Chạy Web (Development)
 
 Tài liệu này hướng dẫn cách cài đặt dependencies và chạy toàn bộ hệ thống web (frontend + backend) trên máy local.
 
 ---
 
-## 🚀 Chạy toàn bộ stack bằng Docker (khuyến nghị)
+## Chạy toàn bộ stack bằng Docker (khuyến nghị)
 
 Đây là cách nhanh nhất — **chỉ cần 1 lệnh** để khởi động toàn bộ hệ thống:
 
@@ -23,9 +23,9 @@ Lệnh này sẽ tự động:
 
 | Dịch vụ | URL |
 |---------|-----|
-| 🌐 Web App | http://localhost:3000 |
-| 📖 API Docs | http://localhost:8000/docs |
-| 🗂️ MinIO Console | http://localhost:9001 |
+| Web App | http://localhost:3000 |
+| API Docs | http://localhost:8000/docs |
+| MinIO Console | http://localhost:9001 |
 
 **Các lệnh hữu ích khác:**
 
@@ -50,7 +50,7 @@ docker compose down -v
 
 ---
 
-## 📋 Yêu cầu hệ thống
+## Yêu cầu hệ thống
 
 | Công cụ | Phiên bản tối thiểu | Mục đích |
 |---------|---------------------|----------|
@@ -61,7 +61,7 @@ docker compose down -v
 
 ---
 
-## ⚙️ Bước 1 — Cài đặt Dependencies
+## Bước 1 — Cài đặt Dependencies
 
 ### 1.1 Backend (Python)
 
@@ -91,7 +91,7 @@ cd ..
 
 ---
 
-## 🐳 Bước 2 — Khởi động Services (Docker)
+## Bước 2 — Khởi động Services (Docker)
 
 > **Lưu ý:** Mở **Docker Desktop** trước và đảm bảo nó đang chạy (icon cá voi ổn định trong system tray).
 
@@ -123,11 +123,11 @@ deployment-redis-1      Up (healthy)    0.0.0.0:6379->6379/tcp
 deployment-minio-1      Up (healthy)    0.0.0.0:9000-9001->9000-9001/tcp
 ```
 
-> **⚠️ Lưu ý Port Postgres:** PostgreSQL Docker dùng port **5433** (không phải 5432) để tránh xung đột với PostgreSQL cài nội địa trên Windows.
+> **Lưu ý Port Postgres:** PostgreSQL Docker dùng port **5433** (không phải 5432) để tránh xung đột với PostgreSQL cài nội địa trên Windows.
 
 ---
 
-## 🔑 Bước 3 — Cấu hình Environment Variables
+## Bước 3 — Cấu hình Environment Variables
 
 Tạo file `.env` ở **thư mục gốc** của dự án bằng cách copy từ template:
 
@@ -169,7 +169,7 @@ MLFLOW_TRACKING_URI=http://127.0.0.1:5000
 
 ---
 
-## 🗄️ Bước 4 — Khởi tạo Database
+## Bước 4 — Khởi tạo Database
 
 Chạy migration để tạo các bảng trong PostgreSQL:
 
@@ -184,7 +184,7 @@ INFO  [alembic.runtime.migration] Running upgrade  -> 5d9babedd663, initial_sche
 
 ---
 
-## 🚀 Bước 5 — Chạy Backend (FastAPI)
+## Bước 5 — Chạy Backend (FastAPI)
 
 ```bash
 uv run uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -196,7 +196,7 @@ Backend sẽ khởi động tại `http://localhost:8000`. Kiểm tra:
 
 ---
 
-## 🌐 Bước 6 — Chạy Frontend (Next.js)
+## Bước 6 — Chạy Frontend (Next.js)
 
 Mở terminal **mới** (backend vẫn chạy ở terminal cũ):
 
@@ -209,7 +209,7 @@ Frontend sẽ khởi động tại `http://localhost:3000`.
 
 ---
 
-## ✅ Truy cập Web
+## Truy cập Web
 
 Sau khi cả hai server đang chạy:
 
@@ -221,17 +221,17 @@ Sau khi cả hai server đang chạy:
 
 ---
 
-## 🧪 Test Nhanh
+## Test Nhanh
 
 1. Mở http://localhost:3000
 2. Click **"+ Chẩn đoán mới"** hoặc dùng ô upload ở trang chính
-3. Click icon 📎 (đính kèm) và chọn ảnh lá cây (định dạng `.jpg`, `.png`, `.webp`)
+3. Click icon (đính kèm) và chọn ảnh lá cây (định dạng `.jpg`, `.png`, `.webp`)
 4. Nhấn nút **gửi** (mũi tên →) để bắt đầu chẩn đoán
 5. Kết quả sẽ hiển thị: tên bệnh, độ tin cậy, khuyến nghị điều trị
 
 ---
 
-## 🛑 Dừng các Services
+## Dừng các Services
 
 ```bash
 # Dừng frontend: Ctrl+C trong terminal đang chạy npm run dev
@@ -243,9 +243,9 @@ docker compose down
 
 ---
 
-## 🔧 Xử lý sự cố thường gặp
+## Xử lý sự cố thường gặp
 
-### ❌ Docker không kết nối được
+### Docker không kết nối được
 ```
 failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine
 ```
@@ -253,7 +253,7 @@ failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine
 
 ---
 
-### ❌ PostgreSQL lỗi authentication
+### PostgreSQL lỗi authentication
 ```
 FATAL: password authentication failed for user "admin"
 ```
@@ -261,12 +261,12 @@ FATAL: password authentication failed for user "admin"
 
 ---
 
-### ❌ Frontend lỗi "Failed to fetch"
+### Frontend lỗi "Failed to fetch"
 **Giải pháp:** Backend chưa chạy. Đảm bảo chạy `uvicorn` ở Bước 5 trước khi dùng web.
 
 ---
 
-### ❌ Model không tìm thấy
+### Model không tìm thấy
 ```
 Model file not found: models/yolo26_quantized.onnx
 ```
@@ -274,7 +274,7 @@ Model file not found: models/yolo26_quantized.onnx
 
 ---
 
-## 📁 Cấu trúc dự án (tóm tắt)
+## Cấu trúc dự án (tóm tắt)
 
 ```
 ml-vietnam-plant-disease-detection/
@@ -292,6 +292,6 @@ ml-vietnam-plant-disease-detection/
 │   └── docker-compose.yml  # Docker services config
 ├── models/                 # File model ONNX (không commit lên git)
 ├── data/                   # Dataset
-├── .env                    # ⚠️ Tạo thủ công, không commit lên git
+├── .env                    # Tạo thủ công, không commit lên git
 └── pyproject.toml          # Python dependencies
 ```
