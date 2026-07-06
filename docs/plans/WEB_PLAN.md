@@ -75,6 +75,8 @@ User (Browser/Mobile)
 > **Deadline: 12/7**
 >
 > *Lưu ý cấu hình tài nguyên: Thường thì sẽ không bị quá tải/thiếu bộ nhớ vì YOLO rất nhẹ. Tuy nhiên, lúc setup cluster thì nên chọn machine type có khoảng 8GB RAM. Backend thì cấu hình Pod Limit cao khoảng 7GB để đảm bảo hoạt động mượt mà.*
+>
+> *Lưu ý deploy: Deploy bằng Kubernetes tốt nhất là dùng chung 1 server K8s, nên ai setup infrastructure thì chú ý để người sau vô làm được nha.*
 
 ### Mục tiêu Phase 6
 - Containerize toàn bộ các service của ứng dụng.
