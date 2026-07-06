@@ -19,7 +19,7 @@ Tui đã hoàn thành việc xây dựng và kiểm thử toàn bộ tầng dữ
 Để chạy PostgreSQL, MinIO và Redis phục vụ cho ứng dụng Backend cục bộ, hãy chạy lệnh sau từ thư mục gốc của dự án:
 
 ```bash
-docker compose -f deployment/docker-compose.yml up -d postgres minio redis
+docker compose up -d postgres minio redis
 ```
 
 * **PostgreSQL**: Chạy tại cổng 5432 (Username: `admin`, Password: `changeme`, Database: `plant_disease`).

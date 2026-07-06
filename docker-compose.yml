@@ -1,7 +1,7 @@
 # Docker Compose — Full Stack: Frontend + Backend + PostgreSQL + MinIO + Redis
 #
 # Cách dùng:
-#   docker compose -f deployment/docker-compose.yml up --build
+#   docker compose up --build
 #
 # Truy cập:
 #   - Web App:       http://localhost:3000
@@ -15,7 +15,7 @@ services:
   # ─────────────────────────────────────────
   frontend:
     build:
-      context: ../frontend
+      context: ./frontend
       dockerfile: Dockerfile
       args:
         # API URL gọi từ browser → dùng localhost (host machine)
@@ -33,7 +33,7 @@ services:
   # ─────────────────────────────────────────
   backend:
     build:
-      context: ..
+      context: .
       dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
@@ -153,6 +153,3 @@ volumes:
   redis_data:
   minio_data:
   mlflow_data:
-
-# Lưu ý: models được mount từ host (MODELS_DIR env var)
-# Xem DEVELOPMENT.md để biết cách cấu hình
