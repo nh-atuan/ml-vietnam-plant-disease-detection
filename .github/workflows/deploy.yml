@@ -35,6 +35,8 @@ jobs:
         run: uv sync --only-group backend --only-group dev
 
       - name: Run Python tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: uv run pytest tests/ -v --tb=short
 
       - name: Setup Node.js
