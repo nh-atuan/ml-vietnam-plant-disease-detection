@@ -171,7 +171,9 @@ jobs:
             helm upgrade --install ${{ env.HELM_RELEASE }} /tmp/plant-disease-deploy/helm \
               --namespace ${{ env.NAMESPACE }} \
               --create-namespace \
+              --set backend.image.repository=${{ env.REGISTRY }}/${{ github.repository_owner }}/plant-backend \
               --set backend.image.tag=${{ github.sha }} \
+              --set frontend.image.repository=${{ env.REGISTRY }}/${{ github.repository_owner }}/plant-frontend \
               --set frontend.image.tag=${{ github.sha }} \
               --set global.domain=${{ env.DOMAIN }} \
               --set ingress.tlsEmail=${{ secrets.CERT_EMAIL }} \
@@ -179,8 +181,7 @@ jobs:
               --set-string secretsRaw.postgres-user='${{ secrets.POSTGRES_USER }}' \
               --set-string secretsRaw.postgres-password='${{ secrets.POSTGRES_PASSWORD }}' \
               --set-string secretsRaw.minio-access-key='${{ secrets.MINIO_ACCESS_KEY }}' \
-              --set-string secretsRaw.minio-secret-key='${{ secrets.MINIO_SECRET_KEY }}' \
-              --wait --timeout 10m
+              --set-string secretsRaw.minio-secret-key='${{ secrets.MINIO_SECRET_KEY }}'
           EOF
 
       - name: Verify deployment
