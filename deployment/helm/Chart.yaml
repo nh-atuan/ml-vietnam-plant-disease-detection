@@ -1,0 +1,14 @@
+apiVersion: v2
+name: plant-disease
+description: Helm chart for Plant Disease Detection System (FastAPI + Next.js + PostgreSQL + MinIO + Redis)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - machine-learning
+  - fastapi
+  - next.js
+  - plant-disease
+maintainers:
+  - name: Trí Xuân
+    email: emanhthangngot@gmail.com

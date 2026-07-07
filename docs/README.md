@@ -7,6 +7,7 @@ Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu th
 - [DATA_PLAN.md](plans/DATA_PLAN.md): kế hoạch thu thập, EDA và tiền xử lý dữ liệu.
 - [MODEL_PLAN.md](plans/MODEL_PLAN.md): kế hoạch huấn luyện, đánh giá và tinh chỉnh mô hình.
 - [WEB_PLAN.md](plans/WEB_PLAN.md): kế hoạch Phase 5-6 cho backend, frontend, API, database và deployment.
+- [GCP_K3S_PLAN.md](plans/GCP_K3S_PLAN.md): kế hoạch đề xuất triển khai Phase 6 bằng 1 VM GCP, k3s, Helm, DuckDNS/Traefik và phối hợp model serving.
 - [FINAL_PLAN.md](plans/FINAL_PLAN.md): kế hoạch hoàn thiện báo cáo, slide và demo cuối kỳ.
 
 ## Báo cáo

@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "plant-disease.fullname" . }}-backend
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "plant-disease.fullname" . }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "plant-disease.fullname" . }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "plant-disease.fullname" . }}
+        app.kubernetes.io/component: backend
+    spec:
+      {{- if .Values.images.pullSecretName }}
+      imagePullSecrets:
+        - name: {{ .Values.images.pullSecretName }}
+      {{- end }}
+      initContainers:
+        - name: wait-for-deps
+          image: alpine:3.18
+          command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done']
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.images.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.service.targetPort }}
+              protocol: TCP
+          env:
+            {{- range $env := .Values.backend.env }}
+            - name: {{ $env.name }}
+              value: {{ $env.value | quote }}
+            {{- end }}
+            {{- range $secret := .Values.backend.secrets }}
+            - name: {{ $secret.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: plant-disease-secrets
+                  key: {{ $secret.key }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.backend.livenessProbe.httpGet.path }}
+              port: {{ .Values.backend.service.targetPort }}
+            initialDelaySeconds: {{ .Values.backend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.backend.readinessProbe.httpGet.path }}
+              port: {{ .Values.backend.service.targetPort }}
+            initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.readinessProbe.periodSeconds }}
+          resources:
+            requests:
+              cpu: {{ .Values.backend.resources.requests.cpu }}
+              memory: {{ .Values.backend.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.backend.resources.limits.cpu }}
+              memory: {{ .Values.backend.resources.limits.memory }}
+          volumeMounts:
+            - name: models
+              mountPath: /models
+              readOnly: true
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: {{ default .Values.model.persistence.claimName .Values.model.persistence.existingClaim }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "plant-disease.fullname" . }}
+    app.kubernetes.io/component: backend
+spec:
+  type: {{ .Values.backend.service.type }}
+  ports:
+    - port: {{ .Values.backend.service.port }}
+      targetPort: {{ .Values.backend.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "plant-disease.fullname" . }}
+    app.kubernetes.io/component: backend
