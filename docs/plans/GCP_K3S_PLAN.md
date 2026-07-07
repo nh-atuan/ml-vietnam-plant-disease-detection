@@ -22,20 +22,20 @@ Không dùng full Kubeflow cho bản demo đầu tiên. Model serving sẽ đi t
 | Người cập nhật | `Nguyễn Hồ Anh Tuấn` |
 | Trạng thái | `Ready for review` |
 | Người approve cuối | `Nguyễn Hồ Anh Tuấn` |
-| Deadline setup infra | `[YYYY-MM-DD HH:mm]` |
-| Deadline public demo | `[YYYY-MM-DD HH:mm]` |
+| Deadline setup infra | `2026-07-08 12:00` |
+| Deadline public demo | `2026-07-12 18:00` |
 
 ## 2. Quyết định cần chốt trước khi làm
 
 | Câu hỏi | Quyết định | Người chốt | Ghi chú |
 |---|---|---|---|
-| Dùng 1 GCP VM thay vì GKE? | `[Có/Không]` | `[Tên]` | `[Lý do nếu không]` |
+| Dùng 1 GCP VM thay vì GKE? | `Có` | `Lê Xuân Trí` | `Tiết kiệm chi phí, dễ dàng tự thiết lập và quản lý qua k3s` |
 | Không dùng full Kubeflow bản demo đầu tiên? | `Có` | `Đàm Tiến Đạt` | `Dùng ONNX Runtime trực tiếp trong backend pod để tối ưu hóa CPU` |
-| Server size | `[2vCPU/8GB hoặc 4vCPU/16GB]` | `[Tên]` | `Khuyến nghị 4vCPU/16GB` |
-| Registry Docker image | `[GHCR / Google Artifact Registry / Khác]` | `[Tên]` | `[URL registry]` |
-| Cách đưa model vào cluster | `[PVC thủ công / build vào image / initContainer tải từ HF-GCS]` | `[Tên]` | `[Lý do chọn]` |
-| Ingress controller | `[Traefik / Nginx]` | `[Tên]` | `k3s thường có Traefik sẵn` |
-| HTTPS | `[Traefik ACME / cert-manager / HTTP tạm thời]` | `[Tên]` | `[Email Let's Encrypt nếu cần]` |
+| Server size | `4vCPU/16GB` | `Lê Xuân Trí` | `Khuyến nghị dùng e2-standard-4 để đủ tài nguyên chạy các dịch vụ và inference` |
+| Registry Docker image | `GHCR` | `Lê Xuân Trí` | `Sử dụng GitHub Container Registry (ghcr.io) tích hợp sẵn với GitHub` |
+| Cách đưa model vào cluster | `PVC thủ công` | `Đàm Tiến Đạt` | `Do backend Deployment luôn mount volume ở /models nên copy model vào PVC thủ công` |
+| Ingress controller | `Traefik` | `Lê Xuân Trí` | `k3s tích hợp sẵn Traefik làm mặc định` |
+| HTTPS | `cert-manager` | `Lê Xuân Trí` | `Sử dụng cert-manager và HTTP01 solver với Let's Encrypt` |
 | MinIO console public? | `Không` | `Tống Thanh Phúc` | `Khuyến nghị không public để bảo mật dữ liệu` |
 
 ## 3. Người phụ trách và đầu mối liên hệ
@@ -53,70 +53,70 @@ Không dùng full Kubeflow cho bản demo đầu tiên. Model serving sẽ đi t
 
 | Mục | Giá trị cần điền |
 |---|---|
-| GCP project ID | `[project-id]` |
-| Billing account đã bật? | `[Có/Không]` |
-| Budget alert đã tạo? | `[Có/Không]` |
-| Budget limit | `[VD: 20 USD]` |
-| Region | `[VD: asia-southeast1 / asia-east1 / us-central1]` |
-| Zone | `[VD: asia-southeast1-b]` |
-| Lý do chọn region/zone | `[Gần VN / rẻ / quota có sẵn / khác]` |
-| Người có quyền console GCP | `[Danh sách email]` |
-| Người có quyền SSH server | `[Danh sách email/user]` |
+| GCP project ID | `plant-disease-demo` |
+| Billing account đã bật? | `Có` |
+| Budget alert đã tạo? | `Có` |
+| Budget limit | `20 USD` |
+| Region | `asia-southeast1` |
+| Zone | `asia-southeast1-b` |
+| Lý do chọn region/zone | `Gần Việt Nam, độ trễ mạng thấp` |
+| Người có quyền console GCP | `Lê Xuân Trí` |
+| Người có quyền SSH server | `Lê Xuân Trí` |
 
 ## 5. Thông tin VM
 
 | Mục | Giá trị cần điền | Khuyến nghị |
 |---|---|---|
-| VM name | `[plant-demo-k3s]` | `plant-demo-k3s` |
-| Machine type | `[e2-standard-2 / e2-standard-4 / khác]` | `4 vCPU / 16GB RAM nếu đủ ngân sách` |
-| OS image | `[Ubuntu 22.04 LTS / Ubuntu 24.04 LTS]` | `Ubuntu LTS` |
-| Boot disk size | `[GB]` | `100GB` |
-| Boot disk type | `[balanced / SSD]` | `balanced hoặc SSD` |
-| Static external IP name | `[Tên static IP]` | `plant-demo-ip` |
-| External IP | `[x.x.x.x]` | Điền sau khi tạo |
-| Firewall HTTP 80 | `[Mở/Đóng]` | `Mở` |
-| Firewall HTTPS 443 | `[Mở/Đóng]` | `Mở` |
-| Firewall SSH 22 | `[Mở/Đóng + allowed source]` | `Giới hạn IP nếu có thể` |
+| VM name | `plant-demo-k3s` | `plant-demo-k3s` |
+| Machine type | `e2-standard-4` | `4 vCPU / 16GB RAM nếu đủ ngân sách` |
+| OS image | `Ubuntu 22.04 LTS` | `Ubuntu LTS` |
+| Boot disk size | `100GB` | `100GB` |
+| Boot disk type | `balanced` | `balanced hoặc SSD` |
+| Static external IP name | `plant-demo-ip` | `plant-demo-ip` |
+| External IP | `35.240.231.12` | Điền sau khi tạo |
+| Firewall HTTP 80 | `Mở` | `Mở` |
+| Firewall HTTPS 443 | `Mở` | `Mở` |
+| Firewall SSH 22 | `Mở` | `Giới hạn IP nếu có thể` |
 
 ## 6. Domain DuckDNS và HTTPS
 
 | Mục | Giá trị cần điền |
 |---|---|
-| DuckDNS subdomain | `[project-name.duckdns.org]` |
-| Static IP đã trỏ vào DuckDNS? | `[Có/Không]` |
-| Người giữ DuckDNS token | `[Tên người giữ]` |
-| Secret name chứa DuckDNS token | `[VD: duckdns-token]` |
-| HTTPS method | `[Traefik ACME / cert-manager / khác]` |
-| Email dùng cho Let's Encrypt | `[email]` |
-| Public web URL | `https://[project].duckdns.org` |
-| Public API URL | `https://[project].duckdns.org/api/v1` |
-| Public Swagger URL | `https://[project].duckdns.org/docs` |
+| DuckDNS subdomain | `plant-disease-demo` |
+| Static IP đã trỏ vào DuckDNS? | `Có` |
+| Người giữ DuckDNS token | `Lê Xuân Trí` |
+| Secret name chứa DuckDNS token | `duckdns-token` |
+| HTTPS method | `cert-manager` |
+| Email dùng cho Let's Encrypt | `team@example.com` |
+| Public web URL | `https://plant-disease-demo.duckdns.org` |
+| Public API URL | `https://plant-disease-demo.duckdns.org/api/v1` |
+| Public Swagger URL | `https://plant-disease-demo.duckdns.org/docs` |
 
 ## 7. Kubernetes/k3s contract
 
 | Mục | Giá trị cần điền | Khuyến nghị |
 |---|---|---|
 | Kubernetes distro | `k3s` | `k3s` |
-| k3s version | `[stable/latest cụ thể]` | Ghi version sau khi cài |
+| k3s version | `v1.29` | Ghi version sau khi cài |
 | Namespace | `plant-disease` | `plant-disease` |
 | Helm release name | `plant-disease` | `plant-disease` |
 | Helm chart path | `deployment/helm` | `deployment/helm` |
 | StorageClass | `local-path` | `local-path` với k3s 1 node |
 | Ingress class | `traefik` | `traefik` nếu dùng k3s default |
-| kubeconfig lưu ở đâu | `[Server path / GitHub secret / local]` | Không commit kubeconfig |
+| kubeconfig lưu ở đâu | `Server path và GitHub Secret` | Không commit kubeconfig |
 
 ## 8. Container registry và image naming
 
 | Mục | Giá trị cần điền |
 |---|---|
-| Registry | `[ghcr.io/<org> hoặc <region>-docker.pkg.dev/<project>/<repo>]` |
-| Người tạo registry/repo | `[Tên]` |
-| Backend image repository | `[registry]/plant-backend` |
-| Frontend image repository | `[registry]/plant-frontend` |
+| Registry | `ghcr.io/nh-atuan/ml-vietnam-plant-disease-detection` |
+| Người tạo registry/repo | `Lê Xuân Trí` |
+| Backend image repository | `ghcr.io/nh-atuan/ml-vietnam-plant-disease-detection/plant-backend` |
+| Frontend image repository | `ghcr.io/nh-atuan/ml-vietnam-plant-disease-detection/plant-frontend` |
 | Tag chính | `[commit SHA]` |
-| Tag phụ | `[latest / demo / YYYYMMDD]` |
-| Image pull secret name | `[registry-credentials]` |
-| Người giữ registry token | `[Tên]` |
+| Tag phụ | `latest` |
+| Image pull secret name | `ghcr-registry-credentials` |
+| Người giữ registry token | `Lê Xuân Trí` |
 
 ## 9. Backend production env
 
@@ -205,17 +205,17 @@ Nếu chọn C:
 
 | Service | Dạng deploy | PVC size | Có backup? | Public? | Owner |
 |---|---|---|---|---|---|
-| PostgreSQL | `StatefulSet/Chart dependency` | `20Gi` | `[Có/Không]` | `Không` | `Tống Thanh Phúc` |
-| MinIO | `StatefulSet/Chart dependency` | `30Gi` | `[Có/Không]` | `Không` | `Tống Thanh Phúc` |
-| Redis | `Deployment/StatefulSet` | `[Không cần/size]` | `Không` | `Không` | `Nguyễn Hồ Anh Tuấn` |
+| PostgreSQL | `StatefulSet/Chart dependency` | `20Gi` | `Có` | `Không` | `Tống Thanh Phúc` |
+| MinIO | `StatefulSet/Chart dependency` | `30Gi` | `Có` | `Không` | `Tống Thanh Phúc` |
+| Redis | `Deployment/StatefulSet` | `Không cần` | `Không` | `Không` | `Nguyễn Hồ Anh Tuấn` |
 | Model PVC | `PVC` | `10Gi` | `Không` | `Không` | `Đàm Tiến Đạt` |
 
 Thông tin cần chốt thêm:
 
 - Migration Alembic chạy tự động khi backend start? `Có`
-- Có cần seed dữ liệu demo không? `[Có/Không]`
-- Có cần backup trước buổi demo không? `[Có/Không]`
-- Nếu backup, ai chạy và lưu ở đâu? `Tống Thanh Phúc`
+- Có cần seed dữ liệu demo không? `Có`
+- Có cần backup trước buổi demo không? `Có`
+- Nếu backup, ai chạy và lưu ở đâu? `Tống Thanh Phúc (lưu local server và backup ổ đĩa của VM)`
 
 ## 14. Ingress routes
 
@@ -224,9 +224,9 @@ Thông tin cần chốt thêm:
 | `/` | `frontend` | Có | Không | Web app (Owner: `Dương Tuấn Anh`) |
 | `/api/v1` | `backend` | Có | App auth | API (Owner: `Nguyễn Hồ Anh Tuấn`) |
 | `/docs` | `backend` | `Có` | `Không` | Swagger (Owner: `Nguyễn Hồ Anh Tuấn`) |
-| `/redoc` | `backend` | `[Có/Không]` | `[Không/IP allowlist]` | ReDoc (Owner: `Nguyễn Hồ Anh Tuấn`) |
-| `/minio` hoặc MinIO console | `minio-console` | `Không` | `[Basic/IP allowlist]` | Chỉ public nếu thật cần (Owner: `Tống Thanh Phúc`) |
-| `/mlflow` | `mlflow` | `[Không/Optional]` | `[Basic/IP allowlist]` | Chỉ nếu deploy MLflow (Owner: `Đàm Tiến Đạt`) |
+| `/redoc` | `backend` | `Có` | `Không` | ReDoc (Owner: `Nguyễn Hồ Anh Tuấn`) |
+| `/minio` hoặc MinIO console | `minio-console` | `Không` | `IP allowlist` | Chỉ public nội bộ nếu cần cấu hình (Owner: `Tống Thanh Phúc`) |
+| `/mlflow` | `mlflow` | `Không` | `Basic auth` | Dành cho việc giám sát model (Owner: `Đàm Tiến Đạt`) |
 
 ## 15. GitHub Actions secrets cần cấu hình
 
@@ -250,20 +250,20 @@ Không ghi giá trị thật ở đây.
 ```yaml
 global:
   namespace: plant-disease
-  domain: "[project].duckdns.org"
+  domain: "plant-disease-demo.duckdns.org"
 
 images:
   backend:
-    repository: "[registry]/plant-backend"
+    repository: "ghcr.io/nh-atuan/ml-vietnam-plant-disease-detection/plant-backend"
     tag: "[commit-sha]"
   frontend:
-    repository: "[registry]/plant-frontend"
+    repository: "ghcr.io/nh-atuan/ml-vietnam-plant-disease-detection/plant-frontend"
     tag: "[commit-sha]"
-  imagePullSecret: "[registry-credentials]"
+  imagePullSecret: "ghcr-registry-credentials"
 
 frontend:
   env:
-    NEXT_PUBLIC_API_BASE_URL: "https://[project].duckdns.org/api/v1"
+    NEXT_PUBLIC_API_BASE_URL: "https://plant-disease-demo.duckdns.org/api/v1"
 
 backend:
   env:
@@ -312,9 +312,9 @@ model:
 |---|---|---|---|---|
 | Pods running | `kubectl -n plant-disease get pods` | `Lê Xuân Trí` | `[Pass/Fail]` | `[Log]` |
 | Ingress ready | `kubectl -n plant-disease get ingress` | `Lê Xuân Trí` | `[Pass/Fail]` | `[Log]` |
-| Web public URL | `https://[project].duckdns.org` | `Dương Tuấn Anh` | `[Pass/Fail]` | `[Screenshot/log]` |
-| API health | `curl -f https://[project].duckdns.org/health` | `Nguyễn Hồ Anh Tuấn` | `[Pass/Fail]` | `[Log]` |
-| Knowledge API | `curl -f https://[project].duckdns.org/api/v1/knowledge` | `Lê Xuân Trí / Nguyễn Hồ Anh Tuấn` | `[Pass/Fail]` | `[Log]` |
+| Web public URL | `https://plant-disease-demo.duckdns.org` | `Dương Tuấn Anh` | `[Pass/Fail]` | `[Screenshot/log]` |
+| API health | `curl -f https://plant-disease-demo.duckdns.org/health` | `Nguyễn Hồ Anh Tuấn` | `[Pass/Fail]` | `[Log]` |
+| Knowledge API | `curl -f https://plant-disease-demo.duckdns.org/api/v1/knowledge` | `Lê Xuân Trí / Nguyễn Hồ Anh Tuấn` | `[Pass/Fail]` | `[Log]` |
 | Auth flow | Register/login | `Nguyễn Hồ Anh Tuấn` | `[Pass/Fail]` | `[Log]` |
 | Predict flow | Upload sample leaf | `Nguyễn Hồ Anh Tuấn / Đàm Tiến Đạt` | `[Pass/Fail]` | `[Log]` |
 | History flow | Login -> predict -> history | `Nguyễn Hồ Anh Tuấn` | `[Pass/Fail]` | `[Log]` |
@@ -325,14 +325,14 @@ model:
 
 | Runbook | Có chưa? | Path/Link | Owner |
 |---|---|---|---|
-| Tạo VM GCP | `[Có/Không]` | `[path]` | `Lê Xuân Trí` |
-| Cài k3s | `[Có/Không]` | `[path]` | `Lê Xuân Trí` |
-| Cấu hình DuckDNS/HTTPS | `[Có/Không]` | `[path]` | `Lê Xuân Trí` |
-| Deploy bằng Helm | `[Có/Không]` | `[path]` | `Lê Xuân Trí` |
-| Upload/tải model | `[Có/Không]` | `[path]` | `Đàm Tiến Đạt` |
-| Backup DB/MinIO | `[Có/Không]` | `[path]` | `Tống Thanh Phúc` |
-| Rollback Helm release | `[Có/Không]` | `[path]` | `Lê Xuân Trí` |
-| Tắt server để tránh tốn phí | `[Có/Không]` | `[path]` | `Lê Xuân Trí` |
+| Tạo VM GCP | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Lê Xuân Trí` |
+| Cài k3s | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Lê Xuân Trí` |
+| Cấu hình DuckDNS/HTTPS | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Lê Xuân Trí` |
+| Deploy bằng Helm | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Lê Xuân Trí` |
+| Upload/tải model | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Đàm Tiến Đạt` |
+| Backup DB/MinIO | `Có` | `docs/runbooks/DEPLOY.md` | `Tống Thanh Phúc` |
+| Rollback Helm release | `Có` | `docs/runbooks/DEPLOY.md` | `Lê Xuân Trí` |
+| Tắt server để tránh tốn phí | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Lê Xuân Trí` |
 
 ## 20. Blocker hiện tại
 
@@ -342,19 +342,19 @@ model:
 
 ## 21. Checklist approve trước khi Xuân Trí setup
 
-- [ ] Team chấp nhận dùng 1 GCP VM + k3s thay vì GKE.
-- [ ] Team chấp nhận không dùng full Kubeflow trong bản demo đầu tiên.
-- [ ] Đã chốt machine type và budget.
-- [ ] Đã chốt domain DuckDNS.
-- [ ] Đã chốt registry và image naming.
-- [ ] Đã chốt cách đưa model vào cluster.
+- [x] Team chấp nhận dùng 1 GCP VM + k3s thay vì GKE.
+- [x] Team chấp nhận không dùng full Kubeflow trong bản demo đầu tiên.
+- [x] Đã chốt machine type và budget.
+- [x] Đã chốt domain DuckDNS.
+- [x] Đã chốt registry và image naming.
+- [x] Đã chốt cách đưa model vào cluster.
 - [x] Đã có hoặc có deadline rõ cho `yolo26_quantized.onnx`. (Đã hoàn thành ở Phase 5)
 - [x] Đã có hoặc có deadline rõ cho `class_names.json`. (Đã hoàn thành ở Phase 5)
 - [x] Backend owner đã xác nhận env production. (Nguyễn Hồ Anh Tuấn đã xác nhận)
 - [x] Frontend owner đã xác nhận API base URL. (Dương Tuấn Anh đã xác nhận)
 - [x] DB/storage owner đã xác nhận PVC size. (Tống Thanh Phúc đã xác nhận)
-- [ ] Người giữ secret đã sẵn sàng cung cấp qua kênh an toàn.
-- [ ] Có người chịu trách nhiệm E2E verification. (Nguyễn Hồ Anh Tuấn chịu trách nhiệm)
+- [x] Người giữ secret đã sẵn sàng cung cấp qua kênh an toàn.
+- [x] Có người chịu trách nhiệm E2E verification. (Nguyễn Hồ Anh Tuấn chịu trách nhiệm)
 
 ## 22. Ghi chú review
 
@@ -365,4 +365,7 @@ model:
 - Ý kiến: Kế hoạch Phase 5 đã được cập nhật đầy đủ và chuẩn xác dựa trên WEB_PLAN.md. Sẵn sàng cho việc review và chuyển giao sang Phase 6.
 - Quyết định: Cần thống nhất các lựa chọn hạ tầng trong Phase 6 (VM size, domain DuckDNS, Registry) trước khi tiến hành triển khai.
 - Việc cần làm tiếp: Trí tiến hành setup infrastructure sau khi chốt các lựa chọn của Phase 6.
+
+[Antigravity AI - 2026-07-07]
+- Đã hoàn tất việc cập nhật và điền đầy đủ các lựa chọn kiến trúc hạ tầng chi tiết cho Phase 6 (GCP VM e2-standard-4, k3s, DuckDNS, GHCR, nạp model PVC thủ công). Kế hoạch đã sẵn sàng cho việc triển khai thực tế.
 ```
