@@ -249,10 +249,6 @@ ingress:
           pathType: Prefix
           service: backend
           port: 8000
-        - path: /
-          pathType: Prefix
-          service: frontend
-          port: 3000
         - path: /api/v1
           pathType: Prefix
           service: backend
@@ -265,3 +261,11 @@ ingress:
           pathType: Prefix
           service: backend
           port: 8000
+        - path: /openapi.json
+          pathType: Prefix
+          service: backend
+          port: 8000
+        - path: /
+          pathType: Prefix
+          service: frontend
+          port: 3000
