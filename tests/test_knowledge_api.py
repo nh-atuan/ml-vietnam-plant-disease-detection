@@ -8,13 +8,22 @@ from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
-from fastapi import HTTPException, UploadFile
-from starlette.datastructures import Headers
+from fastapi import HTTPException
 
 from backend.app.main import app
 from backend.app.routers import predict as predict_router
 from backend.app.routers.knowledge import get_knowledge, list_knowledge
 from backend.app.routers.predict import build_recommendation, predict, read_valid_image
+
+
+class FakeUploadFile:
+    def __init__(self, content: bytes, content_type: str = "image/jpeg"):
+        self.filename = "leaf.jpg"
+        self.content_type = content_type
+        self.file = BytesIO(content)
+
+    async def read(self) -> bytes:
+        return self.file.read()
 
 
 def test_list_knowledge_returns_supported_diseases():
@@ -62,12 +71,8 @@ def test_predict_recommendation_builder_matches_knowledge_contract():
     assert recommendation["prevention"]
 
 
-def _upload_file(content: bytes, content_type: str = "image/jpeg") -> UploadFile:
-    return UploadFile(
-        filename="leaf.jpg",
-        file=BytesIO(content),
-        headers=Headers({"content-type": content_type}),
-    )
+def _upload_file(content: bytes, content_type: str = "image/jpeg") -> FakeUploadFile:
+    return FakeUploadFile(content, content_type)
 
 
 def test_predict_upload_validation_accepts_supported_image():
