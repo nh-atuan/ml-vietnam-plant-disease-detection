@@ -43,8 +43,11 @@ class Settings(BaseSettings):
         """Returns the PostgreSQL connection string."""
         if self.DATABASE_URL:
             return self.DATABASE_URL
+        import urllib.parse
+        user = urllib.parse.quote_plus(self.POSTGRES_USER)
+        password = urllib.parse.quote_plus(self.POSTGRES_PASSWORD)
         return (
-            f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+            f"postgresql://{user}:{password}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
