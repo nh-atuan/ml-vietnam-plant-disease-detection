@@ -26,7 +26,7 @@
 ---
 
 ## PHASE 7 — Hoàn thiện Báo cáo, Slide & Demo
-> **Deadline: Đợi Thầy cập nhật ngày nộp trên Moodle**
+> **Deadline: 14/7**
 
 ### Mục tiêu Phase 7
 - Hoàn thiện báo cáo khoa học đầy đủ 7 bước quy trình theo yêu cầu môn học
