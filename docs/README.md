@@ -21,11 +21,17 @@ Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu th
 - [API_DOCUMENTATION.md](api/API_DOCUMENTATION.md): tài liệu endpoint và cách truy cập Swagger/ReDoc.
 - [openapi.json](api/openapi.json): đặc tả OpenAPI tĩnh được export từ FastAPI.
 
+## Deploy
+
+- [DEPLOY.md](runbooks/DEPLOY.md): runbook deploy lên GCP k3s/Helm.
+- **Web App:** `https://plant-disease-demo.duckdns.org`
+- **API Docs:** `https://plant-disease-demo.duckdns.org/docs`
+
 ## Ghi chú
 
 - [NOTES.md](notes/NOTES.md): ghi chú tổng hợp trong quá trình làm đồ án.
 - [MODEL_NOTES.md](notes/MODEL_NOTES.md): ghi chú riêng về mô hình và tài liệu tham khảo.
-- [DEVELOPMENT.md](notes/DEVELOPMENT.md): hướng dẫn cài đặt và khởi chạy hệ thống web ở local.
+- [DEVELOPMENT.md](notes/DEVELOPMENT.md): hướng dẫn cài đặt và khởi chạy hệ thống web ở môi trường phát triển cục bộ.
 
 ## Yêu cầu đề bài
 

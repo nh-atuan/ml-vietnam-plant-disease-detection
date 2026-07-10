@@ -14,7 +14,17 @@ Tui đã hoàn thành việc xây dựng và kiểm thử toàn bộ tầng dữ
 
 ---
 
-## 2. Khởi chạy Dịch vụ (Docker)
+## 2. Truy cập môi trường đã deploy
+
+Ứng dụng hiện đã được triển khai trên cloud qua DuckDNS:
+
+* **Web App**: `https://plant-disease-demo.duckdns.org`
+* **Backend API**: `https://plant-disease-demo.duckdns.org/api/v1`
+* **Swagger UI**: `https://plant-disease-demo.duckdns.org/docs`
+
+PostgreSQL, Redis và MinIO chạy như các service nội bộ trong cụm Kubernetes. MinIO Console không được public trực tiếp; nếu cần quản trị storage, dùng quyền truy cập hạ tầng hoặc port-forward theo runbook deploy.
+
+## 3. Khởi chạy Dịch vụ phụ trợ cho phát triển cục bộ (Docker)
 
 Để chạy PostgreSQL, MinIO và Redis phục vụ cho ứng dụng Backend cục bộ, hãy chạy lệnh sau từ thư mục gốc của dự án:
 
@@ -24,11 +34,11 @@ docker compose up -d postgres minio redis
 
 * **PostgreSQL**: Chạy tại cổng 5432 (Username: `admin`, Password: `changeme`, Database: `plant_disease`).
 * **MinIO API**: Chạy tại cổng 9000 (Access Key: `minioadmin`, Secret Key: `minioadmin`).
-* **MinIO Console**: Truy cập `http://localhost:9001` trên trình duyệt để quản lý giao diện ảnh.
+* **MinIO Console**: Chỉ dùng trong môi trường phát triển cục bộ; không public trong bản deploy cloud.
 
 ---
 
-## 3. Quản lý Cơ sở dữ liệu (SQLModel & Alembic)
+## 4. Quản lý Cơ sở dữ liệu (SQLModel & Alembic)
 
 Dự án sử dụng SQLModel (wrapper trên SQLAlchemy 2.0) để định nghĩa Schema và quản lý dữ liệu.
 
@@ -52,7 +62,7 @@ uv run alembic revision --autogenerate -m "mô tả thay đổi"
 
 ---
 
-## 4. Hướng dẫn sử dụng cho Backend Developer (Tuấn)
+## 5. Hướng dẫn sử dụng cho Backend Developer (Tuấn)
 
 Phần DB & Storage đã được tích hợp và xuất khẩu sẵn tại `backend/app/db/__init__.py`. 
 Ông có thể trực tiếp sử dụng như sau:
