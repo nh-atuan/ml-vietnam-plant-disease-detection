@@ -1,11 +1,16 @@
+import json
+import os
 import subprocess
+
+import pytest
 import requests
 import yaml
-import json
-import pytest
 
 DOMAIN = "plant-disease-demo.duckdns.org"
 NAMESPACE = "plant-disease"
+
+# Skip remote tests in CI/Actions environments
+SKIP_REMOTE = os.getenv("SKIP_REMOTE_TESTS") == "true" or os.getenv("GITHUB_ACTIONS") == "true"
 
 def run_local_cmd(cmd):
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -46,12 +51,12 @@ def test_github_workflows_exist_and_valid():
     ci_path = ".github/workflows/ci.yml"
     deploy_path = ".github/workflows/deploy.yml"
     
-    with open(ci_path, "r", encoding="utf-8") as f:
+    with open(ci_path, encoding="utf-8") as f:
         ci_yaml = yaml.safe_load(f)
     assert ci_yaml["name"] is not None
     assert "jobs" in ci_yaml
 
-    with open(deploy_path, "r", encoding="utf-8") as f:
+    with open(deploy_path, encoding="utf-8") as f:
         deploy_yaml = yaml.safe_load(f)
     assert deploy_yaml["name"] is not None
     assert "jobs" in deploy_yaml
@@ -63,12 +68,14 @@ def test_github_workflows_exist_and_valid():
 # 2. REMOTE KUBERNETES & SYSTEMD CHECKS
 # ==========================================
 
+@pytest.mark.skipif(SKIP_REMOTE, reason="Remote K3s cluster not available in CI environment")
 def test_remote_k3s_nodes_ready():
     """Verify that all nodes in the K3s cluster are in Ready status."""
     code, stdout, stderr = run_remote_cmd("kubectl get nodes --no-headers")
     assert code == 0, f"Failed to get nodes: {stderr}"
     assert "Ready" in stdout
 
+@pytest.mark.skipif(SKIP_REMOTE, reason="Remote K3s cluster not available in CI environment")
 def test_remote_system_pods_healthy():
     """Verify core system pods in cert-manager and kube-system namespaces are running."""
     # Check cert-manager namespace
@@ -90,6 +97,7 @@ def test_remote_system_pods_healthy():
         status = pod["status"]["phase"]
         assert status == "Running", f"System pod {pod['metadata']['name']} is {status}"
 
+@pytest.mark.skipif(SKIP_REMOTE, reason="Remote K3s cluster not available in CI environment")
 def test_remote_app_pods_running():
     """Verify that all application pods in the plant-disease namespace are running and healthy."""
     code, stdout, stderr = run_remote_cmd(f"kubectl get pods -n {NAMESPACE} -o json")
@@ -108,7 +116,10 @@ def test_remote_app_pods_running():
         
         # Check readiness of container
         for container_status in pod["status"].get("containerStatuses", []):
-            assert container_status["ready"] is True, f"Container {container_status['name']} in Pod {pod_name} is not ready"
+            c_name = container_status['name']
+            assert container_status["ready"] is True, (
+                f"Container {c_name} in Pod {pod_name} is not ready"
+            )
 
         # Track which component this is
         for comp in expected_components:
@@ -116,8 +127,12 @@ def test_remote_app_pods_running():
                 found_components.append(comp)
                 
     # Unique components found
-    assert set(expected_components).issubset(set(found_components)), f"Missing components in deployment: {set(expected_components) - set(found_components)}"
+    missing = set(expected_components) - set(found_components)
+    assert set(expected_components).issubset(set(found_components)), (
+        f"Missing components in deployment: {missing}"
+    )
 
+@pytest.mark.skipif(SKIP_REMOTE, reason="Remote K3s cluster not available in CI environment")
 def test_remote_pvcs_bound():
     """Verify all Persistent Volume Claims (PVC) are bound to Persistent Volumes."""
     code, stdout, stderr = run_remote_cmd(f"kubectl get pvc -n {NAMESPACE} -o json")
@@ -131,6 +146,7 @@ def test_remote_pvcs_bound():
         phase = pvc["status"]["phase"]
         assert phase == "Bound", f"PVC {pvc_name} is in status {phase} (expected Bound)"
 
+@pytest.mark.skipif(SKIP_REMOTE, reason="Remote K3s cluster not available in CI environment")
 def test_remote_cert_manager_issuance():
     """Verify cert-manager ClusterIssuer and Certificate are fully ready and valid."""
     # Check ClusterIssuer letsencrypt-prod
@@ -153,6 +169,7 @@ def test_remote_cert_manager_issuance():
             cert_ready = True
     assert cert_ready is True, "Certificate plant-disease-tls is not Ready"
 
+@pytest.mark.skipif(SKIP_REMOTE, reason="Remote K3s cluster not available in CI environment")
 def test_remote_duckdns_timer_active():
     """Verify DuckDNS update systemd timer is active and running."""
     code, stdout, stderr = run_remote_cmd("systemctl is-active duckdns-update.timer")
@@ -163,6 +180,7 @@ def test_remote_duckdns_timer_active():
 # 3. EXTERNAL PUBLIC HTTPS ENDPOINTS CHECKS
 # ==========================================
 
+@pytest.mark.skipif(SKIP_REMOTE, reason="External public HTTPS endpoints not checked in CI environment")
 def test_public_https_health_check():
     """Verify that backend /health endpoint is publicly reachable over HTTPS with HTTP 200."""
     url = f"https://{DOMAIN}/health"
@@ -171,6 +189,7 @@ def test_public_https_health_check():
     data = response.json()
     assert data.get("status") == "ok", f"Expected 'status': 'ok', got: {data}"
 
+@pytest.mark.skipif(SKIP_REMOTE, reason="External public HTTPS endpoints not checked in CI environment")
 def test_public_https_knowledge_api():
     """Verify that backend /api/v1/knowledge endpoint serves the correct knowledge base schema."""
     url = f"https://{DOMAIN}/api/v1/knowledge"
@@ -182,6 +201,7 @@ def test_public_https_knowledge_api():
     assert "label" in data["items"][0], "Disease items missing 'label'"
     assert "crop" in data["items"][0], "Disease items missing 'crop'"
 
+@pytest.mark.skipif(SKIP_REMOTE, reason="External public HTTPS endpoints not checked in CI environment")
 def test_public_https_frontend_routing():
     """Verify that root URL routes to Next.js frontend and serves correct HTML structure."""
     url = f"https://{DOMAIN}/"
