@@ -26,6 +26,26 @@ spec:
         - name: wait-for-deps
           image: alpine:3.18
           command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done']
+        - name: download-model
+          image: alpine:3.18
+          env:
+            - name: MODEL_DOWNLOAD_URL
+              value: {{ .Values.model.downloadUrl | quote }}
+          command:
+            - sh
+            - -c
+            - |
+              if [ -f /models/yolo26_quantized.onnx ]; then
+                echo "Model already exists. Skipping download."
+              elif [ -n "$MODEL_DOWNLOAD_URL" ]; then
+                echo "Model not found. Downloading from $MODEL_DOWNLOAD_URL..."
+                wget -O /models/yolo26_quantized.onnx "$MODEL_DOWNLOAD_URL"
+              else
+                echo "Model not found and MODEL_DOWNLOAD_URL is not set. Please upload the model manually."
+              fi
+          volumeMounts:
+            - name: models
+              mountPath: /models
       containers:
         - name: backend
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"

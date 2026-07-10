@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   REGISTRY: ghcr.io
   NAMESPACE: plant-disease
@@ -160,8 +164,12 @@ jobs:
           scp /tmp/plant-disease-helm.tgz gcp-k3s:/tmp/plant-disease-helm.tgz
 
       - name: Deploy via SSH
+        env:
+          KUBECONFIG: /etc/rancher/k3s/k3s.yaml
         run: |
-          ssh gcp-k3s << 'EOF'
+          ssh -o StrictHostKeyChecking=no gcp-k3s << 'EOF'
+            set -e
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
             rm -rf /tmp/plant-disease-deploy
             mkdir -p /tmp/plant-disease-deploy
             tar -xzf /tmp/plant-disease-helm.tgz -C /tmp/plant-disease-deploy
