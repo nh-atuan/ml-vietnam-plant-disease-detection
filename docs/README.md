@@ -8,6 +8,7 @@ Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu th
 - [MODEL_PLAN.md](plans/MODEL_PLAN.md): kế hoạch huấn luyện, đánh giá và tinh chỉnh mô hình.
 - [WEB_PLAN.md](plans/WEB_PLAN.md): kế hoạch Phase 5-6 cho backend, frontend, API, database và deployment.
 - [GCP_K3S_PLAN.md](plans/GCP_K3S_PLAN.md): kế hoạch đề xuất triển khai Phase 6 bằng 1 VM GCP, k3s, Helm, DuckDNS/Traefik và phối hợp model serving.
+- [gcp_setup_guide.md](plans/gcp_setup_guide.md): hướng dẫn thiết lập hạ tầng GCP, k3s, Helm và DuckDNS cho môi trường triển khai.
 - [FINAL_PLAN.md](plans/FINAL_PLAN.md): kế hoạch hoàn thiện báo cáo, slide và demo cuối kỳ.
 
 ## Báo cáo
@@ -26,6 +27,10 @@ Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu th
 - [DEPLOY.md](runbooks/DEPLOY.md): runbook deploy lên GCP k3s/Helm.
 - **Web App:** `https://plant-disease-demo.duckdns.org`
 - **API Docs:** `https://plant-disease-demo.duckdns.org/docs`
+
+## Kiểm thử
+
+- [integration-load-testing.md](testing/integration-load-testing.md): hướng dẫn kiểm thử tích hợp và tải cho API.
 
 ## Ghi chú
 
