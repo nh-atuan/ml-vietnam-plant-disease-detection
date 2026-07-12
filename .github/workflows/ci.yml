@@ -20,6 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SKIP_DB_INIT: "true"
+      # Remote K3s/DuckDNS checks require deployment credentials and must not
+      # make the reproducible API integration suite depend on live infra.
+      SKIP_REMOTE_TESTS: "true"
       PYTHONPATH: "."
     steps:
       - uses: actions/checkout@v4
@@ -39,6 +42,9 @@ jobs:
       - name: Lint
         run: |
           uv run ruff check scripts/export_onnx.py scripts/export_openapi.py src/segmentation tests backend/app/db backend/app/knowledge backend/app/routers backend/app/main.py backend/app/models/schemas.py
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
 
       - name: Test
         run: |
