@@ -12,7 +12,7 @@ Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu th
 
 ## Báo cáo
 
-- [ml-proposal.md](project/ml-proposal.md): đề cương sơ bộ của nhóm.
+- [ml-proposal.md](reports/ml-proposal.md): đề cương sơ bộ của nhóm.
 - [ml-data-report.md](reports/ml-data-report.md): báo cáo dữ liệu đã biên soạn.
 - [ml-model-report.md](reports/ml-model-report.md): báo cáo mô hình đã biên soạn.
 
@@ -38,3 +38,4 @@ Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu th
 - [ml-project.md](project/ml-project.md): yêu cầu tổng quan của đồ án môn học.
 - [ml-data.md](project/ml-data.md): khung yêu cầu báo cáo dữ liệu.
 - [ml-model.md](project/ml-model.md): khung yêu cầu báo cáo mô hình.
+- [ml-final-report.md](project/ml-final-report.md): khung cấu trúc và nội dung cần có cho báo cáo cuối kỳ.
