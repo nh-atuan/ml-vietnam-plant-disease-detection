@@ -2,10 +2,12 @@
 
 Phase 6 output owned by Nguyễn Hồ Anh Tuấn.
 
-Expected coverage:
+Current coverage:
 
 - API contract tests for `/health` and `/api/v1/predict`.
-- Integration test for upload image -> predict -> response schema.
-- Basic load test notes for the public demo endpoint.
+- E2E API test for `register/login -> upload image -> prediction -> history` in
+  `tests/integration/`.
+- Locust load scenario in `tests/load/locustfile.py`; the run procedure and
+  acceptance gate are documented in `docs/testing/integration-load-testing.md`.
 
 Keep tests lightweight enough for GitHub Actions, and store sample images as small fixtures only.
