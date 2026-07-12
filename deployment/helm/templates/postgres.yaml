@@ -45,6 +45,8 @@ spec:
                 secretKeyRef:
                   name: plant-disease-secrets
                   key: postgres-password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           resources:
             requests:
               cpu: {{ .Values.postgres.resources.requests.cpu }}
@@ -52,6 +54,30 @@ spec:
             limits:
               cpu: {{ .Values.postgres.resources.limits.cpu }}
               memory: {{ .Values.postgres.resources.limits.memory }}
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - {{ .Values.postgres.auth.username }}
+                - -d
+                - {{ .Values.postgres.auth.database }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - {{ .Values.postgres.auth.username }}
+                - -d
+                - {{ .Values.postgres.auth.database }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
           volumeMounts:
             - name: postgres-data
               mountPath: {{ .Values.postgres.persistence.mountPath }}
