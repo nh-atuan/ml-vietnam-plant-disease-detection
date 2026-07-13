@@ -4,11 +4,12 @@ Hệ thống API Backend được xây dựng bằng **FastAPI** cung cấp các
 
 ---
 
-## 1. KHỞI CHẠY VÀ TRUY CẬP ĐƯỜNG DẪN TÀI LIỆU TỰ ĐỘNG
+## 1. TRUY CẬP ĐƯỜNG DẪN TÀI LIỆU TỰ ĐỘNG
 
-Khi khởi chạy server backend cục bộ (`uvicorn backend.app.main:app --reload`), bạn có thể truy cập tài liệu API dạng tương tác động tại:
-*   **Swagger UI:** `http://localhost:8000/docs` (Giao diện thử nghiệm trực tiếp).
-*   **ReDoc:** `http://localhost:8000/redoc` (Giao diện đọc tài liệu chuyên sâu).
+Backend hiện đã được deploy lên cloud. Bạn có thể truy cập tài liệu API dạng tương tác động tại:
+*   **Swagger UI:** `https://plant-disease-demo.duckdns.org/docs` (Giao diện thử nghiệm trực tiếp).
+*   **ReDoc:** `https://plant-disease-demo.duckdns.org/redoc` (Giao diện đọc tài liệu chuyên sâu).
+*   **API base URL:** `https://plant-disease-demo.duckdns.org/api/v1`
 
 File đặc tả OpenAPI Spec (JSON) tĩnh được lưu tại:
 *   [openapi.json](./openapi.json)
@@ -126,7 +127,7 @@ File đặc tả OpenAPI Spec (JSON) tĩnh được lưu tại:
         "advisory": "Khuyến nghị chỉ mang tính tham khảo..."
       },
       "image_id": "d3b07384-d113-4ec3-a558-ee2b1154c123",
-      "image_url": "http://localhost:9000/plant-disease/images/d3b07384.jpg?X-Amz-Signature=..."
+      "image_url": "https://plant-disease-demo.duckdns.org/plant-disease/images/d3b07384.jpg?X-Amz-Signature=..."
     }
     ```
 *   **Phản hồi lỗi thường gặp:**
@@ -198,7 +199,7 @@ Các endpoint dưới đây được thiết kế khung Schema sẵn sàng để
             "name_vi": "Bệnh đốm nâu hại lúa",
             "treatments": [...]
           },
-          "image_url": "http://localhost:9000/...",
+          "image_url": "https://plant-disease-demo.duckdns.org/plant-disease/images/...",
           "created_at": "2026-06-28T13:15:30"
         }
       ],

@@ -27,6 +27,20 @@
 
 ---
 
+## 🌐 Truy cập bản đã deploy
+
+Ứng dụng hiện đã được deploy lên cloud và truy cập qua URL công khai:
+
+- **Web App:** `https://plant-disease-demo.duckdns.org`
+- **Backend API:** `https://plant-disease-demo.duckdns.org/api/v1`
+- **Swagger UI:** `https://plant-disease-demo.duckdns.org/docs`
+
+Frontend production cần build với biến môi trường:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=https://plant-disease-demo.duckdns.org/api/v1
+```
+
 ## 🛠️ Hướng Dẫn Cài Đặt & Khởi Chạy
 
 ### 1. Cấu hình biến môi trường
@@ -34,7 +48,7 @@ Tạo file cấu hình `.env.local` từ file mẫu:
 ```bash
 cp .env.example .env.local
 ```
-Mặc định Next.js sẽ kết nối tới API Backend chạy tại địa chỉ `http://localhost:8000/api/v1`. Bạn có thể cập nhật giá trị `NEXT_PUBLIC_API_BASE_URL` trong file `.env.local` nếu server chạy ở địa chỉ khác.
+Mặc định file mẫu đang trỏ tới API cloud: `https://plant-disease-demo.duckdns.org/api/v1`. Nếu cần chạy phát triển cục bộ, xem thêm hướng dẫn riêng tại `docs/notes/DEVELOPMENT.md`.
 
 ### 2. Cài đặt thư viện
 Chạy lệnh sau tại thư mục `frontend`:
@@ -46,7 +60,7 @@ npm install
 ```bash
 npm run dev
 ```
-Mở trình duyệt truy cập: `http://localhost:3000`.
+Khi phát triển cục bộ, Next.js sẽ in URL dev server ra terminal sau khi chạy lệnh trên. Bản demo chính thức dùng URL cloud ở phần trên.
 
 ### 4. Build sản phẩm (Production)
 Kiểm tra tính đúng đắn của kiểu dữ liệu và tối ưu hóa trước khi triển khai:

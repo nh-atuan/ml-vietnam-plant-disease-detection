@@ -4,8 +4,7 @@ metadata:
   name: plant-disease
   namespace: {{ .Values.global.namespace }}
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
   ingressClassName: traefik
   tls:

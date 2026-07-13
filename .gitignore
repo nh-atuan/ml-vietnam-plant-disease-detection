@@ -199,6 +199,10 @@ backend/uploads/
 backend/.cache/
 deployment/traefik/acme.json
 
+# Run-specific Phase 6.6 load-test artifacts (the durable summary is in docs/testing/)
+reports/phase6-locust*
+.tmp/
+
 # Report (LaTeX build artifacts)
 report/*.aux
 report/*.log

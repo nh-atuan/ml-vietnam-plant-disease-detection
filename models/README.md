@@ -1,11 +1,15 @@
-# Model Artifacts
+# Tài liệu và Artifacts của Mô hình (Model Artifacts)
 
-Phase 5 output owned by Nguyễn Hồ Anh Tuấn.
+Thư mục này chứa các file cấu hình và thông tin của mô hình phục vụ cho việc chạy ứng dụng web.
 
-Expected files:
+## Hướng dẫn tải và thiết lập mô hình
 
-- `yolo26_quantized.onnx`: quantized YOLO26-seg ONNX model used by the backend by default.
-- `class_names.json`: ordered class labels used by the inference service.
-- `model_card.md`: short notes about metrics, input size, normalization, and export command.
+1. **Liên kết tải file:**
+   Truy cập liên kết Google Drive sau để tải các file mô hình và cấu hình cần thiết để chạy web: [Google Drive Folder](https://drive.google.com/drive/folders/1OS0M2uW8KuWymKMtZwIY8XMUGCBcBGwo?usp=sharing)
 
-Large model binaries are ignored by git. Keep only lightweight metadata and instructions in the repository.
+2. **Cách đặt file sau khi tải:**
+   Hãy tải các file từ Google Drive và đặt vào đúng thư mục `ml-vietnam-plant-disease-detection/models/` trên máy của bạn.
+
+   Các file cần có trong thư mục này bao gồm:
+   - `yolo26_quantized.onnx`: Mô hình YOLO26-seg đã được lượng tử hóa (quantized) dạng ONNX, được backend sử dụng mặc định.
+   - `class_names.json`: Danh sách tên các nhãn (class labels) tương ứng để phục vụ cho việc suy luận.
