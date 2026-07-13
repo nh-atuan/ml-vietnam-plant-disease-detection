@@ -60,6 +60,22 @@ spec:
             limits:
               cpu: {{ .Values.minio.resources.limits.cpu }}
               memory: {{ .Values.minio.resources.limits.memory }}
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
           volumeMounts:
             - name: minio-data
               mountPath: /data

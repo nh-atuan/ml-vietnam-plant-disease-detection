@@ -118,7 +118,7 @@ model:
     existingClaim: ""
     claimName: plant-disease-models
     size: 10Gi
-    storageClass: local-path
+    storageClass: local-path-retain
     accessMode: ReadWriteOnce
 
 # =============================================
@@ -165,8 +165,16 @@ postgres:
   persistence:
     enabled: true
     size: 20Gi
-    storageClass: local-path
+    storageClass: local-path-retain
     mountPath: /var/lib/postgresql/data
+  
+  backup:
+    enabled: true
+    schedule: "0 2 * * *"
+    retentionDays: 7
+    persistence:
+      size: 5Gi
+      storageClass: local-path-retain
   
   resources:
     requests:
@@ -195,7 +203,7 @@ minio:
   persistence:
     enabled: true
     size: 30Gi
-    storageClass: local-path
+    storageClass: local-path-retain
     mountPath: /data
   
   resources:
@@ -218,6 +226,11 @@ redis:
   service:
     type: ClusterIP
     port: 6379
+  
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: local-path-retain
   
   resources:
     requests:
