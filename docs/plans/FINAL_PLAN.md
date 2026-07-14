@@ -47,7 +47,7 @@
   - **Mục tiêu của Đồ án:** Các mục tiêu cụ thể cần đạt được (độ chính xác, khả năng triển khai thực tế).
   - **Tổng quan về Phương pháp:** Sơ đồ quy trình tổng thể từ dữ liệu, huấn luyện đến triển khai web.
 * **Slide:** Soạn slide tương ứng với **Chương 1**.
-* **Trách nhiệm phối hợp:** Tổng hợp báo cáo tổng thể, rà soát văn phong, kiểm tra lỗi định dạng và tính nhất quán giữa Báo cáo, Slide và mã nguồn Backend.
+* **Trách nhiệm phối hợp:** Tổng hợp báo cáo tổng thể, rà soát văn phong, kiểm tra lỗi định dạng và tính nhất quán giữa Báo cáo, Slide và mã nguồn.
 
 ### 2. Đàm Tiến Đạt
 * **Báo cáo:** Viết **Chương 2: Thu thập và Phân tích Dữ liệu** & **Chương 3: Lựa chọn và Huấn luyện Mô hình**
@@ -99,16 +99,14 @@ Video demo là minh chứng trực quan cực kỳ quan trọng thể hiện ứ
 
 ## KIỂM TRA ĐỐI CHIẾU SẢN PHẨM / MINH CHỨNG YÊU CẦU
 
-Bảng dưới đây đối chiếu giữa yêu cầu sản phẩm của môn học (theo [ml-final-report.md](../project/ml-final-report.md)) và kế hoạch phân công trong `FINAL_PLAN.md` để đảm bảo không bị sót minh chứng:
-
-| Sản phẩm yêu cầu (ml-final-report.md) | Trạng thái trong FINAL_PLAN.md | Người phụ trách chính | Minh chứng cụ thể |
-|--------------------------------------|--------------------------------|-----------------------|-------------------|
-| **1. Báo cáo Đồ án (PDF)** | **Đầy đủ** (6 chương tương ứng 7 bước quy trình) | Cả nhóm (Tuấn tổng hợp) | File `Bao_cao_Cuoi_Ky.pdf` |
-| **2. Mã nguồn (ZIP/GitHub)** | **Đầy đủ** (Quản lý GitHub public, có đóng gói ZIP) | Lê Xuân Trí | Link GitHub public trong báo cáo + File `source_code.zip` |
-| **3. Mô hình đã huấn luyện** | **Đầy đủ** (ONNX quantized + PT, kèm hướng dẫn load) | Đàm Tiến Đạt | Checkpoints trên HuggingFace Hub + File `.onnx`/`.pt` trên Cloud |
-| **4. Slide thuyết trình** | **Đầy đủ** (Phần slide khớp nội dung viết báo cáo) | Cả nhóm (Phúc/Trí template) | File `Slide_Bao_ve.pdf` |
-| **5. Tổ chức lưu trữ Cloud** | **Đầy đủ** (Google Drive/OneDrive lưu toàn bộ sản phẩm) | Lê Xuân Trí | Link thư mục Cloud dùng chung gửi giảng viên |
-| **6. Video Demo Web** *(Thêm mới)* | **Đầy đủ** (Video 3-5 phút chất lượng cao, thuyết minh) | Dương Tuấn Anh | File `Video_Demo.mp4` và link YouTube/Drive |
+| Sản phẩm/Minh chứng yêu cầu | Người phụ trách chính | Minh chứng cụ thể |
+|--------------------------------------|-----------------------|-------------------|
+| **1. Báo cáo Đồ án (PDF)** | Cả nhóm | File [Report.pdf](../../submission/Report.pdf) |
+| **2. Mã nguồn (ZIP/GitHub)** | Lê Xuân Trí | Thư mục [code](../../submission/code) |
+| **3. Mô hình đã huấn luyện** | Đàm Tiến Đạt | Thư mục [models](../../submission/models) |
+| **4. Slide thuyết trình** | Cả nhóm | File [Slides.pdf](../../submission/Slides.pdf) |
+| **5. Tổ chức lưu trữ Cloud** | Lê Xuân Trí | Link Cloud trong [README.md](../../submission/README.md) |
+| **6. Video Demo Web** | Dương Tuấn Anh | Thông tin & Link video trong [README.md](../../submission/README.md) |
 
 ---
 
