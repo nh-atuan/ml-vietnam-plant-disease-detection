@@ -325,14 +325,14 @@ model:
 
 | Runbook | Có chưa? | Path/Link | Owner |
 |---|---|---|---|
-| Tạo VM GCP | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Lê Xuân Trí` |
-| Cài k3s | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Lê Xuân Trí` |
-| Cấu hình DuckDNS/HTTPS | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Lê Xuân Trí` |
-| Deploy bằng Helm | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Lê Xuân Trí` |
-| Upload/tải model | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Đàm Tiến Đạt` |
-| Backup DB/MinIO | `Có` | `docs/runbooks/DEPLOY.md` | `Tống Thanh Phúc` |
-| Rollback Helm release | `Có` | `docs/runbooks/DEPLOY.md` | `Lê Xuân Trí` |
-| Tắt server để tránh tốn phí | `Có` | [gcp_setup_guide.md](file:///home/pearspringmind/.gemini/antigravity-ide/brain/3c64d8f1-7f65-4fe8-948c-9ac8ab7c8522/gcp_setup_guide.md) | `Lê Xuân Trí` |
+| Tạo VM GCP | `Có` | [gcp_setup_guide.md](gcp_setup_guide.md) | `Lê Xuân Trí` |
+| Cài k3s | `Có` | [gcp_setup_guide.md](gcp_setup_guide.md) | `Lê Xuân Trí` |
+| Cấu hình DuckDNS/HTTPS | `Có` | [gcp_setup_guide.md](gcp_setup_guide.md) | `Lê Xuân Trí` |
+| Deploy bằng Helm | `Có` | [gcp_setup_guide.md](gcp_setup_guide.md) | `Lê Xuân Trí` |
+| Upload/tải model | `Có` | [gcp_setup_guide.md](gcp_setup_guide.md) | `Đàm Tiến Đạt` |
+| Backup DB/MinIO | `Có` | [DEPLOY.md](DEPLOY.md) | `Tống Thanh Phúc` |
+| Rollback Helm release | `Có` | [DEPLOY.md](DEPLOY.md) | `Lê Xuân Trí` |
+| Tắt server để tránh tốn phí | `Có` | [gcp_setup_guide.md](gcp_setup_guide.md) | `Lê Xuân Trí` |
 
 ## 20. Blocker hiện tại
 

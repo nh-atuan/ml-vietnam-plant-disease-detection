@@ -7,8 +7,6 @@ Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu th
 - [DATA_PLAN.md](plans/DATA_PLAN.md): kế hoạch thu thập, EDA và tiền xử lý dữ liệu.
 - [MODEL_PLAN.md](plans/MODEL_PLAN.md): kế hoạch huấn luyện, đánh giá và tinh chỉnh mô hình.
 - [WEB_PLAN.md](plans/WEB_PLAN.md): kế hoạch Phase 5-6 cho backend, frontend, API, database và deployment.
-- [GCP_K3S_PLAN.md](plans/GCP_K3S_PLAN.md): kế hoạch đề xuất triển khai Phase 6 bằng 1 VM GCP, k3s, Helm, DuckDNS/Traefik và phối hợp model serving.
-- [gcp_setup_guide.md](plans/gcp_setup_guide.md): hướng dẫn thiết lập hạ tầng GCP, k3s, Helm và DuckDNS cho môi trường triển khai.
 - [FINAL_PLAN.md](plans/FINAL_PLAN.md): kế hoạch hoàn thiện báo cáo, slide và demo cuối kỳ.
 
 ## Báo cáo
@@ -24,7 +22,9 @@ Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu th
 
 ## Deploy
 
-- [DEPLOY.md](runbooks/DEPLOY.md): runbook deploy lên GCP k3s/Helm.
+- [GCP_K3S_PLAN.md](deployment/GCP_K3S_PLAN.md): kế hoạch đề xuất triển khai Phase 6 bằng 1 VM GCP, k3s, Helm, DuckDNS/Traefik và phối hợp model serving.
+- [gcp_setup_guide.md](deployment/gcp_setup_guide.md): hướng dẫn thiết lập hạ tầng GCP, k3s, Helm và DuckDNS cho môi trường triển khai.
+- [DEPLOY.md](deployment/DEPLOY.md): runbook deploy lên GCP k3s/Helm.
 - **Web App:** `https://plant-disease-demo.duckdns.org`
 - **API Docs:** `https://plant-disease-demo.duckdns.org/docs`
 
@@ -36,11 +36,11 @@ Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu th
 
 - [NOTES.md](notes/NOTES.md): ghi chú tổng hợp trong quá trình làm đồ án.
 - [MODEL_NOTES.md](notes/MODEL_NOTES.md): ghi chú riêng về mô hình và tài liệu tham khảo.
-- [DEVELOPMENT.md](notes/DEVELOPMENT.md): hướng dẫn cài đặt và khởi chạy hệ thống web ở môi trường phát triển cục bộ.
+- [DEVELOPMENT.md](DEVELOPMENT.md): hướng dẫn cài đặt và khởi chạy hệ thống web ở môi trường phát triển cục bộ.
 
 ## Yêu cầu đề bài
 
-- [ml-project.md](project/ml-project.md): yêu cầu tổng quan của đồ án môn học.
-- [ml-data.md](project/ml-data.md): khung yêu cầu báo cáo dữ liệu.
-- [ml-model.md](project/ml-model.md): khung yêu cầu báo cáo mô hình.
-- [ml-final-report.md](project/ml-final-report.md): khung cấu trúc và nội dung cần có cho báo cáo cuối kỳ.
+- [ml-project.md](requirements/ml-project.md): yêu cầu tổng quan của đồ án môn học.
+- [ml-data.md](requirements/ml-data.md): khung yêu cầu báo cáo dữ liệu.
+- [ml-model.md](requirements/ml-model.md): khung yêu cầu báo cáo mô hình.
+- [ml-final-report.md](requirements/ml-final-report.md): khung cấu trúc và nội dung cần có cho báo cáo cuối kỳ.

@@ -78,7 +78,7 @@ User (Browser/Mobile)
 >
 > *Lưu ý deploy: Deploy bằng Kubernetes tốt nhất là dùng chung 1 server K8s, nên ai setup infrastructure thì chú ý để người sau vô làm được nha.*
 >
-> *Hướng dẫn chạy thử nghiệm & phát triển web ở local: Chi tiết cấu hình dependencies và cách chạy toàn bộ hệ thống bằng Docker hoặc chạy độc lập tại [DEVELOPMENT.md](../notes/DEVELOPMENT.md).*
+> *Hướng dẫn chạy thử nghiệm & phát triển web ở local: Chi tiết cấu hình dependencies và cách chạy toàn bộ hệ thống bằng Docker hoặc chạy độc lập tại [DEVELOPMENT.md](../DEVELOPMENT.md).*
 
 ### Mục tiêu Phase 6
 - Containerize toàn bộ các service của ứng dụng.

@@ -48,7 +48,7 @@ Tạo file cấu hình `.env.local` từ file mẫu:
 ```bash
 cp .env.example .env.local
 ```
-Mặc định file mẫu đang trỏ tới API cloud: `https://plant-disease-demo.duckdns.org/api/v1`. Nếu cần chạy phát triển cục bộ, xem thêm hướng dẫn riêng tại `docs/notes/DEVELOPMENT.md`.
+Mặc định file mẫu đang trỏ tới API cloud: `https://plant-disease-demo.duckdns.org/api/v1`. Nếu cần chạy phát triển cục bộ, xem thêm hướng dẫn riêng tại `docs/DEVELOPMENT.md`.
 
 ### 2. Cài đặt thư viện
 Chạy lệnh sau tại thư mục `frontend`:

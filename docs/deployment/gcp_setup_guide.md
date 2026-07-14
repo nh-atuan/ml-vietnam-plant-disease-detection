@@ -1,6 +1,6 @@
 # Hướng dẫn chi tiết thiết lập GCP Server & k3s (Thống nhất theo GCP_K3S_PLAN.md)
 
-Tài liệu này cung cấp hướng dẫn chi tiết từng bước để thiết lập máy chủ GCP, cài đặt k3s, cấu hình DuckDNS và deploy ứng dụng. Toàn bộ tên gọi, thông số, IP mẫu và cấu hình trong hướng dẫn này được đồng bộ và thống nhất 100% với tệp kế hoạch [GCP_K3S_PLAN.md](file:///home/pearspringmind/Studying/HCMUS/Machine%20Learning/Lab/ml-vietnam-plant-disease-detection/docs/plans/GCP_K3S_PLAN.md).
+Tài liệu này cung cấp hướng dẫn chi tiết từng bước để thiết lập máy chủ GCP, cài đặt k3s, cấu hình DuckDNS và deploy ứng dụng. Toàn bộ tên gọi, thông số, IP mẫu và cấu hình trong hướng dẫn này được đồng bộ và thống nhất 100% với tệp kế hoạch [GCP_K3S_PLAN.md](GCP_K3S_PLAN.md).
 
 ---
 
@@ -227,7 +227,7 @@ git add .
 git commit -m "ci: deploy plant disease app to k3s"
 git push origin main
 ```
-GitHub Actions sẽ tự động kích hoạt workflow [deploy.yml](file:///home/pearspringmind/Studying/HCMUS/Machine%20Learning/Lab/ml-vietnam-plant-disease-detection/.github/workflows/deploy.yml). Pipeline sẽ tự động thực hiện chạy test, build Docker images cho frontend/backend, push lên registry của GitHub, SSH vào máy ảo GCP và ra lệnh cho Helm cài đặt.
+GitHub Actions sẽ tự động kích hoạt workflow [deploy.yml](../../.github/workflows/deploy.yml). Pipeline sẽ tự động thực hiện chạy test, build Docker images cho frontend/backend, push lên registry của GitHub, SSH vào máy ảo GCP và ra lệnh cho Helm cài đặt.
 
 ### Cách 2: Deploy thủ công bằng lệnh Helm trên máy ảo VM
 Nếu muốn chạy trực tiếp trên VM (ví dụ để test nhanh):
