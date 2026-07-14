@@ -2,6 +2,8 @@
 
 Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu theo giai đoạn và mục đích sử dụng.
 
+[DEVELOPMENT.md](DEVELOPMENT.md): hướng dẫn cài đặt và khởi chạy hệ thống web ở môi trường phát triển cục bộ.
+
 ## Kế hoạch
 
 - [DATA_PLAN.md](plans/DATA_PLAN.md): kế hoạch thu thập, EDA và tiền xử lý dữ liệu.
@@ -36,7 +38,6 @@ Thư mục `docs/` được gom theo nhóm để dễ tìm đúng tài liệu th
 
 - [NOTES.md](notes/NOTES.md): ghi chú tổng hợp trong quá trình làm đồ án.
 - [MODEL_NOTES.md](notes/MODEL_NOTES.md): ghi chú riêng về mô hình và tài liệu tham khảo.
-- [DEVELOPMENT.md](DEVELOPMENT.md): hướng dẫn cài đặt và khởi chạy hệ thống web ở môi trường phát triển cục bộ.
 
 ## Yêu cầu đề bài
 
