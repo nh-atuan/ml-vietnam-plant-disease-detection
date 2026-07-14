@@ -1,0 +1,64 @@
+\usetheme{Madrid}
+\usecolortheme{default}
+\useinnertheme{circles}
+
+%------------- Đánh số công thức và Caption -------------
+\setbeamertemplate{equations}[numbered]
+\setbeamertemplate{caption}[numbered]
+\captionsetup{labelfont={color=black},textfont={color=black}}
+% \setbeamertemplate{frametitle}{}
+
+%------------- Màu nhận diện -------------
+\definecolor{Logo1}{HTML}{1B5E20}
+\definecolor{Logo2}{HTML}{3E2723}
+
+\setbeamercolor*{palette primary}{bg=Logo1, fg=white}
+\setbeamercolor*{palette secondary}{bg=Logo2, fg=white}
+\setbeamercolor*{palette tertiary}{bg=white, fg=Logo1}
+\setbeamercolor*{palette quaternary}{bg=Logo1,fg=white}
+\setbeamercolor{structure}{fg=Logo1}
+\setbeamercolor{section in toc}{fg=Logo1}
+\setbeamerfont{section in toc}{series=\mdseries}
+
+%------------- Mục lục đầu mỗi section -------------
+\newbool{showtocatsection}
+\booltrue{showtocatsection}
+\AtBeginSection[]{
+  \ifbool{showtocatsection}{
+    \begin{frame}{Mục lục}
+      \tableofcontents[currentsection,subsectionstyle=hide]
+    \end{frame}
+  }{}
+}
+
+% Không chèn mục lục ở đầu mỗi subsection để deck không vượt quá 40 slide.
+
+% Căn đều (justify) toàn bộ các khối văn bản trong slide
+\apptocmd{\frame}{}{\justifying}{}
+\addtobeamertemplate{block begin}{}{\justifying}
+\makeatletter
+\apptocmd{\beamer@column}{\justifying}{}{}
+
+% Tự động thêm frametitle từ subsection nếu slide chưa có tiêu đề
+\patchcmd{\endbeamer@frameslide}{\ifx\beamer@frametitle\@empty}{\iffalse}{}{\typeout{patch failed}}
+
+\setbeamertemplate{frametitle}
+{
+  \ifx\insertframetitle\@empty
+    \ifx\insertsubsection\@empty
+      % Empty title and no subsection - draw nothing
+    \else
+      \nointerlineskip%
+      \begin{beamercolorbox}[wd=\paperwidth,leftskip=0.3cm,rightskip=0.3cm,sep=0.3cm,dp=0.2ex]{frametitle}%
+        \usebeamerfont{frametitle}\thesection.\thesubsection. \insertsubsection%
+      \end{beamercolorbox}%
+    \fi
+  \else
+    \nointerlineskip%
+    \begin{beamercolorbox}[wd=\paperwidth,leftskip=0.3cm,rightskip=0.3cm,sep=0.3cm,dp=0.2ex]{frametitle}%
+      \usebeamerfont{frametitle}\insertframetitle%
+    \end{beamercolorbox}%
+  \fi
+}
+\makeatother
+
