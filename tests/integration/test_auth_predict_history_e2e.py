@@ -1,4 +1,4 @@
-"""Phase 6.6: login -> upload image -> prediction -> history E2E coverage."""
+"""Login -> upload image -> prediction -> history E2E coverage."""
 
 from fastapi.testclient import TestClient
 

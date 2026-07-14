@@ -1,4 +1,4 @@
-"""Shared fixtures for the Phase 6.6 end-to-end API tests.
+"""Shared fixtures for the end-to-end API tests.
 
 The test stack replaces only infrastructure boundaries (database, ONNX Runtime,
 and MinIO). Auth, request validation, routing, persistence, and history

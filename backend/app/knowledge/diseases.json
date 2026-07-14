@@ -1,5 +1,4 @@
 {
-  "_comment": "Database bệnh cây trồng - Phụ trách: Lê Xuân Trí (Sáng tạo S3, Phase 5)",
   "diseases": {
     "Healthy": {
       "label": "Healthy",

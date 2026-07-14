@@ -1,6 +1,4 @@
 -- PostgreSQL schema skeleton
--- Phụ trách: Tống Thanh Phúc
--- Phase 5, Task 5.5
 
 CREATE TABLE IF NOT EXISTS images (
     id UUID PRIMARY KEY,

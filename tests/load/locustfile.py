@@ -1,4 +1,4 @@
-"""Phase 6.6 Locust scenario for the public backend API.
+"""Locust scenario for the public backend API.
 
 Set ``LOCUST_USERNAME`` and ``LOCUST_PASSWORD`` to a dedicated load-test user
 that already exists in the target environment. Prediction traffic is opt-in:

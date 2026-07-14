@@ -1,15 +1,4 @@
-"""
-SAM 3 segmentation skeleton.
-
-Phụ trách: Đàm Tiến Đạt
-Phase 6, Task 6.6
-
-TODO:
-- Load SAM 3 processor/model.
-- Generate pseudo-mask for images with multiple leaves.
-- Expose optional `/segment` endpoint in the backend.
-- Store masks as lightweight artifacts for manual review.
-"""
+"""SAM 3 segmentation skeleton."""
 
 from __future__ import annotations
 

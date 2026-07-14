@@ -1,7 +1,5 @@
 # Tests
 
-Phase 6 output owned by Nguyễn Hồ Anh Tuấn.
-
 Current coverage:
 
 - API contract tests for `/health` and `/api/v1/predict`.

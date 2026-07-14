@@ -1,10 +1,4 @@
 # Traefik Configuration
-# Phụ trách: Đàm Tiến Đạt (Phase 6, Task 6.3) + Tống Thanh Phúc
-#
-# TODO:
-# - [ ] Cấu hình entrypoints (HTTP → HTTPS redirect)
-# - [ ] DuckDNS DNS challenge cho Let's Encrypt
-# - [ ] Router rules cho frontend, backend, mlflow
 
 api:
   dashboard: true

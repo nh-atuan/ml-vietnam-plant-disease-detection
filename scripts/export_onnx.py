@@ -1,16 +1,4 @@
-"""
-Export the selected PyTorch checkpoint to ONNX.
-
-Phụ trách: Nguyễn Hồ Anh Tuấn
-Phase 5, Task 5.1
-
-TODO:
-- Load best checkpoint selected in Phase 4.
-- Recreate model through ModelFactory.
-- Export dynamic batch ONNX.
-- Validate output parity between PyTorch and ONNX Runtime.
-- Write model metadata to models/model_card.md.
-"""
+"""Export the selected PyTorch checkpoint to ONNX."""
 
 from __future__ import annotations
 
