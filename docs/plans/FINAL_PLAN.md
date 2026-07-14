@@ -39,14 +39,14 @@
 
 ## PHÂN CHIA CÔNG VIỆC CHI TIẾT
 
-Để đảm bảo tính nhất quán và tối ưu hóa hiệu quả làm việc, việc phân chia viết **Báo cáo** và **Slide** được đồng bộ trực tiếp theo các phần việc/mô hình mà từng thành viên đã phụ trách ở các phase trước (Data, Model, Web/DevOps).
-
 ### 1. Nguyễn Hồ Anh Tuấn
 * **Báo cáo:** Chủ trì và viết **Chương 1: Giới thiệu**
   - **Phân tích Vấn đề (Problem Definition):** Mô tả chi tiết bài toán chẩn đoán bệnh trên lá lúa/cà phê, tính cấp thiết và ý nghĩa thực tiễn tại Việt Nam.
   - **Mục tiêu của Đồ án:** Các mục tiêu cụ thể cần đạt được (độ chính xác, khả năng triển khai thực tế).
   - **Tổng quan về Phương pháp:** Sơ đồ quy trình tổng thể từ dữ liệu, huấn luyện đến triển khai web.
 * **Slide:** Soạn slide tương ứng với **Chương 1**.
+* **Minh chứng Storage phụ trách:**
+  - Thiết lập và tổ chức thư mục chia sẻ sản phẩm đồ án trên Cloud (Google Drive hoặc OneDrive) một cách khoa học (bao gồm báo cáo PDF, slide, mã nguồn đóng gói ZIP, model weights tốt nhất).
 * **Trách nhiệm phối hợp:** Tổng hợp báo cáo tổng thể, rà soát văn phong, kiểm tra lỗi định dạng và tính nhất quán giữa Báo cáo, Slide và mã nguồn.
 
 ### 2. Đàm Tiến Đạt
@@ -73,8 +73,7 @@
   - **Giao diện và Chức năng:** Hình ảnh chụp màn hình (UI/UX) và luồng hoạt động chính (Auth, Predict, History, Expert Knowledge Base).
   - **Triển khai Cloud:** Mô tả quá trình container hóa (Docker), viết Helm Chart, cài đặt cụm Kubernetes (k3s) trên GCP VM, cấu hình định tuyến ingress qua Traefik và tên miền DuckDNS kèm SSL HTTPS.
 * **Slide:** Soạn slide tương ứng với **Chương 5**.
-* **Minh chứng Cloud & Storage phụ trách:**
-  - Thiết lập và tổ chức thư mục chia sẻ sản phẩm đồ án trên Cloud (Google Drive hoặc OneDrive) một cách khoa học (bao gồm báo cáo PDF, slide, mã nguồn đóng gói ZIP, model weights tốt nhất).
+* **Minh chứng Cloud phụ trách:**
   - Đảm bảo repo GitHub/GitLab công khai được dọn dẹp sạch sẽ, cấu trúc thư mục rõ ràng, đầy đủ file README hướng dẫn chạy thử nghiệm local và các cấu hình DevOps (`deployment/helm/`, `.github/workflows/`).
 
 ### 5. Dương Tuấn Anh
@@ -105,7 +104,7 @@ Video demo là minh chứng trực quan cực kỳ quan trọng thể hiện ứ
 | **2. Mã nguồn (ZIP/GitHub)** | Lê Xuân Trí | Thư mục [code](../../submission/code) |
 | **3. Mô hình đã huấn luyện** | Đàm Tiến Đạt | Thư mục [models](../../submission/models) |
 | **4. Slide thuyết trình** | Cả nhóm | File [Slides.pdf](../../submission/Slides.pdf) |
-| **5. Tổ chức lưu trữ Cloud** | Lê Xuân Trí | Link Cloud trong [README.md](../../submission/README.md) |
+| **5. Tổ chức lưu trữ Cloud** | Nguyễn Hồ Anh Tuấn | Link Cloud trong [README.md](../../submission/README.md) |
 | **6. Video Demo Web** | Dương Tuấn Anh | Thông tin & Link video trong [README.md](../../submission/README.md) |
 
 ---
