@@ -118,7 +118,9 @@ model:
     existingClaim: ""
     claimName: plant-disease-models
     size: 10Gi
-    storageClass: local-path-retain
+    # This PVC already exists in production. storageClassName is immutable;
+    # migrate to a new claim before changing this value.
+    storageClass: local-path
     accessMode: ReadWriteOnce
 
 # =============================================
@@ -165,7 +167,9 @@ postgres:
   persistence:
     enabled: true
     size: 20Gi
-    storageClass: local-path-retain
+    # Kept compatible with the existing StatefulSet claim. Changing this
+    # value would mutate volumeClaimTemplates and make `helm upgrade` fail.
+    storageClass: local-path
     mountPath: /var/lib/postgresql/data
   
   backup:
@@ -203,7 +207,7 @@ minio:
   persistence:
     enabled: true
     size: 30Gi
-    storageClass: local-path-retain
+    storageClass: local-path
     mountPath: /data
   
   resources:
