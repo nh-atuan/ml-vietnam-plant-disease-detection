@@ -117,3 +117,4 @@ Bảng dưới đây đối chiếu giữa yêu cầu sản phẩm của môn h�
 1. **Git workflow:** Tạo feature branch riêng cho báo cáo/slide (`docs/report-chapX`, `slides/chapX`), tạo PR và nhờ Nguyễn Hồ Anh Tuấn review trước khi merge vào `main`.
 2. **Tiến độ:** Mọi thành viên chủ động hoàn thành phần viết chương báo cáo và slide tương ứng của mình trước **trưa ngày 17/7** để kịp tổng hợp, định dạng LaTeX/Word chuyên nghiệp và rà soát lỗi trước khi nộp.
 3. **Chất lượng nội dung:** Mọi hình ảnh, bảng biểu đưa vào báo cáo và slide phải có chú thích rõ ràng, đánh số thứ tự và được trích dẫn nguồn đầy đủ.
+4. **Quy chuẩn trình bày:** Tất cả thành viên bắt buộc phải đọc qua và tuân thủ nghiêm ngặt các hướng dẫn, lưu ý về cách viết báo cáo và làm slide được thống nhất tại [NOTES.md](../notes/NOTES.md).

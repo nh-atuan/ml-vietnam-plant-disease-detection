@@ -10,6 +10,10 @@
 - Các bảng không được có đường kẻ dọc, với hàng tiêu đề (header) được in đậm.
 - Nên có hình ảnh, sơ đồ minh hoạ.
 - Tuyệt đối không được sử dụng ảnh do AI tạo.
+- Văn phong: Khoa học, khách quan, súc tích.
+- Hình ảnh/Bảng biểu: Mọi hình ảnh, bảng biểu phải được đánh số, có chú thích rõ ràng và được tham chiếu trong nội dung báo cáo.
+- Trích dẫn: Trích dẫn đầy đủ các nguồn tài liệu, kiến trúc mô hình tham khảo.
+- Giới hạn: Báo cáo không nên vượt quá 30 trang (không bao gồm phụ lục) và khoảng 7000 từ để đảm bảo tính cô đọng.
 
 ## Về slides
 
