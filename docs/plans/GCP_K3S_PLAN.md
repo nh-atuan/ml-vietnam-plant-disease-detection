@@ -42,12 +42,12 @@ Không dùng full Kubeflow cho bản demo đầu tiên. Model serving sẽ đi t
 
 | Phạm vi | Người phụ trách | Việc cần cung cấp | Trạng thái |
 |---|---|---|---|
-| Infra/K8s/Helm/Ingress/CI-CD | Lê Xuân Trí | VM, k3s, Helm, DuckDNS, deploy pipeline | `Todo` |
-| Model artifact và inference | Đàm Tiến Đạt | ONNX, class names, input size, resource inference | `Done` |
-| Backend/API/env/migration | Nguyễn Hồ Anh Tuấn | Env production, health probe, migration, API behavior | `Done` |
-| DB/MinIO/PVC/backup | Tống Thanh Phúc | PVC size, credential policy, backup need | `Done` |
-| Frontend/API URL | Dương Tuấn Anh | API base URL, production build config | `Done` |
-| E2E/load test | Nguyễn Hồ Anh Tuấn & Tống Thanh Phúc | Test scenario, sample image, report | `Todo` |
+| Infra/K8s/Helm/Ingress/CI-CD | Lê Xuân Trí | VM, k3s, Helm, DuckDNS, deploy pipeline | Done |
+| Model artifact và inference | Đàm Tiến Đạt | ONNX, class names, input size, resource inference | Done |
+| Backend/API/env/migration | Nguyễn Hồ Anh Tuấn | Env production, health probe, migration, API behavior | Done |
+| DB/MinIO/PVC/backup | Tống Thanh Phúc | PVC size, credential policy, backup need | Done |
+| Frontend/API URL | Dương Tuấn Anh | API base URL, production build config | Done |
+| E2E/load test | Nguyễn Hồ Anh Tuấn & Tống Thanh Phúc | Test scenario, sample image, report | Done |
 
 ## 4. GCP project và chi phí
 
@@ -234,15 +234,15 @@ Không ghi giá trị thật ở đây.
 
 | Secret name | Dùng cho | Người cung cấp | Đã cấu hình? |
 |---|---|---|---|
-| `REGISTRY_USERNAME` | Push/pull image | `Lê Xuân Trí` | `Chưa (Chờ Phase 6)` |
-| `REGISTRY_TOKEN` | Push/pull image | `Lê Xuân Trí` | `Chưa (Chờ Phase 6)` |
-| `GCP_VM_HOST` | SSH deploy | `Lê Xuân Trí` | `Chưa (Chờ Phase 6)` |
-| `GCP_VM_USER` | SSH deploy | `Lê Xuân Trí` | `Chưa (Chờ Phase 6)` |
-| `GCP_VM_SSH_KEY` | SSH deploy | `Lê Xuân Trí` | `Chưa (Chờ Phase 6)` |
-| `POSTGRES_PASSWORD` | Helm secret | `Tống Thanh Phúc` | `Chưa (Chờ Phase 6)` |
-| `MINIO_SECRET_KEY` | Helm secret | `Tống Thanh Phúc` | `Chưa (Chờ Phase 6)` |
-| `JWT_SECRET_KEY` | Backend secret | `Nguyễn Hồ Anh Tuấn` | `Chưa (Chờ Phase 6)` |
-| `DUCKDNS_TOKEN` | HTTPS/DNS automation nếu cần | `Lê Xuân Trí` | `Chưa (Chờ Phase 6)` |
+| `REGISTRY_USERNAME` | Push/pull image | `Lê Xuân Trí` | `Đã cấu hình` |
+| `REGISTRY_TOKEN` | Push/pull image | `Lê Xuân Trí` | `Đã cấu hình` |
+| `GCP_VM_HOST` | SSH deploy | `Lê Xuân Trí` | `Đã cấu hình` |
+| `GCP_VM_USER` | SSH deploy | `Lê Xuân Trí` | `Đã cấu hình` |
+| `GCP_VM_SSH_KEY` | SSH deploy | `Lê Xuân Trí` | `Đã cấu hình` |
+| `POSTGRES_PASSWORD` | Helm secret | `Tống Thanh Phúc` | `Đã cấu hình` |
+| `MINIO_SECRET_KEY` | Helm secret | `Tống Thanh Phúc` | `Đã cấu hình` |
+| `JWT_SECRET_KEY` | Backend secret | `Nguyễn Hồ Anh Tuấn` | `Đã cấu hình` |
+| `DUCKDNS_TOKEN` | HTTPS/DNS automation nếu cần | `Lê Xuân Trí` | `Đã cấu hình` |
 | `MODEL_DOWNLOAD_TOKEN` | Tải model private nếu cần | `Đàm Tiến Đạt` | `N/A (Build thẳng vào image)` |
 
 ## 16. Helm values template cần điền
