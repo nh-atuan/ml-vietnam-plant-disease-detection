@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { LogIn, Calendar, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { Calendar, ChevronRight, FileText, LogIn } from "lucide-react";
 import { fetchHistory, HistoryItem } from "../lib/api";
 import LoadingSpinner from "./ui/LoadingSpinner";
 import ErrorMessage from "./ui/ErrorMessage";
 import EmptyState from "./ui/EmptyState";
+import Pagination from "./ui/Pagination";
 import RecommendationCard from "./RecommendationCard";
 
 interface HistoryListProps {
@@ -13,58 +14,53 @@ interface HistoryListProps {
   onLoginPrompt: () => void;
 }
 
+const PAGE_SIZE = 5;
+
 export default function HistoryList({ token, onLoginPrompt }: HistoryListProps) {
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
 
-  const PAGE_SIZE = 5;
-
-  const loadHistory = async (targetPage = page) => {
+  const loadHistory = useCallback(async (targetPage: number) => {
     if (!token) return;
+
     setIsLoading(true);
     setError(null);
+
     try {
-      const res = await fetchHistory(token, targetPage, PAGE_SIZE);
-      setHistoryItems(res.items || []);
-      setTotal(res.total || 0);
-      setPage(res.page || targetPage);
+      const response = await fetchHistory(token, targetPage, PAGE_SIZE);
+      setHistoryItems(response.items || []);
+      setTotal(response.total || 0);
+      setPage(response.page || targetPage);
+      setExpandedItemId(null);
+      setHasLoaded(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Không thể lấy lịch sử chẩn đoán.");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     if (token) {
-      loadHistory(1);
-    } else {
-      setHistoryItems([]);
-      setTotal(0);
+      void loadHistory(1);
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
 
-  const handlePrevPage = () => {
-    if (page > 1) {
-      loadHistory(page - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (page * PAGE_SIZE < total) {
-      loadHistory(page + 1);
-    }
-  };
+    setHistoryItems([]);
+    setTotal(0);
+    setPage(1);
+    setHasLoaded(false);
+    setError(null);
+  }, [token, loadHistory]);
 
   const formatDate = (dateStr: string) => {
     try {
-      const date = new Date(dateStr);
-      return date.toLocaleString("vi-VN", {
+      return new Date(dateStr).toLocaleString("vi-VN", {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
@@ -78,20 +74,20 @@ export default function HistoryList({ token, onLoginPrompt }: HistoryListProps) 
 
   if (!token) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-6 space-y-6 text-center bg-background/50 dark:bg-black/20 border border-surface-border rounded-3xl shadow-sm">
-        <div className="p-5 rounded-full bg-claude-orange/10 text-claude-orange shadow-inner">
-          <LogIn className="w-8 h-8" />
+      <div className="flex flex-col items-center justify-center space-y-6 rounded-3xl border border-surface-border bg-background/50 px-6 py-20 text-center shadow-sm dark:bg-black/20">
+        <div className="rounded-full bg-claude-orange/10 p-5 text-claude-orange shadow-inner">
+          <LogIn className="h-8 w-8" aria-hidden="true" />
         </div>
         <div className="space-y-2">
           <p className="text-xl font-display font-bold text-foreground">Lịch sử chẩn đoán cá nhân</p>
-          <p className="text-sm font-sans text-claude-muted max-w-sm mx-auto leading-relaxed">
+          <p className="mx-auto max-w-sm text-sm font-sans leading-relaxed text-claude-muted">
             Hãy đăng nhập tài khoản của bạn để tự động lưu vết chẩn đoán lá cây, tra cứu lại các khuyến nghị điều trị chuyên khoa bất cứ lúc nào.
           </p>
         </div>
         <button
           type="button"
           onClick={onLoginPrompt}
-          className="inline-flex items-center gap-1.5 px-4.5 py-2.5 text-xs font-semibold text-claude-orange-text bg-claude-orange hover:bg-claude-orange-hover rounded-lg shadow-sm transition-all focus:outline-none"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-claude-orange px-4 py-2.5 text-xs font-semibold text-claude-orange-text shadow-sm transition-colors hover:bg-claude-orange-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2"
         >
           Đăng nhập ngay
         </button>
@@ -99,21 +95,16 @@ export default function HistoryList({ token, onLoginPrompt }: HistoryListProps) 
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !hasLoaded) {
     return (
-      <div className="bg-surface-raised border border-surface-border rounded-2xl p-8 flex items-center justify-center shadow-sm">
+      <div className="flex items-center justify-center rounded-2xl border border-surface-border bg-surface-raised p-8 shadow-sm">
         <LoadingSpinner />
       </div>
     );
   }
 
   if (error) {
-    return (
-      <ErrorMessage
-        message={error}
-        onRetry={() => loadHistory(page)}
-      />
-    );
+    return <ErrorMessage message={error} onRetry={() => void loadHistory(page)} />;
   }
 
   if (historyItems.length === 0) {
@@ -129,13 +120,11 @@ export default function HistoryList({ token, onLoginPrompt }: HistoryListProps) 
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <p className="text-xs text-claude-muted font-bold tracking-wider uppercase">
-          Tất cả chẩn đoán ({total})
-        </p>
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold uppercase tracking-wider text-claude-muted">Tất cả chẩn đoán ({total})</p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3" aria-busy={isLoading}>
         {historyItems.map((item) => {
           const isExpanded = expandedItemId === item.id;
           const diseaseNameVi = item.recommendation?.name_vi || item.predicted_label;
@@ -144,37 +133,34 @@ export default function HistoryList({ token, onLoginPrompt }: HistoryListProps) 
           return (
             <div
               key={item.id}
-              className="bg-background/50 dark:bg-black/20 border border-surface-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
+              className="overflow-hidden rounded-2xl border border-surface-border bg-background/50 shadow-sm transition-shadow duration-300 hover:shadow-md dark:bg-black/20"
             >
-              {/* Item Header */}
               <div
                 onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
-                className="p-5 flex gap-4 items-center justify-between cursor-pointer hover:bg-surface-sidebar dark:hover:bg-zinc-800/50 select-none transition-colors"
+                className="flex cursor-pointer select-none items-center justify-between gap-4 p-5 transition-colors hover:bg-surface-sidebar dark:hover:bg-zinc-800/50"
               >
-                <div className="flex gap-3.5 items-center min-w-0">
+                <div className="flex min-w-0 items-center gap-3.5">
                   {item.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={item.image_url}
-                      alt="History Leaf"
-                      className="w-12 h-12 rounded-lg object-cover bg-surface-raised border border-surface-border flex-shrink-0"
+                      alt="Lá cây trong lịch sử chẩn đoán"
+                      className="h-12 w-12 shrink-0 rounded-lg border border-surface-border bg-surface-raised object-cover"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-lg bg-surface-raised border border-surface-border text-claude-muted flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-5 h-5" />
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-surface-border bg-surface-raised text-claude-muted">
+                      <FileText className="h-5 w-5" aria-hidden="true" />
                     </div>
                   )}
                   <div className="min-w-0">
-                    <h4 className="font-display font-bold text-foreground text-base truncate">
-                      {diseaseNameVi}
-                    </h4>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-claude-muted mt-1 font-medium">
+                    <h4 className="truncate text-base font-display font-bold text-foreground">{diseaseNameVi}</h4>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-claude-muted">
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
+                        <Calendar className="h-3 w-3" aria-hidden="true" />
                         {formatDate(item.created_at)}
                       </span>
                       {crop && (
-                        <span className="text-[10px] px-2 py-0.5 bg-surface-border/50 text-foreground font-semibold rounded">
+                        <span className="rounded bg-surface-border/50 px-2 py-0.5 text-[10px] font-semibold text-foreground">
                           {crop === "rice" ? "Lúa" : crop === "coffee" ? "Cà phê" : crop}
                         </span>
                       )}
@@ -183,28 +169,23 @@ export default function HistoryList({ token, onLoginPrompt }: HistoryListProps) 
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="text-right hidden sm:block">
-                    <div className="text-xl font-bold font-display text-claude-orange">
-                      {Math.round(item.confidence * 100)}%
-                    </div>
-                    <div className="text-[10px] uppercase tracking-wider text-claude-muted font-medium mt-0.5">Độ tin cậy</div>
+                  <div className="hidden text-right sm:block">
+                    <div className="text-xl font-display font-bold text-claude-orange">{Math.round(item.confidence * 100)}%</div>
+                    <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-claude-muted">Độ tin cậy</div>
                   </div>
                   <button
                     type="button"
-                    className="p-2 rounded-full text-claude-muted hover:text-foreground hover:bg-surface-border/50 transition-colors"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full text-claude-muted transition-colors hover:bg-surface-border/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2"
+                    aria-label={isExpanded ? `Thu gọn ${diseaseNameVi}` : `Xem chi tiết ${diseaseNameVi}`}
+                    aria-expanded={isExpanded}
                   >
-                    {isExpanded ? (
-                      <ChevronRight className="w-4 h-4 transform rotate-90 transition-transform duration-200" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4 transition-transform duration-200" />
-                    )}
+                    <ChevronRight className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`} aria-hidden="true" />
                   </button>
                 </div>
               </div>
 
-              {/* Collapsible details content */}
               {isExpanded && (
-                <div className="border-t border-surface-border p-5 bg-background/30 dark:bg-black/10">
+                <div className="border-t border-surface-border bg-background/30 p-5 dark:bg-black/10">
                   <RecommendationCard recommendation={item.recommendation} />
                 </div>
               )}
@@ -213,32 +194,12 @@ export default function HistoryList({ token, onLoginPrompt }: HistoryListProps) 
         })}
       </div>
 
-      {/* Pagination component */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-3 border-t border-surface-border text-xs text-claude-muted font-medium">
-          <span>
-            Trang {page} / {totalPages}
-          </span>
-          <div className="flex gap-1.5">
-            <button
-              type="button"
-              onClick={handlePrevPage}
-              disabled={page === 1}
-              className="inline-flex items-center justify-center p-1.5 border border-surface-border bg-surface-raised hover:bg-surface-sidebar rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm focus:outline-none"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={handleNextPage}
-              disabled={page === totalPages}
-              className="inline-flex items-center justify-center p-1.5 border border-surface-border bg-surface-raised hover:bg-surface-sidebar rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm focus:outline-none"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        isLoading={isLoading}
+        onPageChange={(targetPage) => void loadHistory(targetPage)}
+      />
     </div>
   );
 }

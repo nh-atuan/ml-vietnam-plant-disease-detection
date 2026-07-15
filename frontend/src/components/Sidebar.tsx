@@ -1,219 +1,192 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, BookOpen, History, ChevronLeft, ChevronRight, Leaf, User as UserIcon, LogOut, LogIn, Loader2 } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, History, Leaf, LogIn, Plus } from "lucide-react";
+import type { UserResponse } from "../lib/api";
 import { TabId } from "./TabNav";
+import AccountMenu from "./ui/AccountMenu";
 
 interface SidebarProps {
   activeTab: TabId;
   onTabChange: (tab: TabId) => void;
-  user: any;
+  onNewDiagnosis: () => void;
+  user: UserResponse | null;
   isLoading: boolean;
+  isPredictionSubmitting: boolean;
   logout: () => void;
   onLoginClick: () => void;
 }
 
+const menuItems = [
+  {
+    id: "knowledge" as TabId,
+    label: "Cơ sở tri thức",
+    mobileLabel: "Kiến thức",
+    icon: BookOpen,
+  },
+  {
+    id: "history" as TabId,
+    label: "Lịch sử chẩn đoán",
+    mobileLabel: "Lịch sử",
+    icon: History,
+  },
+];
+
 export default function Sidebar({
   activeTab,
   onTabChange,
+  onNewDiagnosis,
   user,
   isLoading,
+  isPredictionSubmitting,
   logout,
   onLoginClick,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const menuItems = [
-    {
-      id: "knowledge" as TabId,
-      label: "Cơ sở tri thức",
-      description: "Tra cứu bệnh cây trồng",
-      icon: BookOpen,
-    },
-    {
-      id: "history" as TabId,
-      label: "Lịch sử chẩn đoán",
-      description: "Xem lại kết quả trước",
-      icon: History,
-    },
-  ];
-
-  // Helper to get initials for avatar
-  const getInitials = (username: string) => {
-    if (!username) return "?";
-    return username.slice(0, 2).toUpperCase();
-  };
-
   return (
     <>
-      {/* Mobile Bottom Navigation */}
-      <nav 
-        className="flex lg:hidden fixed bottom-0 left-0 right-0 bg-surface-sidebar border-t border-surface-border z-40 px-4 justify-around py-2 shadow-lg"
-        role="tablist"
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around gap-1 border-t border-surface-border bg-surface-sidebar px-2 py-2 shadow-lg lg:hidden"
+        aria-label="Điều hướng chính"
       >
         <button
-          role="tab"
-          aria-selected={activeTab === "diagnosis"}
+          type="button"
+          aria-pressed={activeTab === "diagnosis"}
           onClick={() => onTabChange("diagnosis")}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all outline-none ${
+          className={`inline-flex min-h-11 min-w-11 flex-col items-center justify-center rounded-xl px-2 py-1 text-[10px] tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2 focus-visible:ring-offset-surface-sidebar ${
             activeTab === "diagnosis"
-              ? "text-claude-orange bg-interactive-active font-semibold"
+              ? "bg-interactive-active font-semibold text-claude-orange"
               : "text-text-secondary hover:text-claude-text"
           }`}
         >
-          <Plus className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-wide">Chẩn đoán</span>
+          <Plus className="mb-0.5 h-5 w-5" aria-hidden="true" />
+          <span>Chẩn đoán</span>
         </button>
 
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
+
           return (
             <button
               key={item.id}
-              role="tab"
-              aria-selected={isActive}
+              type="button"
+              aria-pressed={isActive}
               onClick={() => onTabChange(item.id)}
-              className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all outline-none ${
+              className={`inline-flex min-h-11 min-w-11 flex-col items-center justify-center rounded-xl px-2 py-1 text-[10px] tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2 focus-visible:ring-offset-surface-sidebar ${
                 isActive
-                  ? "text-claude-orange bg-interactive-active font-semibold"
+                  ? "bg-interactive-active font-semibold text-claude-orange"
                   : "text-text-secondary hover:text-claude-text"
               }`}
             >
-              <Icon className="w-5 h-5 mb-0.5" />
-              <span className="text-[10px] tracking-wide">{item.label.split(" ")[0]}</span>
+              <Icon className="mb-0.5 h-5 w-5" aria-hidden="true" />
+              <span>{item.mobileLabel}</span>
             </button>
           );
         })}
+
+        {user ? (
+          <AccountMenu username={user.username} onLogout={logout} variant="mobile" />
+        ) : (
+          <button
+            type="button"
+            onClick={onLoginClick}
+            className="inline-flex h-11 w-11 flex-col items-center justify-center rounded-xl border border-surface-border bg-surface-raised text-text-secondary shadow-sm transition-colors hover:bg-surface-sidebar hover:text-claude-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2 focus-visible:ring-offset-surface-sidebar"
+            aria-label="Đăng nhập"
+          >
+            <LogIn className="h-5 w-5" aria-hidden="true" />
+          </button>
+        )}
       </nav>
 
-      {/* Desktop Sidebar */}
-      <aside 
-        className={`hidden lg:flex flex-col h-screen fixed left-0 top-0 border-r border-surface-border bg-surface-sidebar transition-all duration-300 z-30 ${
+      <aside
+        className={`fixed left-0 top-0 z-30 hidden h-screen flex-col border-r border-surface-border bg-surface-sidebar transition-[width] duration-300 lg:flex ${
           isCollapsed ? "w-[72px]" : "w-64"
         }`}
-        aria-label="Sidebar Navigation"
+        aria-label="Điều hướng bên"
       >
-        {/* Logo area */}
-        <div className="flex items-center justify-between p-4 h-16">
-          {!isCollapsed && (
+        <div className="flex h-16 items-center justify-between p-4">
+          {!isCollapsed ? (
             <div className="flex items-center gap-2">
-              <Leaf className="w-5 h-5 text-claude-orange fill-claude-orange/10" />
-              <span className="font-serif font-bold text-foreground text-lg tracking-tight">PlantDisease AI</span>
+              <Leaf className="h-5 w-5 fill-claude-orange/10 text-claude-orange" aria-hidden="true" />
+              <span className="text-lg font-serif font-bold tracking-tight text-foreground">PlantDisease AI</span>
             </div>
-          )}
-          {isCollapsed && (
-            <Leaf className="w-5 h-5 text-claude-orange mx-auto" />
+          ) : (
+            <Leaf className="mx-auto h-5 w-5 text-claude-orange" aria-hidden="true" />
           )}
           <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 rounded-lg text-text-secondary hover:text-claude-text hover:bg-interactive-active transition-colors"
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            type="button"
+            onClick={() => setIsCollapsed((current) => !current)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-interactive-active hover:text-claude-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2 focus-visible:ring-offset-surface-sidebar"
+            aria-label={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
           >
-            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            {isCollapsed ? <ChevronRight className="h-4 w-4" aria-hidden="true" /> : <ChevronLeft className="h-4 w-4" aria-hidden="true" />}
           </button>
         </div>
 
-        {/* Action Button: New Chat/Diagnosis */}
-        <div className="px-3 mb-4">
+        <div className="mb-4 px-3">
           <button
-            onClick={() => onTabChange("diagnosis")}
-            className={`w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-surface-border bg-surface-raised text-sm font-medium shadow-sm transition-all hover:bg-surface-hover hover:border-border-hover ${
-              isCollapsed ? "p-2 rounded-full" : ""
-            } ${activeTab === "diagnosis" ? "ring-2 ring-claude-orange/20 border-claude-orange/60" : ""}`}
+            type="button"
+            onClick={onNewDiagnosis}
+            disabled={isPredictionSubmitting}
+            className={`flex w-full min-h-11 items-center justify-center gap-2 rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-surface-hover hover:border-border-hover disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2 focus-visible:ring-offset-surface-sidebar ${
+              isCollapsed ? "rounded-full p-2" : ""
+            } ${activeTab === "diagnosis" ? "border-claude-orange/60 ring-2 ring-claude-orange/20" : ""}`}
             title="Chẩn đoán mới"
           >
-            <Plus className="w-4 h-4 text-claude-orange" />
+            <Plus className="h-4 w-4 shrink-0 text-claude-orange" aria-hidden="true" />
             {!isCollapsed && <span className="text-foreground">Chẩn đoán mới</span>}
           </button>
         </div>
 
-        {/* Navigation list */}
-        <nav className="flex-1 px-3 space-y-1" role="tablist">
+        <nav className="flex-1 space-y-1 px-3" aria-label="Chức năng">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
+
             return (
               <button
                 key={item.id}
-                role="tab"
-                aria-selected={isActive}
+                type="button"
+                aria-pressed={isActive}
                 onClick={() => onTabChange(item.id)}
-                className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-all outline-none ${
+                className={`flex min-h-11 w-full items-center gap-3 rounded-lg p-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2 focus-visible:ring-offset-surface-sidebar ${
                   isActive
-                    ? "bg-interactive-active text-claude-text font-medium"
+                    ? "bg-interactive-active font-medium text-claude-text"
                     : "text-text-secondary hover:bg-interactive-hover hover:text-claude-text"
                 }`}
+                aria-label={isCollapsed ? item.label : undefined}
               >
-                <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-claude-orange" : "text-text-secondary"}`} />
-                {!isCollapsed && (
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium leading-none">{item.label}</p>
-                  </div>
-                )}
+                <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-claude-orange" : "text-text-secondary"}`} aria-hidden="true" />
+                {!isCollapsed && <span className="text-sm font-medium leading-none">{item.label}</span>}
               </button>
             );
           })}
         </nav>
 
-        {/* Auth Section at the bottom */}
-        <div className="p-3 border-t border-surface-border/50">
+        <div className="border-t border-surface-border/50 p-3">
           {isLoading ? (
-            <div className="flex items-center justify-center py-2 text-claude-muted">
-              <Loader2 className="w-5 h-5 animate-spin text-claude-orange" />
+            <div className="flex min-h-11 items-center justify-center text-claude-muted" role="status" aria-label="Đang tải tài khoản">
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-claude-orange/30 border-t-claude-orange" aria-hidden="true" />
             </div>
           ) : user ? (
-            <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : "justify-between"} p-1.5`}>
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div 
-                  className="w-8 h-8 rounded-full bg-claude-orange/10 border border-claude-orange/20 text-claude-orange flex items-center justify-center text-xs font-bold font-serif flex-shrink-0"
-                  title={user.username}
-                >
-                  {getInitials(user.username)}
-                </div>
-                {!isCollapsed && (
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-claude-text truncate leading-tight">
-                      {user.username}
-                    </p>
-                    <p className="text-[10px] text-claude-muted font-medium mt-0.5 leading-none">
-                      Thành viên Free
-                    </p>
-                  </div>
-                )}
-              </div>
-              {!isCollapsed && (
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="p-1 text-stone-400 hover:text-danger-700 hover:bg-danger-50 dark:hover:bg-danger-500/10 rounded-lg transition-colors"
-                  title="Đăng xuất"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              )}
-            </div>
+            <AccountMenu username={user.username} onLogout={logout} variant={isCollapsed ? "mobile" : "sidebar"} />
           ) : (
             <button
               type="button"
               onClick={onLoginClick}
-              className={`w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-surface-border bg-surface-raised text-xs font-semibold shadow-sm transition-all hover:bg-surface-hover hover:border-border-hover ${
-                isCollapsed ? "p-2 rounded-full" : ""
+              className={`flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-xs font-semibold shadow-sm transition-colors hover:bg-surface-hover hover:border-border-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2 focus-visible:ring-offset-surface-sidebar ${
+                isCollapsed ? "rounded-full p-2" : ""
               }`}
               title="Đăng nhập"
+              aria-label={isCollapsed ? "Đăng nhập" : undefined}
             >
-              <LogIn className="w-4 h-4 text-claude-orange" />
+              <LogIn className="h-4 w-4 shrink-0 text-claude-orange" aria-hidden="true" />
               {!isCollapsed && <span className="text-claude-text">Đăng nhập</span>}
             </button>
           )}
         </div>
-
-        {/* Footer info */}
-        {!isCollapsed && (
-          <div className="pb-3 text-[9px] text-text-tertiary font-medium text-center">
-            v1.2.0 · Claude UI
-          </div>
-        )}
       </aside>
     </>
   );

@@ -28,6 +28,7 @@ export default function Home() {
     isSubmitting,
     handleFileSelect,
     handleSubmit,
+    handleReset,
   } = usePrediction();
 
   const [activeTab, setActiveTab] = useState<TabId>("diagnosis");
@@ -60,6 +61,14 @@ export default function Home() {
     handleSubmit(auth.token || undefined);
   };
 
+  const startNewDiagnosis = React.useCallback(() => {
+    if (isSubmitting) return;
+
+    handleReset();
+    setSelectedDisease(null);
+    setActiveTab("diagnosis");
+  }, [handleReset, isSubmitting]);
+
   const getActiveTabLabel = () => {
     switch (activeTab) {
       case "diagnosis":
@@ -79,8 +88,10 @@ export default function Home() {
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        onNewDiagnosis={startNewDiagnosis}
         user={auth.user}
         isLoading={auth.isLoading}
+        isPredictionSubmitting={isSubmitting}
         logout={auth.logout}
         onLoginClick={() => setIsAuthModalOpen(true)}
       />
