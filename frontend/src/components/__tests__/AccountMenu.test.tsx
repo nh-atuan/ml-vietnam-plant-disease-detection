@@ -9,10 +9,13 @@ describe("AccountMenu", () => {
     const user = userEvent.setup();
     const onLogout = vi.fn();
 
-    render(<AccountMenu username="very-long-demo-username" onLogout={onLogout} />);
+    const veryLongUsername = "a".repeat(50);
+    render(<AccountMenu username={veryLongUsername} onLogout={onLogout} variant="mobile" />);
 
-    await user.click(screen.getByRole("button", { name: "Mở menu tài khoản của very-long-demo-username" }));
+    await user.click(screen.getByRole("button", { name: `Mở menu tài khoản của ${veryLongUsername}` }));
     expect(screen.getByRole("menuitem", { name: "Đăng xuất" })).toBeVisible();
+    expect(screen.getByText(veryLongUsername)).toHaveClass("min-w-0", "flex-1", "truncate");
+    expect(screen.getByRole("menu")).toHaveClass("w-[min(14rem,calc(100vw-1.5rem))]", "max-w-[calc(100vw-1.5rem)]");
 
     await user.click(screen.getByRole("menuitem", { name: "Đăng xuất" }));
     expect(onLogout).toHaveBeenCalledTimes(1);

@@ -53,8 +53,9 @@ export default function Sidebar({
         <button
           type="button"
           aria-pressed={activeTab === "diagnosis"}
-          onClick={() => onTabChange("diagnosis")}
-          className={`inline-flex min-h-11 min-w-11 flex-col items-center justify-center rounded-xl px-2 py-1 text-[10px] tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2 focus-visible:ring-offset-surface-sidebar ${
+          onClick={onNewDiagnosis}
+          disabled={isPredictionSubmitting}
+          className={`inline-flex min-h-11 min-w-11 flex-col items-center justify-center rounded-xl px-2 py-1 text-[10px] tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2 focus-visible:ring-offset-surface-sidebar ${
             activeTab === "diagnosis"
               ? "bg-interactive-active font-semibold text-claude-orange"
               : "text-text-secondary hover:text-claude-text"
@@ -86,7 +87,11 @@ export default function Sidebar({
           );
         })}
 
-        {user ? (
+        {isLoading ? (
+          <div className="flex h-11 w-11 items-center justify-center text-claude-muted" role="status" aria-label="Đang tải tài khoản">
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-claude-orange/30 border-t-claude-orange" aria-hidden="true" />
+          </div>
+        ) : user ? (
           <AccountMenu username={user.username} onLogout={logout} variant="mobile" />
         ) : (
           <button

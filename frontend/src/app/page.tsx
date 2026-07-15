@@ -34,6 +34,8 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>("diagnosis");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedDisease, setSelectedDisease] = useState<string | null>(null);
+  const authTriggerRef = React.useRef<HTMLElement | null>(null);
+  const mainContentRef = React.useRef<HTMLElement | null>(null);
   
   const [theme, setTheme] = React.useState<"light" | "dark">("light");
 
@@ -69,6 +71,20 @@ export default function Home() {
     setActiveTab("diagnosis");
   }, [handleReset, isSubmitting]);
 
+  React.useEffect(() => {
+    if (auth.sessionMessage) setIsAuthModalOpen(true);
+  }, [auth.sessionMessage]);
+
+  const closeAuthModal = React.useCallback(() => {
+    setIsAuthModalOpen(false);
+    auth.clearSessionMessage();
+  }, [auth]);
+
+  const openAuthModal = React.useCallback(() => {
+    authTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setIsAuthModalOpen(true);
+  }, []);
+
   const getActiveTabLabel = () => {
     switch (activeTab) {
       case "diagnosis":
@@ -93,7 +109,7 @@ export default function Home() {
         isLoading={auth.isLoading}
         isPredictionSubmitting={isSubmitting}
         logout={auth.logout}
-        onLoginClick={() => setIsAuthModalOpen(true)}
+        onLoginClick={openAuthModal}
       />
 
       {/* Main layout container */}
@@ -104,7 +120,7 @@ export default function Home() {
           onThemeToggle={toggleTheme}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main ref={mainContentRef} tabIndex={-1} className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-6xl mx-auto w-full">
             
             {activeTab === "diagnosis" && (
@@ -235,7 +251,7 @@ export default function Home() {
                 <div className="glass-panel rounded-3xl p-6 premium-shadow">
                   <HistoryList
                     token={auth.token}
-                    onLoginPrompt={() => setIsAuthModalOpen(true)}
+                    onLoginPrompt={openAuthModal}
                   />
                 </div>
               </SlideUp>
@@ -247,8 +263,11 @@ export default function Home() {
 
       <AuthModal
         isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+        onClose={closeAuthModal}
         auth={auth}
+        sessionMessage={auth.sessionMessage}
+        restoreFocusRef={authTriggerRef}
+        fallbackFocusRef={mainContentRef}
       />
     </div>
   );

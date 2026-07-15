@@ -47,11 +47,11 @@ export default function AccountMenu({ username, onLogout, variant = "sidebar" }:
           align={isMobile ? "end" : "start"}
           sideOffset={8}
           collisionPadding={12}
-          className="z-[60] min-w-56 rounded-xl border border-surface-border bg-surface-raised p-1.5 text-sm shadow-xl outline-none motion-safe:animate-fade-in"
+          className="z-[60] w-[min(14rem,calc(100vw-1.5rem))] max-w-[calc(100vw-1.5rem)] rounded-xl border border-surface-border bg-surface-raised p-1.5 text-sm shadow-xl outline-none motion-safe:animate-fade-in"
         >
           <DropdownMenu.Label className="flex items-center gap-2 px-2.5 py-2 text-xs font-medium text-claude-muted">
             <UserRound className="h-4 w-4" aria-hidden="true" />
-            <span className="truncate">{username}</span>
+            <span className="min-w-0 flex-1 truncate">{username}</span>
           </DropdownMenu.Label>
           <DropdownMenu.Separator className="my-1 h-px bg-surface-border" />
           <DropdownMenu.Item
