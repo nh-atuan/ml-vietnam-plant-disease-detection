@@ -35,7 +35,7 @@ function AccordionSection({ title, isOpen, onToggle, icon: Icon, children }: Acc
         )}
       </button>
       {isOpen && (
-        <div className="p-5 border-t border-surface-border/50 bg-background/30 dark:bg-black/20 text-sm text-claude-muted leading-relaxed animate-in fade-in duration-200">
+        <div className="p-5 border-t border-surface-border/50 bg-background/30 dark:bg-black/20 text-sm text-claude-text leading-relaxed animate-in fade-in duration-200">
           {children}
         </div>
       )}

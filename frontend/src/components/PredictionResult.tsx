@@ -58,7 +58,7 @@ export default function PredictionResult({ prediction }: PredictionResultProps) 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col p-4 bg-background/50 dark:bg-black/20 border border-surface-border rounded-2xl relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-claude-orange/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <span className="text-xs text-claude-muted font-display font-medium uppercase tracking-wider relative z-10">Điểm tin cậy của mô hình</span>
+          <span className="text-xs text-claude-muted font-display font-medium uppercase tracking-wider relative z-10">Điểm tin cậy</span>
           <span className="text-4xl font-bold font-display text-claude-orange mt-2 relative z-10">
             {confidencePercent}%
           </span>
