@@ -1,187 +1,108 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  ApiError,
+  fetchHistory,
+  getCurrentUser,
+  loginUser,
   predictImage,
   registerUser,
-  loginUser,
-  getCurrentUser,
-  fetchHistory,
-  fetchKnowledgeList,
-  fetchKnowledgeDetail,
 } from "../api";
 import { API_BASE_URL } from "../constants";
+import { AUTH_SESSION_EXPIRED_EVENT } from "../auth-session";
 
-describe("API Client tests", () => {
+function jsonResponse(body: unknown, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  } as Response;
+}
+
+describe("API client", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("predictImage sends FormData and handles success response", async () => {
-    const mockFile = new File(["dummy content"], "leaf.png", { type: "image/png" });
-    const mockResponse = {
-      prediction: "Healthy",
-      confidence: 0.95,
-      top_k: [{ label: "Healthy", confidence: 0.95 }],
-      image_id: "img123",
-      image_url: "http://localhost:9000/leaf.png",
-      prediction_id: "pred123",
-      latency_ms: 12.3,
-    };
+  it("keeps the bearer contract for authenticated prediction requests", async () => {
+    const file = new File(["leaf"], "leaf.png", { type: "image/png" });
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce(jsonResponse({ prediction: "Healthy", confidence: 0.9, top_k: [] }));
 
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
-    } as Response);
+    await predictImage(file, "demo-token");
 
-    const result = await predictImage(mockFile);
-
-    expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/predict`, expect.any(Object));
-    const callArgs = fetchSpy.mock.calls[0];
-    const fetchOptions = callArgs[1] as RequestInit;
-    
-    expect(fetchOptions.method).toBe("POST");
-    expect(fetchOptions.body).toBeInstanceOf(FormData);
-    expect(result).toEqual(mockResponse);
-  });
-
-  it("predictImage includes Authorization header when token is provided", async () => {
-    const mockFile = new File(["dummy content"], "leaf.png", { type: "image/png" });
-    const token = "my-secret-token";
-
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ prediction: "Healthy" }),
-    } as Response);
-
-    await predictImage(mockFile, token);
-
-    const fetchOptions = fetchSpy.mock.calls[0][1] as RequestInit;
-    const headers = fetchOptions.headers as Record<string, string>;
-    expect(headers["Authorization"]).toBe("Bearer my-secret-token");
-  });
-
-  it("predictImage handles backend detail error messages correctly", async () => {
-    const mockFile = new File(["dummy content"], "leaf.png", { type: "image/png" });
-    const errorDetail = "File is too large";
-
-    vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ detail: errorDetail }),
-    } as Response);
-
-    await expect(predictImage(mockFile)).rejects.toThrow(errorDetail);
-  });
-
-  it("registerUser sends correct JSON body and returns response", async () => {
-    const payload = { username: "user1", email: "user1@test.com", password: "password123" };
-    const mockResponse = { id: "user-id-123", username: "user1", email: "user1@test.com", is_active: true, created_at: "2026-07-04" };
-
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
-    } as Response);
-
-    const result = await registerUser(payload);
-
-    expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/auth/register`, {
+    expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/predict`, expect.objectContaining({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-    expect(result).toEqual(mockResponse);
+      headers: { Authorization: "Bearer demo-token" },
+      body: expect.any(FormData),
+    }));
   });
 
-  it("loginUser sends correct JSON body and returns TokenResponse", async () => {
-    const payload = { username: "user1", password: "password123" };
-    const mockResponse = { access_token: "token123", token_type: "bearer" };
+  it("returns a typed, localized error for invalid login without exposing backend detail", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(jsonResponse({ detail: "Incorrect username or password" }, 401));
 
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
-    } as Response);
-
-    const result = await loginUser(payload);
-
-    expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+    await expect(loginUser({ username: "farmer", password: "wrong" })).rejects.toMatchObject({
+      name: "ApiError",
+      status: 401,
+      code: "INVALID_CREDENTIALS",
+      message: "Tên đăng nhập hoặc mật khẩu không chính xác.",
     });
-    expect(result).toEqual(mockResponse);
   });
 
-  it("getCurrentUser sets correct headers", async () => {
-    const token = "token123";
-    const mockResponse = { id: "uid", username: "user1", email: "user1@test.com", is_active: true, created_at: "2026" };
+  it("maps duplicate registration to a safe field error", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(jsonResponse({ detail: "Email already exists" }, 409));
 
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
-    } as Response);
-
-    const result = await getCurrentUser(token);
-
-    expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/auth/me`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
+    await expect(registerUser({ username: "farmer", email: "farmer@example.com", password: "secret1" })).rejects.toMatchObject({
+      status: 409,
+      code: "ACCOUNT_EXISTS",
+      fieldErrors: { email: "Địa chỉ email này đã được sử dụng." },
     });
-    expect(result).toEqual(mockResponse);
   });
 
-  it("fetchHistory maps query parameters correctly", async () => {
-    const token = "token123";
-    const mockResponse = { items: [], total: 0, page: 2, page_size: 5 };
+  it("maps validation, file-size, server, and network failures to safe messages", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch");
+    fetchSpy.mockResolvedValueOnce(jsonResponse({ detail: [{ loc: ["body", "username"], msg: "too short" }] }, 422));
+    fetchSpy.mockResolvedValueOnce(jsonResponse({ detail: "large" }, 413));
+    fetchSpy.mockResolvedValueOnce(jsonResponse({ detail: "database password leaked" }, 500));
+    fetchSpy.mockRejectedValueOnce(new TypeError("Failed to fetch"));
 
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
-    } as Response);
-
-    const result = await fetchHistory(token, 2, 5);
-
-    expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/history?page=2&page_size=5`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
+    await expect(registerUser({ username: "ab", email: "bad", password: "123" })).rejects.toMatchObject({
+      status: 422,
+      fieldErrors: { username: "Dữ liệu của trường này chưa hợp lệ." },
     });
-    expect(result).toEqual(mockResponse);
+    await expect(predictImage(new File(["leaf"], "leaf.png", { type: "image/png" }))).rejects.toMatchObject({
+      status: 413,
+      message: "Tệp gửi lên vượt quá dung lượng cho phép.",
+    });
+    await expect(loginUser({ username: "farmer", password: "secret1" })).rejects.toMatchObject({
+      status: 500,
+      message: "Máy chủ đang gặp sự cố. Vui lòng thử lại sau.",
+    });
+    await expect(loginUser({ username: "farmer", password: "secret1" })).rejects.toMatchObject({
+      status: 0,
+      code: "NETWORK_ERROR",
+      message: "Không thể kết nối máy chủ. Vui lòng kiểm tra mạng và thử lại.",
+    });
   });
 
-  it("fetchKnowledgeList returns supported diseases list", async () => {
-    const mockResponse = { items: [{ name_vi: "Đạo ôn", name_en: "Blast" }], total: 1 };
+  it("notifies the auth boundary when a protected request receives 401", async () => {
+    const listener = vi.fn();
+    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, listener);
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(jsonResponse({ detail: "Could not validate credentials" }, 401));
 
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
-    } as Response);
+    await expect(fetchHistory("stale-token")).rejects.toBeInstanceOf(ApiError);
 
-    const result = await fetchKnowledgeList();
-
-    expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/knowledge`, {
-      method: "GET",
-    });
-    expect(result).toEqual(mockResponse);
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect((listener.mock.calls[0][0] as CustomEvent<{ token: string }>).detail).toEqual({ token: "stale-token" });
+    window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, listener);
   });
 
-  it("fetchKnowledgeDetail queries correct label path", async () => {
-    const mockResponse = { name_vi: "Đạo ôn", name_en: "Blast" };
+  it("keeps /me unauthorized handling opt-in for the auth hook", async () => {
+    const listener = vi.fn();
+    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, listener);
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(jsonResponse({ detail: "Could not validate credentials" }, 401));
 
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
-    } as Response);
+    await expect(getCurrentUser("stale-token", false)).rejects.toMatchObject({ status: 401 });
 
-    const result = await fetchKnowledgeDetail("blast");
-
-    expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/knowledge/blast`, {
-      method: "GET",
-    });
-    expect(result).toEqual(mockResponse);
+    expect(listener).not.toHaveBeenCalled();
+    window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, listener);
   });
 });

@@ -16,6 +16,7 @@ import HistoryList from "../components/HistoryList";
 import { usePrediction } from "../hooks/usePrediction";
 import { useAuth } from "../hooks/useAuth";
 import { TabId } from "../components/TabNav";
+import { useObjectUrl } from "../hooks/useObjectUrl";
 import { BentoGrid, BentoGridItem } from "../components/layout/BentoGrid";
 import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from "../components/animations/Animations";
 
@@ -28,13 +29,18 @@ export default function Home() {
     isSubmitting,
     handleFileSelect,
     handleSubmit,
+    handleReset,
   } = usePrediction();
 
   const [activeTab, setActiveTab] = useState<TabId>("diagnosis");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedDisease, setSelectedDisease] = useState<string | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const authTriggerRef = React.useRef<HTMLElement | null>(null);
+  const mainContentRef = React.useRef<HTMLElement | null>(null);
   
   const [theme, setTheme] = React.useState<"light" | "dark">("light");
+  const selectedImageUrl = useObjectUrl(selectedFile);
 
   React.useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark") || 
@@ -60,16 +66,38 @@ export default function Home() {
     handleSubmit(auth.token || undefined);
   };
 
+  const startNewDiagnosis = React.useCallback(() => {
+    if (isSubmitting) return;
+
+    handleReset();
+    setSelectedDisease(null);
+    setActiveTab("diagnosis");
+  }, [handleReset, isSubmitting]);
+
+  React.useEffect(() => {
+    if (auth.sessionMessage) setIsAuthModalOpen(true);
+  }, [auth.sessionMessage]);
+
+  const closeAuthModal = React.useCallback(() => {
+    setIsAuthModalOpen(false);
+    auth.clearSessionMessage();
+  }, [auth]);
+
+  const openAuthModal = React.useCallback(() => {
+    authTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setIsAuthModalOpen(true);
+  }, []);
+
   const getActiveTabLabel = () => {
     switch (activeTab) {
       case "diagnosis":
-        return "Chẩn đoán Dashboard";
+        return "Chẩn đoán";
       case "knowledge":
         return "Cơ sở tri thức";
       case "history":
         return "Lịch sử cá nhân";
       default:
-        return "Dashboard";
+        return "Chẩn đoán";
     }
   };
 
@@ -79,21 +107,25 @@ export default function Home() {
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        onNewDiagnosis={startNewDiagnosis}
         user={auth.user}
         isLoading={auth.isLoading}
+        isPredictionSubmitting={isSubmitting}
         logout={auth.logout}
-        onLoginClick={() => setIsAuthModalOpen(true)}
+        onLoginClick={openAuthModal}
+        isCollapsed={isSidebarCollapsed}
+        onCollapsedChange={setIsSidebarCollapsed}
       />
 
       {/* Main layout container */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 pb-16 lg:pb-0 min-h-screen">
+      <div className={`flex-1 flex flex-col min-w-0 pb-16 lg:pb-0 min-h-screen transition-[padding] duration-300 ${isSidebarCollapsed ? "lg:pl-[72px]" : "lg:pl-64"}`}>
         <Header 
           activeTabLabel={getActiveTabLabel()} 
           theme={theme}
           onThemeToggle={toggleTheme}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main ref={mainContentRef} tabIndex={-1} className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-6xl mx-auto w-full">
             
             {activeTab === "diagnosis" && (
@@ -133,8 +165,8 @@ export default function Home() {
                           {selectedFile && (
                             <div className="relative rounded-xl overflow-hidden flex-1 bg-surface-raised border border-surface-border">
                               <img
-                                src={URL.createObjectURL(selectedFile)}
-                                alt="Uploaded leaf"
+                                src={selectedImageUrl ?? undefined}
+                                alt="Ảnh lá đã tải lên để chẩn đoán"
                                 className="w-full h-full object-cover absolute inset-0"
                               />
                             </div>
@@ -224,7 +256,8 @@ export default function Home() {
                 <div className="glass-panel rounded-3xl p-6 premium-shadow">
                   <HistoryList
                     token={auth.token}
-                    onLoginPrompt={() => setIsAuthModalOpen(true)}
+                    onLoginPrompt={openAuthModal}
+                    onStartDiagnosis={startNewDiagnosis}
                   />
                 </div>
               </SlideUp>
@@ -236,8 +269,11 @@ export default function Home() {
 
       <AuthModal
         isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+        onClose={closeAuthModal}
         auth={auth}
+        sessionMessage={auth.sessionMessage}
+        restoreFocusRef={authTriggerRef}
+        fallbackFocusRef={mainContentRef}
       />
     </div>
   );

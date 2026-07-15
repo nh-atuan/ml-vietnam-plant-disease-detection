@@ -2,6 +2,7 @@
 
 import React from "react";
 import { TopKPrediction } from "../lib/api";
+import { getDiseaseDisplayName } from "../lib/disease-labels";
 
 interface TopKListProps {
   topK: TopKPrediction[];
@@ -19,10 +20,10 @@ export default function TopKList({ topK }: TopKListProps) {
     <div className="w-full p-5 bg-surface-raised border border-surface-border rounded-xl shadow-sm space-y-4">
       <div>
         <h4 className="text-sm font-semibold uppercase tracking-wider text-claude-muted">
-          Xác suất các chẩn đoán
+          Các kết quả mô hình đã cân nhắc
         </h4>
         <p className="text-xs text-claude-muted mt-0.5">
-          Tỷ lệ tin cậy phân bổ giữa các nhãn phân loại hàng đầu
+          Điểm tin cậy của các kết quả hàng đầu
         </p>
       </div>
 
@@ -37,7 +38,7 @@ export default function TopKList({ topK }: TopKListProps) {
           return (
             <div key={item.label} className="space-y-1.5">
               <div className="flex justify-between text-xs font-semibold">
-                <span className="text-claude-text truncate">{item.label}</span>
+                <span className="text-claude-text truncate">{getDiseaseDisplayName(item.label)}</span>
                 <span className="text-claude-text">{percentage}%</span>
               </div>
               <div className="w-full h-2 bg-surface border border-surface-border/20 rounded-full overflow-hidden">

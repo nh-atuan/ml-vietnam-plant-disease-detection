@@ -3,6 +3,7 @@
 import React from "react";
 import { PredictionResponse } from "../lib/api";
 import { motion } from "framer-motion";
+import { getDiseaseDisplayName } from "../lib/disease-labels";
 
 interface PredictionResultProps {
   prediction: PredictionResponse;
@@ -14,10 +15,9 @@ export default function PredictionResult({ prediction }: PredictionResultProps) 
     confidence,
     recommendation,
     latency_ms,
-    prediction_id,
   } = prediction;
 
-  const diseaseNameVi = recommendation?.name_vi || rawLabel;
+  const diseaseNameVi = recommendation?.name_vi || getDiseaseDisplayName(rawLabel);
   const confidencePercent = Math.round(confidence * 100);
   const confidenceNote = recommendation?.confidence_note;
 
@@ -25,7 +25,7 @@ export default function PredictionResult({ prediction }: PredictionResultProps) 
     <div className="w-full space-y-6">
       <div className="flex flex-col gap-2 border-b border-surface-border/50 pb-5">
         <span className="text-xs font-display font-bold uppercase tracking-[0.2em] text-claude-orange/80">
-          Chẩn đoán chính xác nhất
+          Dự đoán hàng đầu
         </span>
         <h3 className="text-4xl md:text-5xl font-display font-bold text-foreground leading-tight mt-1">
           {diseaseNameVi}
@@ -36,9 +36,6 @@ export default function PredictionResult({ prediction }: PredictionResultProps) 
           </p>
         )}
         <div className="mt-4 flex flex-wrap gap-2 items-center">
-          <code className="text-xs font-mono px-2.5 py-1 bg-surface-sidebar border border-surface-border text-foreground rounded-md shadow-sm">
-            Nhãn: {rawLabel}
-          </code>
           {recommendation?.crop && (
             <span className="text-xs px-2.5 py-1 bg-surface-raised border border-surface-border text-claude-muted font-semibold rounded-md shadow-sm">
               Cây trồng: {recommendation.crop === "rice" ? "Lúa" : recommendation.crop === "coffee" ? "Cà phê" : recommendation.crop}
@@ -58,10 +55,10 @@ export default function PredictionResult({ prediction }: PredictionResultProps) 
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col p-4 bg-background/50 dark:bg-black/20 border border-surface-border rounded-2xl relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-claude-orange/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <span className="text-xs text-claude-muted font-display font-medium uppercase tracking-wider relative z-10">Độ tin cậy</span>
+          <span className="text-xs text-claude-muted font-display font-medium uppercase tracking-wider relative z-10">Điểm tin cậy</span>
           <span className="text-4xl font-bold font-display text-claude-orange mt-2 relative z-10">
             {confidencePercent}%
           </span>
@@ -74,12 +71,9 @@ export default function PredictionResult({ prediction }: PredictionResultProps) 
             />
           </div>
         </div>
-
-        <div className="flex flex-col p-4 bg-background/50 dark:bg-black/20 border border-surface-border rounded-2xl justify-center">
-          <span className="text-xs text-claude-muted font-display font-medium uppercase tracking-wider">Thời gian xử lý</span>
-          <span className="text-2xl font-bold font-display text-foreground mt-2">
-            {latency_ms ? `${latency_ms.toFixed(0)} ms` : "--"}
-          </span>
+        <div className="flex flex-col justify-center rounded-2xl border border-surface-border bg-background/50 p-4 dark:bg-black/20">
+          <span className="text-xs font-medium uppercase tracking-wider text-claude-muted">Thời gian phản hồi mô hình</span>
+          <span className="mt-2 text-2xl font-bold text-foreground">{latency_ms === undefined ? "Không có dữ liệu" : `${latency_ms.toFixed(0)} ms`}</span>
         </div>
       </div>
 
@@ -87,12 +81,6 @@ export default function PredictionResult({ prediction }: PredictionResultProps) 
         <div className="p-4 bg-warning-50 dark:bg-warning-900/10 border border-warning-500/20 text-warning-800 dark:text-warning-400 rounded-2xl text-sm font-medium flex gap-3 items-start shadow-sm">
           <span className="text-xl">💡</span>
           <span className="pt-0.5">{confidenceNote}</span>
-        </div>
-      )}
-
-      {prediction_id && (
-        <div className="text-[10px] text-claude-muted/50 font-mono text-right pt-2">
-          ID: {prediction_id}
         </div>
       )}
     </div>
