@@ -137,9 +137,12 @@ export default function HistoryList({ token, onLoginPrompt, onStartDiagnosis }: 
               key={item.id}
               className="overflow-hidden rounded-2xl border border-surface-border bg-background/50 shadow-sm transition-shadow duration-300 hover:shadow-md dark:bg-black/20"
             >
-              <div
+              <button
+                type="button"
                 onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
-                className="flex cursor-pointer select-none items-center justify-between gap-4 p-5 transition-colors hover:bg-surface-sidebar dark:hover:bg-zinc-800/50"
+                aria-expanded={isExpanded}
+                aria-controls={`history-detail-${item.id}`}
+                className="flex w-full items-center justify-between gap-4 p-5 text-left transition-colors hover:bg-surface-sidebar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-inset dark:hover:bg-zinc-800/50"
               >
                 <div className="flex min-w-0 items-center gap-3.5">
                   {item.image_url ? (
@@ -175,19 +178,14 @@ export default function HistoryList({ token, onLoginPrompt, onStartDiagnosis }: 
                     <div className="text-xl font-display font-bold text-claude-orange">{Math.round(item.confidence * 100)}%</div>
                     <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-claude-muted">Độ tin cậy</div>
                   </div>
-                  <button
-                    type="button"
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full text-claude-muted transition-colors hover:bg-surface-border/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2"
-                    aria-label={isExpanded ? `Thu gọn ${diseaseNameVi}` : `Xem chi tiết ${diseaseNameVi}`}
-                    aria-expanded={isExpanded}
-                  >
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-full text-claude-muted" aria-hidden="true">
                     <ChevronRight className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`} aria-hidden="true" />
-                  </button>
+                  </span>
                 </div>
-              </div>
+              </button>
 
               {isExpanded && (
-                <div className="border-t border-surface-border bg-background/30 p-5 dark:bg-black/10">
+                <div id={`history-detail-${item.id}`} className="border-t border-surface-border bg-background/30 p-5 dark:bg-black/10">
                   <RecommendationCard recommendation={item.recommendation} />
                 </div>
               )}

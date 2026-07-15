@@ -35,6 +35,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>("diagnosis");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedDisease, setSelectedDisease] = useState<string | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const authTriggerRef = React.useRef<HTMLElement | null>(null);
   const mainContentRef = React.useRef<HTMLElement | null>(null);
   
@@ -112,10 +113,12 @@ export default function Home() {
         isPredictionSubmitting={isSubmitting}
         logout={auth.logout}
         onLoginClick={openAuthModal}
+        isCollapsed={isSidebarCollapsed}
+        onCollapsedChange={setIsSidebarCollapsed}
       />
 
       {/* Main layout container */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 pb-16 lg:pb-0 min-h-screen">
+      <div className={`flex-1 flex flex-col min-w-0 pb-16 lg:pb-0 min-h-screen transition-[padding] duration-300 ${isSidebarCollapsed ? "lg:pl-[72px]" : "lg:pl-64"}`}>
         <Header 
           activeTabLabel={getActiveTabLabel()} 
           theme={theme}

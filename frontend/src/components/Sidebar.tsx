@@ -15,6 +15,8 @@ interface SidebarProps {
   isPredictionSubmitting: boolean;
   logout: () => void;
   onLoginClick: () => void;
+  isCollapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
 const menuItems = [
@@ -41,8 +43,16 @@ export default function Sidebar({
   isPredictionSubmitting,
   logout,
   onLoginClick,
+  isCollapsed: controlledCollapsed,
+  onCollapsedChange,
 }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const isCollapsed = controlledCollapsed ?? internalCollapsed;
+  const toggleCollapsed = () => {
+    const nextCollapsed = !isCollapsed;
+    onCollapsedChange?.(nextCollapsed);
+    if (controlledCollapsed === undefined) setInternalCollapsed(nextCollapsed);
+  };
 
   return (
     <>
@@ -122,7 +132,7 @@ export default function Sidebar({
           )}
           <button
             type="button"
-            onClick={() => setIsCollapsed((current) => !current)}
+            onClick={toggleCollapsed}
             className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-interactive-active hover:text-claude-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2 focus-visible:ring-offset-surface-sidebar"
             aria-label={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
           >
