@@ -12,11 +12,12 @@ import RecommendationCard from "./RecommendationCard";
 interface HistoryListProps {
   token: string | null;
   onLoginPrompt: () => void;
+  onStartDiagnosis: () => void;
 }
 
 const PAGE_SIZE = 5;
 
-export default function HistoryList({ token, onLoginPrompt }: HistoryListProps) {
+export default function HistoryList({ token, onLoginPrompt, onStartDiagnosis }: HistoryListProps) {
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -112,6 +113,7 @@ export default function HistoryList({ token, onLoginPrompt }: HistoryListProps) 
       <EmptyState
         title="Lịch sử chẩn đoán trống"
         description="Bạn chưa thực hiện phiên chẩn đoán bệnh nào sau khi đăng nhập. Hãy thử tải ảnh để chẩn đoán, kết quả sẽ tự động lưu lại đây."
+        action={<button type="button" onClick={onStartDiagnosis} className="min-h-11 rounded-lg bg-claude-orange px-4 py-2 text-sm font-semibold text-claude-orange-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2">Chẩn đoán mới</button>}
       />
     );
   }
@@ -169,7 +171,7 @@ export default function HistoryList({ token, onLoginPrompt }: HistoryListProps) 
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="hidden text-right sm:block">
+                  <div className="text-right">
                     <div className="text-xl font-display font-bold text-claude-orange">{Math.round(item.confidence * 100)}%</div>
                     <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-claude-muted">Độ tin cậy</div>
                   </div>

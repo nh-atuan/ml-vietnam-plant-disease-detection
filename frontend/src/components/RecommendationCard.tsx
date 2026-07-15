@@ -89,7 +89,7 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
     <div className="w-full space-y-6">
       <div className="border-b border-surface-border/50 pb-4">
         <h4 className="text-xs font-display font-bold uppercase tracking-widest text-claude-orange/80">
-          Tư vấn kỹ thuật chuyên nghiệp
+          Khuyến nghị tham khảo
         </h4>
         <h3 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-2">
           {name_vi}

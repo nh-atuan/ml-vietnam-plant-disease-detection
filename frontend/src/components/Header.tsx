@@ -29,8 +29,9 @@ export default function Header({ activeTabLabel, theme, onThemeToggle }: HeaderP
         <button
           type="button"
           onClick={onThemeToggle}
-          className="p-2 rounded-xl border border-surface-border bg-surface-raised hover:bg-surface-sidebar text-text-secondary hover:text-claude-text transition-all shadow-sm focus:outline-none"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-surface-border bg-surface-raised text-text-secondary shadow-sm transition-all hover:bg-surface-sidebar hover:text-claude-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2"
           title={theme === "light" ? "Chuyển sang Chế độ tối" : "Chuyển sang Chế độ sáng"}
+          aria-label={theme === "light" ? "Chuyển sang chế độ tối" : "Chuyển sang chế độ sáng"}
         >
           {theme === "light" ? (
             <Moon className="w-4 h-4 text-stone-600" />

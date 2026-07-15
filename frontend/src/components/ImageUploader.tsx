@@ -3,6 +3,7 @@
 import React, { useRef, useState } from "react";
 import { Camera, X, Paperclip, Send, Image as ImageIcon } from "lucide-react";
 import { ALLOWED_IMAGE_TYPES, MAX_FILE_SIZE_BYTES } from "../lib/constants";
+import { useObjectUrl } from "../hooks/useObjectUrl";
 
 interface ImageUploaderProps {
   selectedFile: File | null;
@@ -86,7 +87,7 @@ export default function ImageUploader({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const previewUrl = selectedFile ? URL.createObjectURL(selectedFile) : null;
+  const previewUrl = useObjectUrl(selectedFile);
 
   return (
     <div className="w-full space-y-3">
@@ -107,7 +108,7 @@ export default function ImageUploader({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
-                alt="Upload preview"
+                alt="Ảnh lá đã chọn để chẩn đoán"
                 className="w-full h-full object-cover"
               />
             </div>

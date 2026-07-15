@@ -16,6 +16,7 @@ import HistoryList from "../components/HistoryList";
 import { usePrediction } from "../hooks/usePrediction";
 import { useAuth } from "../hooks/useAuth";
 import { TabId } from "../components/TabNav";
+import { useObjectUrl } from "../hooks/useObjectUrl";
 import { BentoGrid, BentoGridItem } from "../components/layout/BentoGrid";
 import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from "../components/animations/Animations";
 
@@ -38,6 +39,7 @@ export default function Home() {
   const mainContentRef = React.useRef<HTMLElement | null>(null);
   
   const [theme, setTheme] = React.useState<"light" | "dark">("light");
+  const selectedImageUrl = useObjectUrl(selectedFile);
 
   React.useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark") || 
@@ -88,13 +90,13 @@ export default function Home() {
   const getActiveTabLabel = () => {
     switch (activeTab) {
       case "diagnosis":
-        return "Chẩn đoán Dashboard";
+        return "Chẩn đoán";
       case "knowledge":
         return "Cơ sở tri thức";
       case "history":
         return "Lịch sử cá nhân";
       default:
-        return "Dashboard";
+        return "Chẩn đoán";
     }
   };
 
@@ -160,8 +162,8 @@ export default function Home() {
                           {selectedFile && (
                             <div className="relative rounded-xl overflow-hidden flex-1 bg-surface-raised border border-surface-border">
                               <img
-                                src={URL.createObjectURL(selectedFile)}
-                                alt="Uploaded leaf"
+                                src={selectedImageUrl ?? undefined}
+                                alt="Ảnh lá đã tải lên để chẩn đoán"
                                 className="w-full h-full object-cover absolute inset-0"
                               />
                             </div>
@@ -252,6 +254,7 @@ export default function Home() {
                   <HistoryList
                     token={auth.token}
                     onLoginPrompt={openAuthModal}
+                    onStartDiagnosis={startNewDiagnosis}
                   />
                 </div>
               </SlideUp>

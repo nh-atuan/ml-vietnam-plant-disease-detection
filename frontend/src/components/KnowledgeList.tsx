@@ -67,10 +67,11 @@ export default function KnowledgeList({ onSelectDisease }: KnowledgeListProps) {
           const { label, name_vi, name_en, crop, severity, description } = disease;
           
           return (
-            <div
+            <button
+              type="button"
               key={label}
               onClick={() => label && onSelectDisease(label)}
-              className="row-span-1 rounded-2xl group hover:shadow-2xl transition duration-300 p-6 bg-background/50 dark:bg-black/20 border border-surface-border cursor-pointer flex flex-col justify-between overflow-hidden relative"
+              className="row-span-1 w-full rounded-2xl group text-left hover:shadow-2xl transition duration-300 p-6 bg-background/50 dark:bg-black/20 border border-surface-border cursor-pointer flex flex-col justify-between overflow-hidden relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-claude-orange focus-visible:ring-offset-2"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-claude-orange/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative z-10 space-y-2">
@@ -105,7 +106,7 @@ export default function KnowledgeList({ onSelectDisease }: KnowledgeListProps) {
                   </span>
                 )}
               </div>
-            </div>
+            </button>
           );
         })}
       </BentoGrid>

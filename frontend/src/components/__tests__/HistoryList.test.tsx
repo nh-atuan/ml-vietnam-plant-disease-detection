@@ -41,7 +41,7 @@ describe("HistoryList pagination", () => {
   it("navigates deterministically across three pages for eleven records", async () => {
     const user = userEvent.setup();
 
-    render(<HistoryList token="demo-token" onLoginPrompt={vi.fn()} />);
+    render(<HistoryList token="demo-token" onLoginPrompt={vi.fn()} onStartDiagnosis={vi.fn()} />);
 
     expect(await screen.findByText("Disease 1")).toBeVisible();
     expect(screen.getByText("Trang 1 trên 3")).toBeVisible();
