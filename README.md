@@ -108,9 +108,6 @@ Nhóm đã thực nghiệm huấn luyện và đánh giá trên 5 kiến trúc m
 | MobileSAM | Rice<br/>Coffee | 0.612<br/>0.738 | 0.548<br/>0.682 | 0.621<br/>0.704 | ~1450.2 ms<br/>~1520.6 ms |
 | Mask2Former | Rice<br/>Coffee | 0.793<br/>0.876 | 0.731<br/>0.828 | 0.768<br/>0.851 | ~92.4 ms<br/>~88.7 ms |
 
-> [!TIP]
-> **Quyết định Kỹ thuật:** Mặc dù mô hình nền tảng Transformer RF-DETR đạt hiệu năng cao nhất, nhóm quyết định lựa chọn **YOLO26m-seg** làm mô hình triển khai chính thức. Lý do là vì YOLO26m-seg có tốc độ suy luận nhanh gấp **~5.5 lần** so với RF-DETR, đồng thời dễ dàng lượng tử hóa (quantization) về dạng ONNX để phục vụ trên môi trường CPU có chi phí thấp.
-
 ### Cải thiện sau khi Tinh chỉnh Siêu tham số (Hyperparameter Tuning)
 
 Sử dụng thư viện **Ray Tune** kết hợp thuật toán điều phối **ASHA** để tìm kiếm siêu tham số tối ưu (Learning Rate, Weight Decay, Augmentation params), hiệu năng của YOLO26m-seg sau tinh chỉnh đã tăng vượt trội:
