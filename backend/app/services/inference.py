@@ -16,8 +16,6 @@ class InferenceService:
 
     def __init__(self, model_path: str, class_names: list[str], input_size: int = 640):
         model_file = Path(model_path)
-        if not model_file.exists():
-            raise FileNotFoundError(f"ONNX model not found: {model_path}")
         if not class_names:
             raise ValueError("class_names must not be empty")
 
@@ -27,10 +25,6 @@ class InferenceService:
         # Locate Rice and Coffee models
         rice_path = parent_dir / "yolo26_rice_quantized.onnx"
         coffee_path = parent_dir / "yolo26_coffee_quantized.onnx"
-
-        # If specific rice/coffee models are not present, fall back to model_file
-        if not rice_path.exists():
-            rice_path = model_file
 
         if rice_path.exists() and coffee_path.exists():
             self.rice_session = ort.InferenceSession(str(rice_path), providers=["CPUExecutionProvider"])
@@ -43,6 +37,8 @@ class InferenceService:
 
             self.has_both = True
         else:
+            if not model_file.exists():
+                raise FileNotFoundError(f"ONNX model not found: {model_path}")
             self.session = ort.InferenceSession(str(model_file), providers=["CPUExecutionProvider"])
             self.input_name = self.session.get_inputs()[0].name
             self.class_names = class_names
