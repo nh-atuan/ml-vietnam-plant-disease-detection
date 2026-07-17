@@ -1,13 +1,73 @@
 \section{Kết luận}
 
 \subsection{Tóm tắt Kết quả}
-\begin{frame}
+\begin{frame}{Tóm tắt kết quả của đồ án}
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \justifying
+      \centerline{\textbf{Đóng góp chính}}
+      \vspace{0.2cm}
+      
+      Xây dựng thành công bộ dữ liệu chuẩn hóa gồm 7.149 ảnh thực địa chất lượng cao của lúa và cà phê sau khi làm sạch bằng MD5 và phương sai Laplacian.
+      
+      Huấn luyện và tối ưu hóa mô hình YOLO26-seg bằng Ray Tune cùng ASHA giúp nâng mAP@50 thêm hơn 2\%. Lượng tử hóa ONNX giúp giảm dung lượng xuống còn 6,23 MB và suy luận dưới 66 ms trên CPU.
+      
+      Phát triển và triển khai thành công ứng dụng web lên hạ tầng GCP sử dụng Kubernetes k3s cùng quy trình CI/CD hoàn tất tự động.
+    \end{column}
+    \begin{column}{0.51\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth,height=0.65\textheight,keepaspectratio]{ch5/web-predict-rice-v2.png}
+        \caption{Giao diện chẩn đoán bệnh cây trồng trên thực tế}
+      \end{figure}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \subsection{Hạn chế}
-\begin{frame}
+\begin{frame}{Hạn chế hiện tại của hệ thống}
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \justifying
+      \centerline{\textbf{Các giới hạn kỹ thuật}}
+      \vspace{0.2cm}
+      
+      Tập dữ liệu vẫn chịu ảnh hưởng của sự mất cân bằng lớp, tiêu biểu là số ảnh bệnh phấn trắng trên cây cà phê còn khá ít.
+      
+      Độ chính xác của mô hình chẩn đoán có thể suy giảm dưới các điều kiện ánh sáng thực địa bất lợi như nắng gắt hoặc bóng râm dày.
+      
+      Hạ tầng đám mây chạy trên máy ảo đơn node nên còn rủi ro về điểm lỗi đơn, chưa cấu hình sao lưu và nhân bản dữ liệu phân tán tự động.
+    \end{column}
+    \begin{column}{0.51\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth,height=0.65\textheight,keepaspectratio]{yolo/rice/confusion_matrix_3.png}
+        \caption{Nhầm lẫn giữa các vết bệnh có hình thái tương đồng}
+      \end{figure}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \subsection{Hướng phát triển}
-\begin{frame}
+\begin{frame}{Hướng phát triển trong tương lai}
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \justifying
+      \centerline{\textbf{Kế hoạch cải tiến}}
+      \vspace{0.2cm}
+      
+      Tiếp tục làm phong phú tập dữ liệu thực địa cho các lớp thiểu số và áp dụng các kỹ thuật sinh ảnh nâng cao.
+      
+      Thử nghiệm các kiến trúc phân vùng mới hoặc tích hợp mô hình ngôn ngữ lớn thị giác để hỗ trợ chẩn đoán thông minh qua hội thoại.
+      
+      Nâng cấp hạ tầng lên cụm Kubernetes nhiều node phân tán, kết hợp cơ chế lưu trữ có nhân bản và tự động hóa giám sát tài nguyên.
+    \end{column}
+    \begin{column}{0.51\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth,height=0.65\textheight,keepaspectratio]{ch5/deployment-architecture-gcp-k3s.png}
+        \caption{Kiến trúc hạ tầng hướng tới tính sẵn sàng cao}
+      \end{figure}
+    \end{column}
+  \end{columns}
 \end{frame}

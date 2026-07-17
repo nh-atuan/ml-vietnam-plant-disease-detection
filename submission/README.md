@@ -55,6 +55,9 @@ Thư mục được tổ chức một cách khoa học để giảng viên tiệ
 
 ## VIDEO DEMO SẢN PHẨM & LƯU TRỮ CLOUD
 
+*   **Video Demo hoạt động hệ thống (Dương Tuấn Anh phụ trách):** [https://youtu.be/k4cGGiSH1Ts](https://youtu.be/k4cGGiSH1Ts)
+*   **Thư mục lưu trữ Cloud (Báo cáo PDF, Slide PDF, Mã nguồn và Trọng số mô hình):** [Google Drive Folder](https://drive.google.com/drive/folders/1OS0M2uW8KuWymKMtZwIY8XMUGCBcBGwo?usp=sharing)
+
 ---
 
 ## HƯỚNG DẪN CÀI ĐẶT & CHẠY THỬ CỤC BỘ (QUICK START)
