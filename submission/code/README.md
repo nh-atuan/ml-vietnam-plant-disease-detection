@@ -1,11 +1,13 @@
 # ml-vietnam-plant-disease-detection
 End-to-end machine learning system for detecting plant diseases (rice/coffee leaves) in Vietnam, including data collection, preprocessing, model training, evaluation, and deployment as a web application to support farmers.
 
-# Public Deployment
+# Public Deployment & Artifacts
 
 - Web App: `https://plant-disease-demo.duckdns.org`
 - Backend API: `https://plant-disease-demo.duckdns.org/api/v1`
 - Swagger UI: `https://plant-disease-demo.duckdns.org/docs`
+- Video Demo: `https://youtu.be/k4cGGiSH1Ts`
+- Cloud Folder: `https://drive.google.com/drive/folders/1OS0M2uW8KuWymKMtZwIY8XMUGCBcBGwo?usp=sharing`
 
 # Install libraries for this project
 First, install `uv`:

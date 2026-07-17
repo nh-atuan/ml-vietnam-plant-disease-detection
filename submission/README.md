@@ -34,15 +34,16 @@ Thư mục được tổ chức một cách khoa học để giảng viên tiệ
 
 ```text
 .
-├── Report.pdf              # File Báo cáo đồ án hoàn chỉnh (PDF)
-├── Slides.pdf              # File Slide trình bày cho buổi bảo vệ cuối kỳ (PDF)
+├── 14-report.pdf           # File Báo cáo đồ án hoàn chỉnh (PDF)
+├── 14-slide.pdf            # File Slide trình bày cho buổi bảo vệ cuối kỳ (PDF)
 ├── code/                   # Thư mục chứa toàn bộ mã nguồn của hệ thống
-└── models/                 # Thư mục chứa mô hình học máy đã huấn luyện tốt nhất
+├── models/                 # Thư mục chứa mô hình học máy đã huấn luyện tốt nhất
+└── data/                   # Thư mục chứa hướng dẫn tải dữ liệu đồ án (~9.0 GB)
 ```
 
 ### Chi tiết các thành phần:
 
-1.  **Báo cáo Đồ án (Report.pdf):** Trình bày chi tiết theo quy trình nghiên cứu khoa học End-to-End gồm 6 chương (từ định nghĩa bài toán, thu thập, tiền xử lý, phân tích dữ liệu EDA, huấn luyện, đánh giá mô hình, đến thiết kế hệ thống và triển khai thực tế).
+1.  **Báo cáo Đồ án (14-report.pdf):** Trình bày chi tiết theo quy trình nghiên cứu khoa học End-to-End gồm 6 chương (từ định nghĩa bài toán, thu thập, tiền xử lý, phân tích dữ liệu EDA, huấn luyện, đánh giá mô hình, đến thiết kế hệ thống và triển khai thực tế).
 2.  **Mã nguồn hệ thống (code/):** Gồm toàn bộ logic của:
     *   `crawl/`: Pipeline tự động crawl dữ liệu lá lúa & cà phê sử dụng `Crawl4AI` và giao diện bán tự động gán nhãn `Labeler.py` (Streamlit).
     *   `backend/`: API Backend xây dựng trên `FastAPI`, `SQLModel` (PostgreSQL), `MinIO` (quản lý ảnh), `Redis` (caching), và `ONNX Runtime` để chạy suy luận mô hình.
@@ -50,12 +51,13 @@ Thư mục được tổ chức một cách khoa học để giảng viên tiệ
     *   `deployment/`: Cấu hình Docker Compose và các tệp Helm Chart phục vụ triển khai Kubernetes.
     *   `notebooks/`: Các file Jupyter Notebook minh họa luồng tiền xử lý và quá trình huấn luyện mô hình (bao gồm `data_pipeline_demo.ipynb`, `eda.ipynb`, `model_training_evaluation.ipynb`).
 3.  **Mô hình đã huấn luyện (models/):** Thư mục chứa mô hình học máy đã huấn luyện tốt nhất.
+4.  **Dữ liệu (data/):** Chứa file `README.md` hướng dẫn tải và cấu trúc dữ liệu thô (`raw/`) cùng dữ liệu đã xử lý (`processed/`) phục vụ cho huấn luyện và EDA (do dung lượng tập dữ liệu quá lớn, ~9.0 GB).
 
 ---
 
 ## VIDEO DEMO SẢN PHẨM & LƯU TRỮ CLOUD
 
-*   **Video Demo hoạt động hệ thống (Dương Tuấn Anh phụ trách):** [https://youtu.be/k4cGGiSH1Ts](https://youtu.be/k4cGGiSH1Ts)
+*   **Video Demo hoạt động hệ thống:** [https://youtu.be/k4cGGiSH1Ts](https://youtu.be/k4cGGiSH1Ts)
 *   **Thư mục lưu trữ Cloud (Báo cáo PDF, Slide PDF, Mã nguồn và Trọng số mô hình):** [Google Drive Folder](https://drive.google.com/drive/folders/1OS0M2uW8KuWymKMtZwIY8XMUGCBcBGwo?usp=sharing)
 
 ---
@@ -65,8 +67,8 @@ Thư mục được tổ chức một cách khoa học để giảng viên tiệ
 Mã nguồn trong thư mục `code/` có cấu trúc hoàn toàn đồng bộ với repository. Có thể dễ dàng chạy thử theo các bước:
 
 ### 1. Yêu cầu hệ thống
-*   Đã cài đặt Docker và Docker Compose.
-*   (Tùy chọn) Đã cài đặt [uv](https://astral.sh/uv/) để quản lý môi trường ảo Python nhanh chóng.
+*   Đã cài đặt Docker và Docker Compose (để chạy cụm container cục bộ).
+*   Đã cài đặt [uv](https://astral.sh/uv/) để khởi tạo môi trường ảo Python nhanh chóng và chạy thử Jupyter Notebook.
 
 ### 2. Chuẩn bị Mô hình
 Sao chép thư mục `models/` ở thư mục gốc vào thư mục `code/models/`.
