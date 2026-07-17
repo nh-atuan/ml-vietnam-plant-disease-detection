@@ -74,7 +74,7 @@ Mặc dù Mask R-CNN đạt chỉ số mAP cao nhất trên tập Cà phê (0.94
 YOLO26-seg nổi bật như một ứng cử viên xuất sắc nhất khi đạt mAP@50 0.8247 (Lúa) và 0.9012 (Cà phê), xếp sau Mask R-CNN trên tập Cà phê nhưng nhanh hơn gấp 35 lần (20.21 ms) và kích thước siêu nhỏ (6.23 MB). Nhờ khả năng suy luận theo thời gian thực và tiêu thụ rất ít tài nguyên, YOLO26-seg đã được nhóm chọn làm mô hình chính thức để triển khai.
 
 \subsubsection{Cải thiện với RayTune và ASHA}
-Để tối ưu hóa thêm cho mô hình YOLO26-seg, chúng tôi đã sử dụng thuật toán RayTune kết hợp với bộ lập lịch ASHA để tìm kiếm siêu tham số. 
+Để tối ưu hóa thêm cho mô hình YOLO26-seg, chúng tôi đã sử dụng thuật toán RayTune kết hợp với bộ lập lịch ASHA để tìm kiếm siêu tham số. Kết quả so sánh hiệu năng của mô hình trước và sau khi tinh chỉnh được tổng hợp trong Bảng~\ref{tab:results_yolo_tuned}. 
 
 \begin{table}[H]
   \centering

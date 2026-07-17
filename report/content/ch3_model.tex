@@ -9,6 +9,7 @@ Chi tiết phân bố số lượng ảnh theo từng tập con và lớp bệnh
     \centering
     \caption{Phân bố số lượng ảnh theo tập con, miền và lớp bệnh}
     \label{tab:split_distribution}
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{llrrrr}
         \toprule
         \textbf{Miền dữ liệu}  & \textbf{Lớp bệnh}        & \textbf{Train (70\%)} & \textbf{Val (15\%)} & \textbf{Test (15\%)} & \textbf{Tổng cộng} \\
@@ -27,13 +28,14 @@ Chi tiết phân bố số lượng ảnh theo từng tập con và lớp bệnh
         \midrule
         Tổng toàn cục & 8 lớp bệnh      & 5.004        & 1.072      & 1.073       & 7.149     \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
 \end{table}
 
 Để tăng khả năng tổng quát hóa, nhóm đã sử dụng kỹ thuật tăng cường dữ liệu. Các phép biến đổi hình thái và màu sắc được áp dụng ngẫu nhiên trong quá trình huấn luyện. Cụ thể như sau: cắt và thay đổi kích thước ngẫu nhiên (tỷ lệ $0,75$ đến $1,0$), lật ngang với xác suất $p=0,5$, lật dọc với $p=0,2$, biến đổi affine xoay $\pm 30^\circ$, điều chỉnh màu sắc và trộn ảnh ngẫu nhiên với hệ số $\alpha=0,4$.
 
 \subsection{Lựa chọn và Kiến trúc Mô hình}
-Để giải quyết trọn vẹn bài toán segmentation lá cây bị bệnh với hai mục tiêu song hành là độ chính xác cao và tốc độ suy luận nhanh đáp ứng triển khai thực tế, nhóm đã khảo sát, huấn luyện và so sánh năm kiến trúc tiên tiến thuộc hai trường phái Convolutional Neural Network và Vision Transformer (được tổng hợp tại Bảng \ref{tab:model_overview}).
+Để giải quyết trọn vẹn bài toán phân vùng thực thể lá cây bị bệnh với hai mục tiêu song hành là độ chính xác cao và tốc độ suy luận nhanh đáp ứng triển khai thực tế, nhóm đã khảo sát, huấn luyện và so sánh năm kiến trúc tiên tiến thuộc hai trường phái mạng nơ-ron tích chập (CNN) và mạng thị giác sử dụng cơ chế chú ý (Vision Transformer) (được tổng hợp tại Bảng \ref{tab:model_overview}).
 
 \begin{table}[htbp]
     \centering
@@ -43,17 +45,36 @@ Chi tiết phân bố số lượng ảnh theo từng tập con và lớp bệnh
         \toprule
         \textbf{Mô hình}     & \textbf{Họ kiến trúc} & \textbf{Đặc điểm nổi bật và lý do lựa chọn}                                                                                                                                                                                        \\
         \midrule
-        Mask R-CNN  & CNN          & Kiến trúc hai giai đoạn kinh điển, mang lại độ chính xác cao trong phân vùng thực thể. Được chọn làm baseline để đánh giá và đối chiếu hiệu suất.                                                                                  \\
-        YOLO26m-seg & CNN          & Kiến trúc một giai đoạn với tốc độ suy luận thời gian thực xuất sắc. Phiên bản cỡ medium được chọn nhằm tối ưu hóa điểm cân bằng giữa độ chính xác và tốc độ trong thực tế.                                                        \\
-        RF-DETR     & ViT          & Thiết kế end-to-end loại bỏ hoàn toàn bước hậu xử lý NMS, sử dụng DINOv2 feature extractor để tận dụng khả năng zero-shot và hiệu suất học ngữ cảnh mạnh mẽ. Được chọn làm đại diện cho dòng mô hình Transformer-based tốc độ cao. \\
-        MobileSAM   & ViT          & Phiên bản thu gọn siêu nhẹ của Segment Anything Model (SAM). Được chọn nhờ khả năng zero-shot linh hoạt với prompt và tối ưu hóa chuyên sâu để triển khai trên edge devices.                                                       \\
-        Mask2Former & ViT          & Kiến trúc phân vùng hợp nhất dựa trên mask classification. Được chọn nhờ đạt hiệu năng đa tác vụ vượt trội (panoptic, instance, semantic).                                                                                         \\
+        Mask R-CNN~\cite{he2017mask}  & CNN          & Kiến trúc hai giai đoạn kinh điển, mang lại độ chính xác cao trong phân vùng thực thể. Được chọn làm baseline để đánh giá và đối chiếu hiệu suất.                                                                                  \\
+        YOLO26m-seg~\cite{jocher2023ultralytics, jocher2024yolo} & CNN          & Kiến trúc một giai đoạn với tốc độ suy luận thời gian thực xuất sắc. Phiên bản cỡ medium được chọn nhằm tối ưu hóa điểm cân bằng giữa độ chính xác và tốc độ trong thực tế.                                                        \\
+        RF-DETR~\cite{roboflow2024rfdetr, lv2023detrs}     & ViT          & Thiết kế end-to-end loại bỏ hoàn toàn bước hậu xử lý NMS, sử dụng DINOv2 feature extractor để tận dụng khả năng zero-shot và hiệu suất học ngữ cảnh mạnh mẽ. Được chọn làm đại diện cho dòng mô hình Transformer-based tốc độ cao. \\
+        MobileSAM~\cite{zhang2023mobilesam, zhang2023faster}   & ViT          & Phiên bản thu gọn siêu nhẹ của Segment Anything Model (SAM). Được chọn nhờ khả năng zero-shot linh hoạt với prompt và tối ưu hóa chuyên sâu để triển khai trên edge devices.                                                       \\
+        Mask2Former~\cite{cheng2022masked} & ViT          & Kiến trúc phân vùng hợp nhất dựa trên mask classification. Được chọn nhờ đạt hiệu năng đa tác vụ vượt trội (panoptic, instance, semantic).                                                                                         \\
         \bottomrule
     \end{tabular}
 \end{table}
 
+Sau khi khảo sát, nhóm lựa chọn mô hình YOLO26-seg làm mô hình hạt nhân cho việc lượng tử hóa và triển khai thực tế. Mô hình sử dụng mạng tích chập sâu với cấu trúc phân tầng gồm ba khối chức năng chính:
+\begin{itemize}
+  \item \textbf{Backbone (Xương sống):} Sử dụng các khối liên kết cào đặc trưng cải tiến (C2f) và Spatial Pyramid Pooling Fast (SPPF) nhằm trích xuất đa quy mô các đặc trưng ngữ cảnh từ hình ảnh lá cây bị bệnh.
+  \item \textbf{Neck (Cổ mạng):} Sử dụng cấu trúc mạng kim tự tháp đặc trưng hai chiều (PANet) kết hợp luồng thông tin từ dưới lên và từ trên xuống để tổng hợp các đặc trưng ngữ cảnh không gian và thông tin ngữ nghĩa cấp cao.
+  \item \textbf{Head (Đầu dự đoán phân vùng):} Áp dụng kiến trúc Anchor-free dự đoán song song hai nhánh độc lập (Decoupled Head) bao gồm: một nhánh dự đoán hộp bao kèm nhãn bệnh lớp mục tiêu, và một nhánh dự đoán tập hợp các mặt nạ nguyên mẫu (Prototype Masks) kết hợp với các hệ số mặt nạ (Mask Coefficients) để tạo ra mặt nạ phân vùng thực thể cuối cùng ở cấp độ điểm ảnh.
+\end{itemize}
+
 \subsection{Cấu hình Huấn luyện}
 Toàn bộ quá trình huấn luyện các mô hình được thực hiện trên GPU NVIDIA Tesla T4. Cấu hình huấn luyện chung và tham số riêng cho từng mô hình được tổng hợp tại Bảng \ref{tab:common_train_config} và Bảng \ref{tab:specific_train_config}.
+
+Đối với mô hình YOLO26-seg, hàm mất mát toàn cục $\mathcal{L}_{total}$ được định nghĩa là sự kết hợp tuyến tính có trọng số của các hàm mất mát thành phần:
+\begin{equation}
+\mathcal{L}_{total} = \lambda_{box} \mathcal{L}_{box} + \lambda_{cls} \mathcal{L}_{cls} + \lambda_{dfl} \mathcal{L}_{dfl} + \lambda_{mask} \mathcal{L}_{mask},
+\end{equation}
+Trong đó:
+\begin{itemize}
+  \item $\mathcal{L}_{box}$ là hàm mất mát Complete Intersection over Union (CIoU) đo lường độ sai lệch về kích thước, tỷ lệ khung hình và vị trí tâm của hộp bao dự đoán so với nhãn thực tế.
+  \item $\mathcal{L}_{cls}$ là hàm mất mát entropy chéo nhị phân (Binary Cross Entropy - BCE) để phân loại nhãn lớp vết bệnh cho các hộp bao.
+  \item $\mathcal{L}_{dfl}$ là hàm mất mát phân bố tiêu điểm (Distribution Focal Loss) hỗ trợ việc tinh chỉnh biên hộp bao tốt hơn trong các trường hợp ranh giới mờ nhòe.
+  \item $\mathcal{L}_{mask}$ là hàm mất mát nhị phân kết hợp cấp độ điểm ảnh (gồm BCE loss và Dice loss) nhằm tối ưu hóa độ trùng khớp hình thái của mặt nạ phân vùng.
+\end{itemize}
 
 \begin{table}[htbp]
     \centering
@@ -78,6 +99,7 @@ Toàn bộ quá trình huấn luyện các mô hình được thực hiện trê
     \centering
     \caption{Cấu hình tham số riêng theo yêu cầu kiến trúc từng mô hình}
     \label{tab:specific_train_config}
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{lrrl}
         \toprule
         \textbf{Mô hình}     & \textbf{Learning Rate khởi tạo} & \textbf{Kích thước ảnh}     & \textbf{Ghi chú kỹ thuật}                      \\
@@ -88,11 +110,12 @@ Toàn bộ quá trình huấn luyện các mô hình được thực hiện trê
         MobileSAM   & $1 \times 10^{-5}$     & $1024 \times 1024$ & Batch size 2, gradient accumulation 4 \\
         Mask2Former & $5 \times 10^{-5}$     & $384 \times 384$   & Batch size 4, gradient accumulation 2 \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
 \end{table}
 
 \subsection{Tinh chỉnh siêu tham số}
-Sau khi so sánh 5 mô hình và chọn ra mô hình tốt nhất, nhóm áp dụng phương pháp tinh chỉnh siêu tham số  của mô hình YOLO26m-seg một cách tự động bằng Ray Tune với thuật toán lập lịch bất đồng bộ ASHA. Thuật toán này cho phép đánh giá song song nhiều cấu hình thử nghiệm và sớm loại bỏ các cấu hình kém hiệu quả ngay từ những epoch đầu, giúp tiết kiệm đáng kể tài nguyên tính toán.
+Sau khi so sánh 5 mô hình và chọn ra mô hình tốt nhất, nhóm áp dụng phương pháp tinh chỉnh siêu tham số của mô hình YOLO26m-seg một cách tự động bằng thư viện Ray Tune~\cite{liaw2018tune} với thuật toán lập lịch bất đồng bộ ASHA. Thuật toán này cho phép đánh giá song song nhiều cấu hình thử nghiệm và sớm loại bỏ các cấu hình kém hiệu quả ngay từ những epoch đầu, giúp tiết kiệm đáng kể tài nguyên tính toán.
 
 Quá trình tìm kiếm được thực hiện với 20 thử nghiệm độc lập trên không gian sáu siêu tham số, được chi tiết hóa tại Bảng \ref{tab:raytune_search_space}.
 
@@ -100,6 +123,7 @@ Quá trình tìm kiếm được thực hiện với 20 thử nghiệm độc l�
     \centering
     \caption{Không gian tìm kiếm siêu tham số cho YOLO26m-seg bằng Ray Tune}
     \label{tab:raytune_search_space}
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{lll}
         \toprule
         \textbf{Siêu tham số}                                     & \textbf{Kiểu phân phối tìm kiếm} & \textbf{Khoảng giá trị hoặc tập lựa chọn}       \\
@@ -111,6 +135,7 @@ Quá trình tìm kiếm được thực hiện với 20 thử nghiệm độc l�
         Hệ số mất mát khung bao ($\lambda_{\text{box}}$) & Uniform                 & $[5,0, 10,0]$                          \\
         Hệ số mất mát phân loại ($\lambda_{\text{cls}}$) & Uniform                 & $[0,3, 0,8]$                           \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}%
+    }
 \end{table}
 
