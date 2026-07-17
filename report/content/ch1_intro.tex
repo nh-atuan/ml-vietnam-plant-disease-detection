@@ -40,7 +40,7 @@ Hệ thống chẩn đoán thực tế phải đối mặt với nhiều thách 
 Đồ án hướng tới việc giải quyết toàn diện bài toán chẩn đoán bệnh trên lá cây đặc sản thông qua các mục tiêu cụ thể sau:
 \begin{itemize}
   \item Xây dựng và chuẩn hóa một bộ dữ liệu thực địa gồm 7.149 ảnh sạch gán nhãn chất lượng cao cho 8 lớp mục tiêu (Healthy, BrownSpot, Hispa, LeafBlast đối với lúa; LeafMiner, PowderyMildew, Rust, AlgalLeafSpot đối với cà phê).
-  \item Nghiên cứu, huấn luyện và đánh giá so sánh hiệu năng của 5 mô hình phân vùng thực thể hiện đại (Mask R-CNN, YOLO26m-seg, RF-DETR, MobileSAM, Mask2Former) trên tập dữ liệu đã xây dựng.
+  \item Nghiên cứu, huấn luyện và đánh giá so sánh hiệu năng của 5 mô hình phân vùng thực thể hiện đại (Mask R-CNN, YOLO26-seg trung bình, RF-DETR, MobileSAM, Mask2Former) trên tập dữ liệu đã xây dựng.
   \item Tinh chỉnh tối ưu hóa siêu tham số bằng thuật toán tìm kiếm thông minh Ray Tune và bộ lập lịch ASHA để nâng cao chất lượng dự đoán của mô hình tốt nhất, hướng tới vượt qua các mô hình SOTA (State-of-the-Art) trên tập kiểm thử tĩnh.
   \item Phát triển ứng dụng Web hoàn chỉnh tích hợp mô hình đã được tối ưu hóa (ONNX Runtime, FastAPI, Next.js) đạt độ trễ suy luận dưới 200 ms/ảnh để phục vụ người dùng thời gian thực.
   \item Triển khai ứng dụng lên nền tảng đám mây công khai sử dụng cụm Kubernetes (k3s) trên GCP, cấu hình tên miền động DuckDNS và mã hóa SSL bảo mật, đi kèm quy trình tự động hóa CI/CD.
@@ -87,6 +87,6 @@ Hệ thống chẩn đoán thực tế phải đối mặt với nhiều thách 
 Quy trình 9 bước bao gồm các nội dung chính sau:
 \begin{itemize}
   \item Pha 1 (Các bước 1, 2, 3): Thu thập dữ liệu từ các nguồn mở bản địa sử dụng công cụ cào tự động Crawl4AI kết hợp tiền gán nhãn bằng mô hình ngôn ngữ lớn thị giác Gemma 4. Tiến hành kiểm duyệt thủ công bằng Streamlit Labeler (quy trình human-in-the-loop) và tạo pseudo-mask bằng SAM 3. Dữ liệu được chia tập Train/Val/Test theo tỷ lệ 70/15/15 phân tầng (stratified split) để chống rò rỉ dữ liệu.
-  \item Pha 2 (Các bước 4, 5, 6): Huấn luyện độc lập 5 mô hình (Mask R-CNN, YOLO26m-seg, RF-DETR, MobileSAM, Mask2Former) trên GPU T4 của Kaggle. Lựa chọn mô hình YOLO26m-seg và tinh chỉnh siêu tham số bằng Ray Tune + ASHA, sau đó thực hiện lượng tử hóa sang định dạng ONNX phục vụ tối ưu hóa suy luận CPU.
+  \item Pha 2 (Các bước 4, 5, 6): Huấn luyện độc lập 5 mô hình (Mask R-CNN, YOLO26-seg, RF-DETR, MobileSAM, Mask2Former) trên GPU T4 của Kaggle. Lựa chọn mô hình YOLO26-seg và tinh chỉnh siêu tham số bằng Ray Tune + ASHA, sau đó thực hiện lượng tử hóa sang định dạng ONNX phục vụ tối ưu hóa suy luận CPU.
   \item Pha 3 (Các bước 7, 8, 9): Phát triển backend FastAPI kết nối PostgreSQL (lưu lịch sử), MinIO (lưu ảnh) và Redis (caching). Xây dựng frontend bằng Next.js tạo giao diện trực quan. Toàn bộ hệ thống được container hóa bằng Docker, quản lý bởi Helm Chart và triển khai lên cụm Kubernetes k3s trên GCP.
 \end{itemize}

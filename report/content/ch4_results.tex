@@ -1,7 +1,7 @@
 \section{Kết quả và Thảo luận}
 
 \subsection{Kết quả Thực nghiệm}
-Trong phần này, chúng tôi trình bày kết quả đánh giá hiệu năng của 5 mô hình phân vùng thực thể (MobileSAM, YOLO26-seg, RF-DETR, Mask R-CNN, Mask2Former) trên tập dữ liệu kiểm thử (Test set) của hai miền dữ liệu lúa và cà phê. Các chỉ số được sử dụng để đánh giá bao gồm mAP@50, mAP@50:95 (đối với mask), mIoU, và hệ số Dice. Ngoài ra, tốc độ suy luận (Inference time) tính bằng mili-giây (ms) và kích thước mô hình (Size) tính bằng MB cũng được đo lường để đánh giá khả năng triển khai thực tế.
+Trong phần này, chúng tôi trình bày kết quả đánh giá hiệu năng của 5 mô hình phân vùng thực thể (MobileSAM, YOLO26-seg, RF-DETR, Mask R-CNN, Mask2Former) trên tập dữ liệu kiểm thử của hai miền dữ liệu lúa và cà phê. Các chỉ số được sử dụng để đánh giá bao gồm mAP@50, mAP@50:95 (đối với mask), mIoU, và hệ số Dice. Ngoài ra, tốc độ suy luận tính bằng mili-giây (ms) và kích thước mô hình tính bằng MB cũng được đo lường để đánh giá khả năng triển khai thực tế.
 
 Bảng~\ref{tab:results_rice} và Bảng~\ref{tab:results_coffee} tóm tắt các chỉ số trên tập kiểm thử của hai loại cây trồng.
 
@@ -126,8 +126,8 @@ Dựa trên ma trận nhầm lẫn, có thể thấy một số nhãn có tỷ l
 \subsubsection{Hiện tượng Overfitting và Underfitting}
 Qua các biểu đồ và chỉ số, chúng tôi ghi nhận một số vấn đề liên quan đến hiện tượng khớp quá mức (overfitting) và chưa khớp (underfitting):
 \begin{itemize}
-  \item Hiện tượng chưa khớp (underfitting) xảy ra với MobileSAM khi mô hình đạt mAP thấp nhất trên tập Lúa (0.5637). Do kiến trúc là Zero-shot segmentation được fine-tune, mô hình khó nắm bắt các chi tiết cực kỳ nhỏ gọn như vết bệnh Hispa trên lá lúa. Biện pháp khắc phục là sử dụng mô hình chuyên biệt (như YOLO) kết hợp với các anchor box phù hợp với đối tượng kích thước nhỏ.
-  \item Hiện tượng khớp quá mức (overfitting) xuất hiện ở Mask R-CNN và Mask2Former do cả hai mô hình này đều có kích thước tham số rất lớn. Khi thực hiện tinh chỉnh (RayTune) hoặc áp dụng các augment mạnh hơn, kết quả đánh giá trên tập test thậm chí còn giảm sâu so với baseline (mAP của Mask2Former giảm từ 0.69 xuống 0.10 khi tăng size backbone). Điều này minh chứng cho việc các kiến trúc khổng lồ dễ dàng "ghi nhớ" tập dữ liệu huấn luyện nhỏ. Để khắc phục, cần thu thập thêm dữ liệu (thực tế hoặc qua các phương pháp sinh ảnh), áp dụng thêm cơ chế regularization mạnh (Dropout/Weight decay) và Early Stopping nghiêm ngặt hơn.
+  \item Hiện tượng chưa khớp xảy ra với MobileSAM khi mô hình đạt mAP thấp nhất trên tập Lúa (0.5637). Do kiến trúc là Zero-shot segmentation được fine-tune, mô hình khó nắm bắt các chi tiết cực kỳ nhỏ gọn như vết bệnh Hispa trên lá lúa. Biện pháp khắc phục là sử dụng mô hình chuyên biệt (như YOLO) kết hợp với các anchor box phù hợp với đối tượng kích thước nhỏ.
+  \item Hiện tượng khớp quá mức xuất hiện ở Mask R-CNN và Mask2Former do cả hai mô hình này đều có kích thước tham số rất lớn. Khi thực hiện tinh chỉnh (RayTune) hoặc áp dụng các augment mạnh hơn, kết quả đánh giá trên tập test thậm chí còn giảm sâu so với baseline (mAP của Mask2Former giảm từ 0.69 xuống 0.10 khi tăng size backbone). Điều này minh chứng cho việc các kiến trúc khổng lồ dễ dàng "ghi nhớ" tập dữ liệu huấn luyện nhỏ. Để khắc phục, cần thu thập thêm dữ liệu (thực tế hoặc qua các phương pháp sinh ảnh), áp dụng thêm cơ chế regularization mạnh (Dropout/Weight decay) và Early Stopping nghiêm ngặt hơn.
 \end{itemize}
 
 

@@ -119,7 +119,7 @@ Sau triển khai, nhóm kiểm tra node, pod, service, ingress, PVC và Helm rel
 
 \subsection{Đánh giá và Giới hạn Triển khai}
 
-Chuỗi giao diện--API--ONNX--tri thức--PostgreSQL--MinIO đã hoạt động trên cloud công khai; Docker, Helm, probe, lưu trữ bền vững, sao lưu và CI/CD nâng khả năng tái lập. Tuy nhiên, cụm một node vẫn là điểm lỗi đơn; volume \texttt{local-path} không replication; frontend/backend chỉ có một replica; Redis chưa tham gia luồng nghiệp vụ; CORS còn cho phép mọi origin; smoke test chưa bao phủ dự đoán ảnh đầu-cuối. Hướng mở rộng là dùng cụm nhiều node và storage replication, tăng replica stateless, giới hạn CORS, tự động phân phối model, bổ sung quan sát hệ thống và đưa ảnh mẫu vào smoke test.
+Chuỗi giao diện - API - ONNX - tri thức - PostgreSQL - MinIO đã hoạt động trên cloud công khai; Docker, Helm, probe, lưu trữ bền vững, sao lưu và CI/CD nâng khả năng tái lập. Tuy nhiên, cụm một node vẫn là điểm lỗi đơn; volume \texttt{local-path} không replication; frontend/backend chỉ có một replica; Redis chưa tham gia luồng nghiệp vụ; CORS còn cho phép mọi origin; smoke test chưa bao phủ dự đoán ảnh đầu-cuối. Hướng mở rộng là dùng cụm nhiều node và storage replication, tăng replica stateless, giới hạn CORS, tự động phân phối model, bổ sung quan sát hệ thống và đưa ảnh mẫu vào smoke test.
 
 \FloatBarrier
 \clearpage
