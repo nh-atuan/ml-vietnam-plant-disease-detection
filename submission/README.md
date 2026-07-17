@@ -44,22 +44,22 @@ Thư mục được tổ chức một cách khoa học để giảng viên tiệ
 ### Chi tiết các thành phần:
 
 1.  **Báo cáo Đồ án (14-report.pdf):** Trình bày chi tiết theo quy trình nghiên cứu khoa học End-to-End gồm 6 chương (từ định nghĩa bài toán, thu thập, tiền xử lý, phân tích dữ liệu EDA, huấn luyện, đánh giá mô hình, đến thiết kế hệ thống và triển khai thực tế).
-2.  **Mã nguồn hệ thống (code/):** Gồm toàn bộ logic của:
+2.  **Slide thuyết trình (14-slide.pdf):** Tóm tắt toàn bộ nội dung đồ án (gồm bối cảnh bài toán, thu thập/phân tích dữ liệu, lựa chọn/huấn luyện mô hình, kết quả đạt được, kiến trúc hệ thống và triển khai thực tế) phục vụ cho buổi báo cáo bảo vệ cuối kỳ.
+3.  **Mã nguồn hệ thống (code/):** Gồm toàn bộ logic của:
     *   `crawl/`: Pipeline tự động crawl dữ liệu lá lúa & cà phê sử dụng `Crawl4AI` và giao diện bán tự động gán nhãn `Labeler.py` (Streamlit).
     *   `backend/`: API Backend xây dựng trên `FastAPI`, `SQLModel` (PostgreSQL), `MinIO` (quản lý ảnh), `Redis` (caching), và `ONNX Runtime` để chạy suy luận mô hình.
     *   `frontend/`: Giao diện Web Client viết bằng `Next.js` và `React` với phong cách thiết kế hiện đại, responsive.
     *   `deployment/`: Cấu hình Docker Compose và các tệp Helm Chart phục vụ triển khai Kubernetes.
     *   `notebooks/`: Các file Jupyter Notebook minh họa luồng tiền xử lý và quá trình huấn luyện mô hình (bao gồm `data_pipeline_demo.ipynb`, `eda.ipynb`, `model_training_evaluation.ipynb`).
-3.  **Mô hình đã huấn luyện (models/):** Thư mục chứa mô hình học máy đã huấn luyện tốt nhất.
-4.  **Dữ liệu (data/):** Chứa file `README.md` hướng dẫn tải và cấu trúc dữ liệu thô (`raw/`) cùng dữ liệu đã xử lý (`processed/`) phục vụ cho huấn luyện và EDA (do dung lượng tập dữ liệu quá lớn, ~9.0 GB).
+4.  **Mô hình đã huấn luyện (models/):** Thư mục chứa mô hình học máy đã huấn luyện tốt nhất.
+5.  **Dữ liệu (data/):** Chứa file `README.md` hướng dẫn tải và cấu trúc dữ liệu thô (`raw/`) cùng dữ liệu đã xử lý (`processed/`) phục vụ cho huấn luyện và EDA (do dung lượng tập dữ liệu quá lớn, ~9.0 GB).
 
 ---
 
-## VIDEO DEMO SẢN PHẨM & LƯU TRỮ CLOUD
+## VIDEO DEMO SẢN PHẨM & LINK GITHUB REPO
 
 *   **Video Demo hoạt động hệ thống:** [https://youtu.be/k4cGGiSH1Ts](https://youtu.be/k4cGGiSH1Ts)
 *   **Repository GitHub:** [https://github.com/nh-atuan/ml-vietnam-plant-disease-detection](https://github.com/nh-atuan/ml-vietnam-plant-disease-detection)
-*   **Thư mục lưu trữ Cloud (Báo cáo PDF, Slide PDF, Mã nguồn và Trọng số mô hình):** [Google Drive Folder](https://drive.google.com/drive/folders/1OS0M2uW8KuWymKMtZwIY8XMUGCBcBGwo?usp=sharing)
 
 ---
 
