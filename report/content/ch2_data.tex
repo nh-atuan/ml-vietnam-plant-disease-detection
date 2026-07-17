@@ -1,10 +1,152 @@
-\section{Thu thập và Phân tích Dữ liệu}
+\section{Thu thập và phân tích dữ liệu}
 
-\subsection{Nguồn và Phương pháp Thu thập}
-Trình bày nguồn dữ liệu (API, scraping, tự tạo,\ldots). Mô tả chi tiết quy trình và công cụ thu thập, định dạng lưu trữ.
+\subsection{Nguồn và phương pháp thu thập}
+Nhóm đã mở rộng hai bộ dataset có sẵn là \href{https://www.kaggle.com/datasets/minhhuy2810/rice-diseases-image-dataset/}{Rice Diseases Image Dataset} và \href{https://github.com/phuvinh010701/CS114-MachineLearning-DetectDiseaseOnCoffeeLeaves}{Detect Disease On Coffee Leaves} bằng cách thu thập thêm ảnh từ các trang web, blog. Hình \ref{fig:data_collection_pipeline} thể hiện quy trình thu thập. Quy trình này được thiết kế chặt chẽ nhằm đảm bảo tính đa dạng về điều kiện chiếu sáng, góc chụp đồng thời giúp thời gian gắn nhãn.
 
-\subsection{Tiền xử lý và Làm sạch}
-Mô tả các bước đã thực hiện: xử lý nhiễu, dữ liệu thiếu, chuẩn hóa, biến đổi.
 
-\subsection{Phân tích Khám phá Dữ liệu (EDA)}
-Trình bày các thống kê mô tả, phân tích phân bố nhãn, và mối quan hệ giữa các thuộc tính. Sử dụng biểu đồ, bảng để minh họa các phát hiện quan trọng về dữ liệu. Phân tích chất lượng dữ liệu và cách xử lý các vấn đề (ngoại lệ, trùng lặp).
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[node distance=1cm and 0.8cm]
+
+        \node (step1) [step1] {\textbf{1. Xây dựng truy vấn}\\Từ khóa tiếng Việt\\cho từng nhãn bệnh};
+        \node (step2) [step2, right=of step1] {\textbf{2. Khám phá URL}\\DuckDuckGo / Serper.dev\\và loại URL trùng};
+        \node (step3) [step3, right=of step2] {\textbf{3. Cào dữ liệu}\\Ảnh gốc và văn bản\\ngữ cảnh bằng Crawl4AI};
+
+        \node (step4) [step4, below=of step3] {\textbf{4. Lưu trữ dữ liệu thô}\\Lưu ảnh và context\\theo thư mục chuẩn hóa};
+        \node (step5) [step5, left=of step4] {\textbf{5. AI gán nhãn tự động}\\Gemma 4 dự đoán\\nhãn hoặc Invalid};
+        \node (stepSAM) [stepSAM, left=of step5] {\textbf{6. Dùng SAM3}\\để tạo mask cho\\các lá trong ảnh};
+
+        \node (step6) [step6, below=of stepSAM] {\textbf{7. Kiểm duyệt thủ công}\\Công cụ Streamlit\\xác nhận hoặc sửa nhãn};
+        \node (final) [final, right=of step6] {\textbf{Tập dữ liệu cuối}\\phục vụ huấn luyện\\và đánh giá};
+
+        \node (hitl) [hitl, below=0.6cm of $(step6.south)!0.5!(final.south)$] {\textbf{Human-in-the-loop:} AI chỉ đề xuất nhãn, mask; nhãn và mask cuối cùng chỉ được chấp nhận sau bước kiểm duyệt thủ công.};
+
+        \draw [arrow] (step1) -- (step2);
+        \draw [arrow] (step2) -- (step3);
+        \draw [arrow] (step3) -- (step4);
+        \draw [arrow] (step4) -- (step5);
+        \draw [arrow] (step5) -- (stepSAM);
+        \draw [arrow] (stepSAM) -- (step6);
+        \draw [arrow] (step6) -- (final);
+
+        \draw [arrow, dashed] (hitl.north -| step6.south) -- (step6.south);
+
+    \end{tikzpicture}
+    \caption{Sơ đồ pipeline thu thập và gán nhãn dữ liệu theo hướng human-in-the-loop.}
+    \label{fig:data_collection_pipeline}
+\end{figure}
+
+Tập dữ liệu thu thập được bao gồm 7.300 ảnh chuẩn hóa định dạng COCO với tổng cộng 7.562 thực thể vết bệnh được gán nhãn phục vụ cho bài toán segmentation, được phân chia thành hai miền dữ liệu chính. Miền dữ liệu lúa bao gồm 3.421 ảnh và 3.720 annotation với bốn lớp nhãn chính: lá khỏe mạnh, bệnh đạo ôn, bệnh sâu đục lá và bệnh đốm nâu. Miền dữ liệu cà phê bao gồm 3.879 ảnh và 3.842 annotation với bốn lớp nhãn chính: bệnh rỉ sắt, bệnh sâu đục lá, bệnh đốm rong và bệnh phấn trắng.
+
+\subsection{Tiền xử lý và làm sạch}
+Dữ liệu thô thu thập từ nhiều nguồn thường chứa các ảnh mờ nhòe hay ảnh trùng lặp. Nhóm đã áp dụng quy trình kiểm duyệt chất lượng nghiêm ngặt gồm hai bước. Bước đầu tiên là khử trùng lặp thông qua việc tính toán hàm băm MD5 trên nội dung nhị phân của ảnh để phát hiện và loại bỏ chính xác các ảnh trùng lặp hoàn toàn. Bước thứ hai là lọc ảnh mờ nhòe bằng phương pháp đánh giá độ sắc nét dựa trên phương sai của phép biến đổi Laplacian, trong đó các ảnh có phương sai dưới ngưỡng $\tau = 100$ được loại bỏ khỏi tập dữ liệu sạch.
+
+Kết quả tổng hợp quy trình làm sạch dữ liệu trên toàn bộ tập ảnh được thể hiện chi tiết tại Bảng \ref{tab:data_clean_summary}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Tổng hợp kết quả làm sạch dữ liệu trên toàn bộ tập ảnh}
+    \label{tab:data_clean_summary}
+    \begin{tabular}{lrr}
+        \toprule
+        \textbf{Lý do xử lý}     & \textbf{Số lượng ảnh}   & \textbf{Tỷ lệ (\%)}     \\
+        \midrule
+        Ảnh trùng lặp            & 1              & 0,01           \\
+        Ảnh mờ nhòe              & 150            & 2,05           \\
+        \textbf{Giữ lại sử dụng} & \textbf{7.149} & \textbf{97,93} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Sau khi loại bỏ 151 ảnh nhiễu, tập dữ liệu sạch giữ lại 7.149 ảnh (chiếm 97,93\%) với 7.411 annotation hợp lệ. Phân bố chi tiết số lượng ảnh và tỷ lệ tương ứng theo từng lớp bệnh ở hai miền dữ liệu sau bước làm sạch được thống kê tại Bảng \ref{tab:class_dist_clean}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Phân bố chi tiết số ảnh theo lớp và miền dữ liệu sau làm sạch}
+    \label{tab:class_dist_clean}
+    \begin{tabular}{llrr}
+        \toprule
+        \textbf{Miền dữ liệu} & \textbf{Lớp bệnh}        & \textbf{Số lượng ảnh} & \textbf{Tỷ lệ trong miền (\%)} \\
+        \midrule
+        \multirow{4}{*}{Lúa (3.351 ảnh)}
+                     & Lá khỏe mạnh    & 1.472        & 43,93                 \\
+                     & Bệnh đạo ôn     & 777          & 23,19                 \\
+                     & Sâu đục lá      & 571          & 17,04                 \\
+                     & Bệnh đốm nâu    & 531          & 15,85                 \\
+        \midrule
+        \multirow{4}{*}{Cà phê (3.798 ảnh)}
+                     & Bệnh rỉ sắt     & 1.387        & 36,52                 \\
+                     & Sâu đục lá      & 1.200        & 31,60                 \\
+                     & Bệnh đốm rong   & 949          & 24,99                 \\
+                     & Bệnh phấn trắng & 262          & 6,90                  \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Phân tích và khám phá dữ liệu}
+Để hiểu rõ đặc trưng phân bố và định hướng thiết kế mô hình, nhóm thực hiện phân tích khám phá dữ liệu trên tập thu thập theo năm khía cạnh: mất cân bằng lớp, hình học ảnh, mẫu bệnh trực quan, độ sáng - màu sắc, và cấu trúc annotation COCO.
+
+\subsubsection{Phân bố lớp và mức độ mất cân bằng}
+Hình \ref{fig:eda_class_dist} thể hiện phân bố tuyệt đối và tỉ lệ phần trăm theo từng lớp bệnh. Hai chỉ số được dùng để định lượng mất cân bằng là tỉ số mất cân bằng $\text{IR} = N_{\max}/N_{\min}$ và hệ số biến thiên $\text{CV} = \sigma_N/\mu_N$. Miền lúa có $\text{IR} = 2,77$ và $\text{CV} = 52,1\%$ (lớp đa số là lá khỏe mạnh, lớp thiểu số là đốm nâu). Miền cà phê lệch mạnh hơn với $\text{IR} = 5,28$ và $\text{CV} = 51,8\%$ do lớp phấn trắng chỉ chiếm khoảng $6,9\%$ ảnh trong miền. Sau bước làm sạch (Bảng \ref{tab:class_dist_clean}), tỉ lệ tương đối giữa các lớp gần như không đổi, nên mất cân bằng vẫn là ràng buộc chính khi huấn luyện và đòi hỏi hàm mất mát có trọng số cùng tăng cường dữ liệu cho lớp thiểu số.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/eda/class_distribution.png}
+    \caption{Phân bố số lượng ảnh và tỉ lệ phần trăm theo lớp bệnh trên hai miền lúa và cà phê.}
+    \label{fig:eda_class_dist}
+\end{figure}
+
+\subsubsection{Độ phân giải, tỉ lệ khung hình và annotation}
+Hình \ref{fig:eda_image_dims} cho thấy sự chênh lệch lớn về kích thước giữa hai miền. Ảnh lúa có độ phân giải trung bình khoảng $2.031 \times 2.026$ px, chủ yếu vuông, với khoảng biến thiên rộng từ khoảng $132$ đến $3.120$ px theo chiều rộng. Ảnh cà phê nhỏ hơn rõ rệt (trung bình khoảng $971 \times 1.154$ px) và thiên về khung hình dọc. Do đó, đầu vào mô hình cần được chuẩn hóa về cùng kích thước ($640 \times 640$ hoặc $256 \times 256$ tùy kiến trúc) bằng letterbox để giữ tỉ lệ thật của lá và tránh méo dạng vùng bệnh.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/eda/image_dimensions.png}
+    \caption{Phân tích kích thước ảnh: quan hệ width-height, phân phối chiều rộng và tỉ lệ khung hình theo miền dữ liệu.}
+    \label{fig:eda_image_dims}
+\end{figure}
+
+Song song đó, Hình \ref{fig:eda_annotation} phân tích cấu trúc nhãn COCO. Số annotation trên mỗi ảnh lúa trung bình đạt $1,09$ (dao động từ $1$ đến tối đa $28$), trong khi miền cà phê gần như luôn có đúng một thực thể trên mỗi ảnh. Tỉ lệ diện tích bounding box so với ảnh ở lúa thường cao hơn cà phê, cho thấy vùng quan tâm chiếm phần lớn khung hình. Các quan sát này hỗ trợ chiến lược huấn luyện trên ảnh toàn phần kèm tăng cường theo tỉ lệ và vị trí vùng bệnh.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/eda/annotation_analysis.png}
+    \caption{Phân tích annotation COCO: số thực thể trên mỗi ảnh, tỉ lệ diện tích bounding box và phân phối kích thước vùng bệnh.}
+    \label{fig:eda_annotation}
+\end{figure}
+
+\subsubsection{Trực quan hóa mẫu bệnh}
+Hình \ref{fig:eda_samples_rice} và Hình \ref{fig:eda_samples_coffee} minh họa một số mẫu ngẫu nhiên theo từng lớp. Quan sát trực quan cho thấy các lớp có triệu chứng gần nhau (đốm nâu và đạo ôn trên lúa; đốm rong và rỉ sắt trên cà phê), đồng thời tồn tại ảnh nhiễu thực địa như góc chụp xa, nhiều lá chồng nhau hoặc bệnh ở giai đoạn sớm. Những trường hợp này giải thích vì sao đặc trưng màu toàn cục không đủ để tách lớp và cần mô hình học kết cấu cục bộ cùng ngữ cảnh không gian.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.92\textwidth]{img/eda/samples_rice.jpg}
+    \caption{Một số mẫu ảnh tiêu biểu theo từng lớp bệnh trên miền lúa.}
+    \label{fig:eda_samples_rice}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.92\textwidth]{img/eda/samples_coffee.jpg}
+    \caption{Một số mẫu ảnh tiêu biểu theo từng lớp bệnh trên miền cà phê.}
+    \label{fig:eda_samples_coffee}
+\end{figure}
+
+\subsubsection{Độ sáng, kênh màu và cặp bệnh dễ nhầm lẫn}
+Hình \ref{fig:eda_brightness} so sánh độ sáng cảm nhận, giá trị trung bình các kênh RGB và độ tương phản theo lớp. Ảnh lúa nhìn chung sáng hơn rõ rệt (độ sáng trung bình khoảng $198$-$202$) so với cà phê (khoảng $116$-$129$). Ở cả hai miền, kênh Green thường chiếm ưu thế, phù hợp đặc trưng sắc tố lá; tuy nhiên biên độ và độ tương phản giữa các lớp vẫn giao thoa đáng kể. Vì vậy, tiền xử lý cần chuẩn hóa theo thống kê tập huấn luyện và dùng tăng cường biến thiên độ sáng để tăng độ bền với điều kiện chiếu sáng thực địa.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/eda/brightness_rgb.png}
+    \caption{Phân phối độ sáng, giá trị trung bình kênh RGB và độ tương phản theo lớp bệnh trên hai miền dữ liệu.}
+    \label{fig:eda_brightness}
+\end{figure}
+
+Để định lượng mức độ tương đồng màu giữa các cặp dễ nhầm, Hình \ref{fig:eda_confusable} đối chiếu histogram chuẩn hóa ba kênh RGB thông qua khoảng cách Bhattacharyya $D_B$. Trên lúa, cặp đốm nâu và đạo ôn có $D_B$ nhỏ trên cả ba kênh (lớn nhất ở kênh Red với $D_B = 0,132$). Trên cà phê, cặp đốm rong và rỉ sắt gần như trùng khớp hoàn toàn ($D_B \approx 0,003$-$0,005$). Kết quả này khẳng định mô hình không thể dựa chủ yếu vào phân bố màu toàn cục mà cần học đặc trưng kết cấu và hình thái vùng bệnh.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/eda/confusable_histograms.png}
+    \caption{So sánh histogram RGB và khoảng cách Bhattacharyya giữa các cặp bệnh dễ nhầm lẫn trên lúa và cà phê.}
+    \label{fig:eda_confusable}
+\end{figure}

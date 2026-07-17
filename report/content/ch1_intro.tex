@@ -1,10 +1,92 @@
 \section{Giới thiệu}
 
 \subsection{Phân tích Vấn đề (Problem Definition)}
-Mô tả chi tiết bài toán, làm rõ tính cấp thiết và ý nghĩa của vấn đề trong bối cảnh thực tiễn Việt Nam.
+Nông nghiệp luôn đóng vai trò là trụ đỡ quan trọng của nền kinh tế Việt Nam, đóng góp đáng kể vào tổng sản phẩm quốc nội (GDP) và đảm bảo an ninh lương thực quốc gia. Trong số các cây trồng chủ lực, lúa gạo và cà phê Robusta là hai mặt hàng xuất khẩu nông sản hàng đầu, đưa Việt Nam trở thành quốc gia xuất khẩu gạo và cà phê thuộc nhóm lớn nhất thế giới. Các vùng sản xuất lúa trọng điểm tại Đồng bằng sông Cửu Long và các vùng chuyên canh cà phê tại Tây Nguyên là sinh kế của hàng triệu hộ nông dân.
+
+Tuy nhiên, năng suất và chất lượng của hai loại nông sản đặc sản này thường xuyên đối mặt với nguy cơ suy giảm nghiêm trọng do dịch bệnh và sâu hại lá. Sự bùng phát của các loại bệnh như đạo ôn lá, đốm nâu trên cây lúa hay nấm rỉ sắt, đốm rong trên cây cà phê gây thiệt hại to lớn về kinh tế cho người nông dân. Trong canh tác truyền thống, việc phát hiện và chẩn đoán bệnh chủ yếu dựa vào kinh nghiệm cảm quan của nông hộ. Khi gặp những vết bệnh lạ hoặc ở giai đoạn chớm nở, nông dân thường không thể tiếp cận các chuyên gia bệnh học thực vật kịp thời do sự thiếu hụt nhân lực khuyến nông tại các vùng sâu vùng xa. Hệ quả là nông dân thường chẩn đoán sai bệnh hoặc tự ý phun thuốc bảo vệ thực vật theo kiểu bao vây. Hành vi này không chỉ làm gia tăng chi phí sản xuất, giảm chất lượng nông sản xuất khẩu do tồn dư hóa chất mà còn gây ô nhiễm nguồn nước, suy thoái đất canh tác và ảnh hưởng trực tiếp đến sức khỏe con người.
+
+Từ bối cảnh thực tiễn cấp thiết trên, việc nghiên cứu và ứng dụng công nghệ học máy để tự động nhận diện và chẩn đoán bệnh trên lá cây trực tiếp ngoài đồng ruộng là một hướng đi vô cùng ý nghĩa. Một hệ thống AI có khả năng hoạt động ổn định trên các thiết bị di động bình dân sẽ cung cấp cho người nông dân một công cụ chẩn đoán nhanh, nhất quán và đáng tin cậy.
+
+Về mặt toán học, bài toán chẩn đoán vết bệnh trên lá cây được định nghĩa như một tác vụ phân vùng thực thể (instance segmentation). Cho ảnh đầu vào $I \in \mathbb{R}^{H \times W \times 3}$, trong đó $H$ và $W$ lần lượt là chiều cao và chiều rộng của ảnh. Hệ thống cần tìm tập hợp gồm $K$ thực thể bệnh xuất hiện trong ảnh:
+\begin{equation}
+E = \{e_1, e_2, \dots, e_K\}.
+\end{equation}
+Trong đó, mỗi thực thể vết bệnh $e_k$ ($k \in \{1, 2, \dots, K\}$) được biểu diễn bằng một bộ ba:
+\begin{equation}
+e_k = (b_k, c_k, m_k),
+\end{equation}
+Với:
+\begin{itemize}
+  \item $b_k = [x_{min}, y_{min}, x_{max}, y_{max}] \in \mathbb{R}^4$ là tọa độ của hộp bao (bounding box) giới hạn thực thể $e_k$.
+  \item $c_k \in \{1, 2, \dots, C\}$ là nhãn lớp bệnh tương ứng với thực thể $e_k$ trong tập $C$ lớp nhãn mục tiêu ($C = 4$ cho từng miền dữ liệu cây trồng).
+  \item $m_k \in \{0, 1\}^{H \times W}$ là mặt nạ nhị phân (binary mask) xác định vùng bị tổn thương ở cấp độ điểm ảnh (pixel-level) của thực thể $e_k$.
+\end{itemize}
+
+Việc lựa chọn hướng phân vùng thực thể thay vì chỉ phân loại ảnh (image classification) xuất phát từ các đặc tính thực tế của ảnh chụp ngoài đồng ruộng:
+\begin{itemize}
+  \item Ảnh chụp thực tế thường chứa nhiều lá cây nằm chồng chéo lên nhau hoặc một lá cây có thể xuất hiện đồng thời nhiều loại bệnh khác nhau. Phân vùng thực thể cho phép khoanh vùng và chẩn đoán từng vết bệnh riêng biệt trên từng chiếc lá.
+  \item Vết bệnh thường chỉ chiếm một tỷ lệ diện tích rất nhỏ so với diện tích lá lành và bối cảnh nền. Việc chỉ phân loại ảnh dễ bị nhiễu do bối cảnh nền phức tạp ngoài tự nhiên.
+  \item Cung cấp cho nông dân hình ảnh trực quan sinh động về vị trí và diện tích chính xác của các vết bệnh trên lá cây để họ dễ dàng đánh giá mức độ nghiêm trọng của dịch bệnh.
+\end{itemize}
+
+Hệ thống chẩn đoán thực tế phải đối mặt với nhiều thách thức kỹ thuật lớn:
+\begin{itemize}
+  \item Sự tương đồng về mặt hình thái học giữa một số cặp bệnh ở giai đoạn sớm (ví dụ: đốm nâu và đạo ôn trên lúa, đốm rong và gỉ sắt trên cà phê) làm giảm khả năng phân biệt nếu chỉ dựa trên đặc trưng màu sắc.
+  \item Sự biến thiên mạnh mẽ về điều kiện ánh sáng tự nhiên (nắng gắt, bóng râm, ngược sáng), góc chụp và độ mờ do camera điện thoại bình dân của người nông dân.
+  \item Mất cân bằng dữ liệu nghiêm trọng giữa các lớp bệnh phổ biến (như bệnh gỉ sắt chiếm đa số) và các lớp bệnh hiếm gặp hơn (như phấn trắng).
+\end{itemize}
 
 \subsection{Mục tiêu của Đồ án}
-Trình bày các mục tiêu cụ thể mà nhóm hướng tới giải quyết.
+Đồ án hướng tới việc giải quyết toàn diện bài toán chẩn đoán bệnh trên lá cây đặc sản thông qua các mục tiêu cụ thể sau:
+\begin{itemize}
+  \item Xây dựng và chuẩn hóa một bộ dữ liệu thực địa gồm 7.149 ảnh sạch gán nhãn chất lượng cao cho 8 lớp mục tiêu (Healthy, BrownSpot, Hispa, LeafBlast đối với lúa; LeafMiner, PowderyMildew, Rust, AlgalLeafSpot đối với cà phê).
+  \item Nghiên cứu, huấn luyện và đánh giá so sánh hiệu năng của 5 mô hình phân vùng thực thể hiện đại (Mask R-CNN, YOLO26m-seg, RF-DETR, MobileSAM, Mask2Former) trên tập dữ liệu đã xây dựng.
+  \item Tinh chỉnh tối ưu hóa siêu tham số bằng thuật toán tìm kiếm thông minh Ray Tune và bộ lập lịch ASHA để nâng cao chất lượng dự đoán của mô hình tốt nhất, hướng tới vượt qua các mô hình SOTA (State-of-the-Art) trên tập kiểm thử tĩnh.
+  \item Phát triển ứng dụng Web hoàn chỉnh tích hợp mô hình đã được tối ưu hóa (ONNX Runtime, FastAPI, Next.js) đạt độ trễ suy luận dưới 200 ms/ảnh để phục vụ người dùng thời gian thực.
+  \item Triển khai ứng dụng lên nền tảng đám mây công khai sử dụng cụm Kubernetes (k3s) trên GCP, cấu hình tên miền động DuckDNS và mã hóa SSL bảo mật, đi kèm quy trình tự động hóa CI/CD.
+\end{itemize}
 
 \subsection{Tổng quan về Phương pháp}
-Mô tả ngắn gọn cách tiếp cận tổng thể, từ thu thập dữ liệu đến triển khai sản phẩm.
+Để đạt được các mục tiêu trên, nhóm đề xuất một quy trình xây dựng hệ thống gồm 3 giai đoạn chính được minh họa trong Hình~\ref{fig:quy-trinh-he-thong}:
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm and 0.8cm,
+    block/.style={rectangle, draw, fill=blue!10, text width=3.3cm, text centered, rounded corners, minimum height=1.2cm, font=\small},
+    line/.style={draw, -{Stealth[scale=1.2]}, thick}
+]
+    % Nodes
+    \node [block] (crawl) {1. Thu thập dữ liệu \\ (Crawl4AI \& VLM)};
+    \node [block] (label) [right=of crawl] {2. Kiểm duyệt \& Gán nhãn \\ (Streamlit Labeler)};
+    \node [block] (split) [right=of label] {3. Tiền xử lý \& Chia tập \\ (Stratified Split)};
+    
+    \node [block] (train) [below=of split] {4. Huấn luyện mô hình \\ (5 Kiến trúc so sánh)};
+    \node [block] (tune) [left=of train] {5. Tinh chỉnh siêu tham số \\ (Ray Tune \& ASHA)};
+    \node [block] (onnx) [left=of tune] {6. Xuất \& Lượng tử hóa \\ (ONNX Runtime)};
+    
+    \node [block] (api) [below=of onnx] {7. Phát triển API Backend \\ (FastAPI \& PostgreSQL)};
+    \node [block] (ui) [right=of api] {8. Thiết kế Client Web \\ (Next.js \& Tailwind)};
+    \node [block] (k8s) [right=of ui] {9. Triển khai GCP Cloud \\ (Kubernetes k3s)};
+
+    % Lines
+    \path [line] (crawl) -- (label);
+    \path [line] (label) -- (split);
+    \path [line] (split) -- (train);
+    \path [line] (train) -- (tune);
+    \path [line] (tune) -- (onnx);
+    \path [line] (onnx) -- (api);
+    \path [line] (api) -- (ui);
+    \path [line] (ui) -- (k8s);
+
+\end{tikzpicture}
+\caption{Sơ đồ quy trình tổng thể 9 bước của hệ thống chẩn đoán bệnh cây trồng}
+\label{fig:quy-trinh-he-thong}
+\end{figure}
+
+Quy trình 9 bước bao gồm các nội dung chính sau:
+\begin{itemize}
+  \item Pha 1 (Các bước 1, 2, 3): Thu thập dữ liệu từ các nguồn mở bản địa sử dụng công cụ cào tự động Crawl4AI kết hợp tiền gán nhãn bằng mô hình ngôn ngữ lớn thị giác Gemma 4. Tiến hành kiểm duyệt thủ công bằng Streamlit Labeler (quy trình human-in-the-loop) và tạo pseudo-mask bằng SAM 3. Dữ liệu được chia tập Train/Val/Test theo tỷ lệ 70/15/15 phân tầng (stratified split) để chống rò rỉ dữ liệu.
+  \item Pha 2 (Các bước 4, 5, 6): Huấn luyện độc lập 5 mô hình (Mask R-CNN, YOLO26m-seg, RF-DETR, MobileSAM, Mask2Former) trên GPU T4 của Kaggle. Lựa chọn mô hình YOLO26m-seg và tinh chỉnh siêu tham số bằng Ray Tune + ASHA, sau đó thực hiện lượng tử hóa sang định dạng ONNX phục vụ tối ưu hóa suy luận CPU.
+  \item Pha 3 (Các bước 7, 8, 9): Phát triển backend FastAPI kết nối PostgreSQL (lưu lịch sử), MinIO (lưu ảnh) và Redis (caching). Xây dựng frontend bằng Next.js tạo giao diện trực quan. Toàn bộ hệ thống được container hóa bằng Docker, quản lý bởi Helm Chart và triển khai lên cụm Kubernetes k3s trên GCP.
+\end{itemize}
