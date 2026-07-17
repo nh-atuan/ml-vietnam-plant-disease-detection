@@ -44,7 +44,7 @@ Các bước thực hiện chi tiết:
      ```
 
 2. **Chạy Pipeline Tiền xử lý:**
-   - Mở và chạy tuần tự toàn bộ các cell trong Notebook tiền xử lý: [02_preprocessing.ipynb](file:///d:/HỌC KÌ 6/NHẬP MÔN HỌC MÁY/ĐỒ ÁN CUỐI KỲ/ml-vietnam-plant-disease-detection/submission/code/notebooks/02_preprocessing.ipynb) (nằm tại thư mục `code/notebooks/02_preprocessing.ipynb`).
+   - Mở và chạy tuần tự toàn bộ các cell trong Notebook tiền xử lý: [02_preprocessing.ipynb](../code/notebooks/02_preprocessing.ipynb) (nằm tại thư mục `code/notebooks/02_preprocessing.ipynb`).
 
 3. **Chi tiết luồng xử lý tự động của Pipeline:**
    - **Lọc trùng lặp & Ảnh lỗi**: Pipeline sử dụng MD5 checksum để quét và tự động loại bỏ các ảnh trùng lặp hoặc các tệp tin ảnh bị lỗi định dạng vật lý.
