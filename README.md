@@ -4,7 +4,21 @@ Hệ thống Học máy End-to-End hỗ trợ chẩn đoán và đưa ra khuyế
 
 ---
 
-## 🌐 Môi trường Triển khai & Tài nguyên Dự án
+## Mục lục
+
+1. [Môi trường Triển khai & Tài nguyên Dự án](#1-môi-trường-triển-khai--tài-nguyên-dự-án)
+2. [Các Tính năng Nổi bật](#2-các-tính-năng-nổi-bật)
+3. [Kiến trúc Hệ thống (System Architecture)](#3-kiến-trúc-hệ-thống-system-architecture)
+4. [Quy trình Tiền xử lý & Nhãn Dữ liệu (Data Pipeline)](#4-quy-trình-tiền-xử-lý--nhãn-dữ-liệu-data-pipeline)
+5. [Kết quả Huấn luyện & Tối ưu hóa Mô hình](#5-kết-quả-huấn-luyện--tối-ưu-hóa-mô-hình)
+6. [Hướng dẫn Cài đặt & Khởi chạy (Quick Start)](#6-hướng-dẫn-cài-đặt--khởi-chạy-quick-start)
+7. [Kiểm thử Hệ thống (Testing & Verification)](#7-kiểm-thử-hệ-thống-testing--verification)
+8. [Cấu trúc Thư mục Chính của Dự án](#8-cấu-trúc-thư-mục-chính-của-dự-án)
+9. [Thành viên Thực hiện Dự án](#9-thành-viên-thực-hiện-dự-án)
+
+---
+
+## 1. Môi trường Triển khai & Tài nguyên Dự án
 
 - **Web Application:** [https://plant-disease-demo.duckdns.org](https://plant-disease-demo.duckdns.org)
 - **Backend API Documentation:** [https://plant-disease-demo.duckdns.org/docs](https://plant-disease-demo.duckdns.org/docs) (Swagger UI) hoặc `/redoc` (ReDoc UI)
@@ -13,7 +27,7 @@ Hệ thống Học máy End-to-End hỗ trợ chẩn đoán và đưa ra khuyế
 
 ---
 
-## ✨ Các Tính năng Nổi bật
+## 2. Các Tính năng Nổi bật
 
 - **Nhận diện & Phân đoạn Thực thể Thời gian thực (Real-time Instance Segmentation):** Sử dụng mô hình lượng tử hóa **YOLO26-seg (ONNX format)** cho phép phát hiện chính xác vùng lá bệnh và phân loại vết bệnh với tốc độ cực nhanh (~12ms trên CPU).
 - **Hệ thống Tri thức Chuyên gia (Expert Knowledge Base):** Tích hợp bộ quy tắc chẩn đoán tiếng Việt chi tiết với 8 loại bệnh lá lúa/cà phê, tự động cung cấp nguyên nhân, triệu chứng và khuyến nghị điều trị thực địa cho nông dân.
@@ -23,7 +37,7 @@ Hệ thống Học máy End-to-End hỗ trợ chẩn đoán và đưa ra khuyế
 
 ---
 
-## 🏗️ Kiến trúc Hệ thống (System Architecture)
+## 3. Kiến trúc Hệ thống (System Architecture)
 
 Sơ đồ dưới đây thể hiện luồng hoạt động từ Client đến các thành phần hạ tầng backend:
 
@@ -42,7 +56,7 @@ graph TD
 
 ---
 
-## 📊 Quy trình Tiền xử lý & Nhãn Dữ liệu (Data Pipeline)
+## 4. Quy trình Tiền xử lý & Nhãn Dữ liệu (Data Pipeline)
 
 Quy trình thu thập dữ liệu kết hợp mô hình AI và con người (Human-in-the-loop) để tạo ra tập dữ liệu chất lượng cao:
 
@@ -80,7 +94,7 @@ datasets/final/
 
 ---
 
-## 🧠 Kết quả Huấn luyện & Tối ưu hóa Mô hình
+## 5. Kết quả Huấn luyện & Tối ưu hóa Mô hình
 
 Nhóm đã thực nghiệm huấn luyện và đánh giá trên 5 kiến trúc mô hình Instance Segmentation phổ biến: **Mask R-CNN, YOLO26m-seg, RF-DETR, MobileSAM, và Mask2Former** (sử dụng GPU NVIDIA T4).
 
@@ -105,7 +119,7 @@ Sử dụng thư viện **Ray Tune** kết hợp thuật toán điều phối **
 
 ---
 
-## 🛠️ Hướng dẫn Cài đặt & Khởi chạy (Quick Start)
+## 6. Hướng dẫn Cài đặt & Khởi chạy (Quick Start)
 
 Tham khảo hướng dẫn chi tiết tại [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
@@ -134,7 +148,7 @@ Sau khi khởi động thành công, các dịch vụ sẽ sẵn sàng tại:
 
 ### Cách 2: Cài đặt và Chạy thủ công từng thành phần
 
-#### 1. Cài đặt các thư viện cần thiết
+#### 6.1. Cài đặt các thư viện cần thiết
 ```bash
 # Sync môi trường Python backend
 uv sync
@@ -148,29 +162,29 @@ npm install
 cd ..
 ```
 
-#### 2. Thiết lập cấu hình môi trường
+#### 6.2. Thiết lập cấu hình môi trường
 Sao chép mẫu biến môi trường từ thư mục backend ra thư mục gốc:
 ```bash
 cp backend/.env.example .env
 ```
 *(Hãy tải các file mô hình ONNX từ Google Drive đặt vào thư mục `models/` theo tài liệu [models/README.md](models/README.md)).*
 
-#### 3. Khởi động các dịch vụ lưu trữ nền (Postgres, MinIO, Redis)
+#### 6.3. Khởi động các dịch vụ lưu trữ nền (Postgres, MinIO, Redis)
 ```bash
 docker compose up -d postgres minio redis
 ```
 
-#### 4. Khởi tạo Database Schema (Alembic Migration)
+#### 6.4. Khởi tạo Database Schema (Alembic Migration)
 ```bash
 uv run alembic upgrade head
 ```
 
-#### 5. Chạy Backend API Server
+#### 6.5. Chạy Backend API Server
 ```bash
 uv run uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### 6. Chạy Trình duyệt phát triển Frontend
+#### 6.6. Chạy Trình duyệt phát triển Frontend
 ```bash
 cd frontend
 npm run dev
@@ -179,7 +193,7 @@ Mở trình duyệt truy cập: [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## 🧪 Kiểm thử Hệ thống (Testing & Verification)
+## 7. Kiểm thử Hệ thống (Testing & Verification)
 
 Hệ thống được đảm bảo tính ổn định qua các kịch bản kiểm thử tích hợp (E2E) và kiểm thử hiệu năng tải (Load Testing):
 
@@ -194,7 +208,7 @@ Hệ thống được đảm bảo tính ổn định qua các kịch bản ki�
 
 ---
 
-## 📂 Cấu trúc Thư mục Chính của Dự án
+## 8. Cấu trúc Thư mục Chính của Dự án
 
 ```text
 ml-vietnam-plant-disease-detection/
@@ -214,7 +228,7 @@ ml-vietnam-plant-disease-detection/
 
 ---
 
-## 👥 Thành viên Thực hiện Dự án
+## 9. Thành viên Thực hiện Dự án
 
 Dự án được thực hiện bởi nhóm sinh viên Khoa Công nghệ Thông tin - Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM:
 
