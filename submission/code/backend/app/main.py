@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
 from backend.app.config import settings
 from backend.app.db import init_db
@@ -68,6 +69,23 @@ app.include_router(knowledge.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(predict.router, prefix="/api/v1")
 app.include_router(history.router, prefix="/api/v1")
+
+
+@app.get("/")
+async def root_redirect():
+    """Redirect root to API documentation."""
+    return RedirectResponse(url="/docs")
+
+
+@app.get("/api/v1")
+async def api_v1_root():
+    """Welcome endpoint for API v1."""
+    return {
+        "message": "Welcome to the Plant Disease Detection API v1",
+        "docs": "/docs",
+        "health": "/health",
+        "version": "0.1.0"
+    }
 
 
 @app.get("/health")
