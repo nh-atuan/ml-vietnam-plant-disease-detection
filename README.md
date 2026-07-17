@@ -1,6 +1,6 @@
-# Hệ thống Chẩn đoán Bệnh Lá cây Lúa & Cà phê Đặc sản Việt Nam
+# Hệ thống Phân vùng Thực thể Chẩn đoán Bệnh trên Lá cây Nông nghiệp Đặc sản Cà phê và Lúa
 
-Hệ thống Học máy End-to-End hỗ trợ chẩn đoán và đưa ra khuyến nghị điều trị bệnh trên lá cây nông nghiệp đặc sản tại Việt Nam (Lúa và Cà phê). Hệ thống bao gồm toàn bộ chu trình phát triển: thu thập dữ liệu tự động, gán nhãn AI tích hợp phản hồi từ con người (human-in-the-loop), huấn luyện & tối ưu hóa mô hình học sâu phân đoạn thực thể (Instance Segmentation), lượng tử hóa mô hình phục vụ suy luận thời gian thực và triển khai hệ thống Web App hoàn chỉnh lên hạ tầng đám mây K8s/GCP.
+Hệ thống Học máy End-to-End ứng dụng kỹ thuật **Phân vùng Thực thể** (Instance Segmentation) để chẩn đoán bệnh và đưa ra khuyến nghị điều trị trên lá cây nông nghiệp đặc sản tại Việt Nam (Lúa và Cà phê). Hệ thống bao gồm toàn bộ chu trình phát triển: thu thập dữ liệu tự động, gán nhãn AI tích hợp phản hồi từ con người (human-in-the-loop), huấn luyện & tối ưu hóa mô hình học sâu, lượng tử hóa mô hình phục vụ suy luận thời gian thực và triển khai hệ thống Web App hoàn chỉnh lên hạ tầng đám mây K3s/GCP.
 
 ---
 
@@ -33,7 +33,7 @@ Hệ thống Học máy End-to-End hỗ trợ chẩn đoán và đưa ra khuyế
 - **Hệ thống Tri thức Chuyên gia (Expert Knowledge Base):** Tích hợp bộ quy tắc chẩn đoán tiếng Việt chi tiết với 8 loại bệnh lá lúa/cà phê, tự động cung cấp nguyên nhân, triệu chứng và khuyến nghị điều trị thực địa cho nông dân.
 - **Quy trình Thu thập Dữ liệu Tiên tiến:** Kết hợp cào dữ liệu thông minh qua [Crawl4AI](https://github.com/unclecode/crawl4ai), tự động tiền gán nhãn bằng mô hình thị giác lớn **Gemma 4 VLM**, tự động sinh mask phân đoạn qua **SAM 3 (Segment Anything Model)** và cho phép hiệu chỉnh thủ công bằng Streamlit Labeler tự phát triển.
 - **Hạ tầng Full-stack Hiện đại:** Backend được xây dựng bằng FastAPI kết hợp SQLModel/PostgreSQL (quản lý tài khoản & lịch sử chẩn đoán), lưu trữ hình ảnh trên MinIO (S3-compatible Object Storage), chạy nền dịch vụ qua Redis. Frontend Next.js cung cấp giao diện trực quan, mượt mà.
-- **Đảm bảo Chất lượng & DevOps:** Triển khai tự động hóa bằng Docker Compose cho môi trường phát triển cục bộ và Helm Chart / k3s lên đám mây GCP. Đầy đủ bộ kiểm thử API Integration và Load Testing (Locust).
+- **Đảm bảo Chất lượng & DevOps:** Triển khai tự động hóa bằng Docker Compose cho môi trường phát triển cục bộ và Helm Chart trên K3s (Lightweight Kubernetes) lên đám mây GCP. Đầy đủ bộ kiểm thử API Integration và Load Testing (Locust).
 
 ---
 
@@ -216,7 +216,7 @@ ml-vietnam-plant-disease-detection/
 ├── crawl/                  # Mã nguồn bộ cào dữ liệu, Gemma 4 labeler, SAM
 ├── models/                 # Chứa các file ONNX chạy suy luận (đọc thêm models/README.md)
 ├── docs/                   # Tài liệu thiết kế hệ thống, kiến trúc, kế hoạch các Phase
-├── deployment/             # Cấu hình Helm chart, Traefik proxy triển khai lên GCP
+├── deployment/             # Cấu hình Helm chart, K3s setup script, Traefik proxy triển khai lên GCP
 ├── notebooks/              # Jupyter Notebooks phục vụ EDA và huấn luyện thử nghiệm
 ├── tests/                  # Bộ mã nguồn kiểm thử (Integration, Load, DevOps)
 ├── pyproject.toml          # Định nghĩa dependencies Python (sử dụng uv)
