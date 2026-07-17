@@ -24,8 +24,8 @@
   
   \vspace{0.2cm}
   \begin{itemize}
-    \item YOLO26-seg đạt độ chính xác (mAP) đứng hạng đầu trên tập Lúa và hạng 3 trên Cà phê.
-    \item YOLO26-seg có tốc độ suy luận vượt trội nhất (20 - 65 ms/ảnh) và gọn nhẹ nhất (6.23 MB).
+    \item[-] YOLO26-seg đạt độ chính xác mAP đứng hạng đầu trên tập Lúa và hạng ba trên tập Cà phê.
+    \item[-] YOLO26-seg sở hữu tốc độ suy luận vượt trội nhất (20 - 65 ms/ảnh) và kích thước gọn nhẹ nhất (6.23 MB).
   \end{itemize}
 \end{frame}
 
@@ -51,7 +51,7 @@
   \end{table}
   
   \begin{itemize}
-    \item Phương pháp tìm kiếm kết hợp loại bỏ sớm (ASHA) giúp tăng hơn 2\% mAP@50 trên cả hai miền dữ liệu.
+    \item[-] Phương pháp tìm kiếm kết hợp thuật toán loại bỏ sớm ASHA giúp tăng hơn 2\% mAP@50 trên cả hai miền dữ liệu.
   \end{itemize}
 \end{frame}
 
@@ -62,36 +62,50 @@
     \centering
     \begin{minipage}{0.48\textwidth}
       \centering
-      \includegraphics[width=\textwidth]{yolo/rice/confusion_matrix_3.png}
+      \includegraphics[width=0.8\textwidth]{yolo/rice/confusion_matrix_3.png}
       \caption*{Tập Lúa}
     \end{minipage}\hfill
     \begin{minipage}{0.48\textwidth}
       \centering
-      \includegraphics[width=\textwidth]{yolo/coffee/confusion_matrix_3.png}
+      \includegraphics[width=0.8\textwidth]{yolo/coffee/confusion_matrix_3.png}
       \caption*{Tập Cà phê}
     \end{minipage}
+    \vspace{0.1cm}
+    \caption{Ma trận nhầm lẫn chuẩn hóa của mô hình YOLO26-seg}
   \end{figure}
   \vspace{-0.3cm}
   \begin{itemize}
-    \item Nhầm lẫn điển hình: Đốm nâu (BrownSpot) $\leftrightarrow$ Bọ xít gai (Hispa) trên lúa.
-    \item Cà phê: Nhầm lẫn nhẹ giữa Rỉ sắt (Rust) $\leftrightarrow$ Đốm rong (AlgalLeafSpot).
+    \item[-] Nhầm lẫn điển hình: Đốm nâu (BrownSpot) $\leftrightarrow$ Bọ xít gai (Hispa) trên lúa.
+    \item[-] Cà phê: Nhầm lẫn nhẹ giữa Rỉ sắt (Rust) $\leftrightarrow$ Đốm rong (AlgalLeafSpot).
   \end{itemize}
 \end{frame}
 
 \subsection{So sánh và Thảo luận}
 \begin{frame}{Phân tích chuyên sâu (Overfitting / Underfitting)}
-  \begin{itemize}
-    \item Đánh giá Overfitting/Underfitting
-    \begin{itemize}
-      \item MobileSAM gặp hiện tượng underfitting (đặc biệt trên tập lúa) do bản chất zero-shot khó bắt các chi tiết cực kỳ nhỏ của bệnh thực vật.
-      \item Mask R-CNN và Mask2Former dễ bị overfitting; kết quả tuning thậm chí giảm mạnh do mạng quá lớn so với tập dữ liệu.
-    \end{itemize}
-    \item Cách khắc phục đề xuất
-    \begin{itemize}
-      \item Tăng cường dữ liệu (Data Augmentation), thu thập thêm mẫu thực tế.
-      \item Áp dụng các kỹ thuật Regularization mạnh hơn (Dropout, Weight decay, Early Stopping).
-    \end{itemize}
-  \end{itemize}
+  \begin{columns}[t]
+    \begin{column}{0.48\textwidth}
+      \justifying
+      \centerline{\textbf{Hiện tượng lệch khớp}}
+      \vspace{0.3cm}
+      
+      \begin{itemize}
+        \item[-] Hiện tượng chưa khớp (underfitting) xảy ra với MobileSAM do mô hình zero-shot khó nhận diện các vết bệnh nhỏ trên lá lúa.
+        \item[-] Hiện tượng khớp quá mức (overfitting) xảy ra ở Mask R-CNN và Mask2Former do kích thước mô hình quá lớn so với tập dữ liệu.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \justifying
+      \centerline{\textbf{Giải pháp khắc phục}}
+      \vspace{0.3cm}
+      
+      Để nâng cao hiệu năng và tính tổng quát hóa:
+      \vspace{0.2cm}
+      \begin{itemize}
+        \item[-] Tăng cường tập dữ liệu huấn luyện (Data Augmentation) hoặc bổ sung thêm mẫu thực tế.
+        \item[-] Áp dụng các kỹ thuật Regularization mạnh mẽ hơn như Dropout, Weight decay và Early Stopping.
+      \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 

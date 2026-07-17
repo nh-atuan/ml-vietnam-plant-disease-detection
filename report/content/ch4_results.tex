@@ -119,15 +119,15 @@ Ma trận nhầm lẫn chuẩn hóa của mô hình YOLO26-seg được trình b
 
 Dựa trên ma trận nhầm lẫn, có thể thấy một số nhãn có tỷ lệ đoán sai đáng chú ý (confusion pairs):
 \begin{itemize}
-  \item \textbf{Tập Lúa:} Mô hình dễ nhầm lẫn giữa bệnh đốm nâu (BrownSpot) và bọ xít gai (Hispa), hoặc giữa BrownSpot và LeafBlast. Nguyên nhân chủ yếu xuất phát từ sự tương đồng hình thái ở giai đoạn đầu của bệnh, khi cả ba vết bệnh đều biểu hiện dưới dạng các chấm nhỏ li ti màu nâu nhạt trên bề mặt lá.
-  \item \textbf{Tập Cà phê:} Mô hình đôi khi nhầm lẫn giữa bệnh rỉ sắt (Rust) và đốm rong (AlgalLeafSpot). Cả hai loại bệnh này đều có xu hướng gây ra những vùng đốm tròn màu vàng hoặc gỉ sắt ở mặt dưới lá, gây khó khăn cho việc phân loại chính xác khi ảnh chụp không đủ độ phân giải hoặc bị ngược sáng.
+  \item Đối với tập dữ liệu Lúa: Mô hình dễ nhầm lẫn giữa bệnh đốm nâu (BrownSpot) và bọ xít gai (Hispa), hoặc giữa BrownSpot và LeafBlast. Nguyên nhân chủ yếu xuất phát từ sự tương đồng hình thái ở giai đoạn đầu của bệnh, khi cả ba vết bệnh đều biểu hiện dưới dạng các chấm nhỏ li ti màu nâu nhạt trên bề mặt lá.
+  \item Đối với tập dữ liệu Cà phê: Mô hình đôi khi nhầm lẫn giữa bệnh rỉ sắt (Rust) và đốm rong (AlgalLeafSpot). Cả hai loại bệnh này đều có xu hướng gây ra những vùng đốm tròn màu vàng hoặc gỉ sắt ở mặt dưới lá, gây khó khăn cho việc phân loại chính xác khi ảnh chụp không đủ độ phân giải hoặc bị ngược sáng.
 \end{itemize}
 
 \subsubsection{Hiện tượng Overfitting và Underfitting}
 Qua các biểu đồ và chỉ số, chúng tôi ghi nhận một số vấn đề liên quan đến hiện tượng khớp quá mức (overfitting) và chưa khớp (underfitting):
 \begin{itemize}
-  \item \textbf{Underfitting (MobileSAM):} MobileSAM có mAP thấp nhất trên tập Lúa (0.5637). Do kiến trúc là Zero-shot segmentation được fine-tune, mô hình khó nắm bắt các chi tiết cực kỳ nhỏ gọn như vết bệnh Hispa trên lá lúa. Biện pháp khắc phục là sử dụng mô hình chuyên biệt (như YOLO) kết hợp với các anchor box phù hợp với object nhỏ.
-  \item \textbf{Overfitting (Mask R-CNN và Mask2Former):} Cả hai mô hình này đều rất lớn. Khi chúng tôi thực hiện tinh chỉnh (RayTune) hoặc áp dụng các augment mạnh hơn, kết quả đánh giá trên tập test thậm chí còn giảm sâu so với baseline (mAP của Mask2Former giảm từ 0.69 xuống 0.10 khi tăng size backbone). Điều này minh chứng cho việc các kiến trúc khổng lồ dễ dàng "ghi nhớ" tập dữ liệu huấn luyện nhỏ, dẫn tới overfit. Để khắc phục, cần thu thập thêm dữ liệu (thực tế hoặc qua GAN), áp dụng thêm cơ chế regularization mạnh (Dropout/Weight decay) và Early Stopping nghiêm ngặt hơn.
+  \item Hiện tượng chưa khớp (underfitting) xảy ra với MobileSAM khi mô hình đạt mAP thấp nhất trên tập Lúa (0.5637). Do kiến trúc là Zero-shot segmentation được fine-tune, mô hình khó nắm bắt các chi tiết cực kỳ nhỏ gọn như vết bệnh Hispa trên lá lúa. Biện pháp khắc phục là sử dụng mô hình chuyên biệt (như YOLO) kết hợp với các anchor box phù hợp với đối tượng kích thước nhỏ.
+  \item Hiện tượng khớp quá mức (overfitting) xuất hiện ở Mask R-CNN và Mask2Former do cả hai mô hình này đều có kích thước tham số rất lớn. Khi thực hiện tinh chỉnh (RayTune) hoặc áp dụng các augment mạnh hơn, kết quả đánh giá trên tập test thậm chí còn giảm sâu so với baseline (mAP của Mask2Former giảm từ 0.69 xuống 0.10 khi tăng size backbone). Điều này minh chứng cho việc các kiến trúc khổng lồ dễ dàng "ghi nhớ" tập dữ liệu huấn luyện nhỏ. Để khắc phục, cần thu thập thêm dữ liệu (thực tế hoặc qua các phương pháp sinh ảnh), áp dụng thêm cơ chế regularization mạnh (Dropout/Weight decay) và Early Stopping nghiêm ngặt hơn.
 \end{itemize}
 
 
