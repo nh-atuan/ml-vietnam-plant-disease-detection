@@ -1,13 +1,179 @@
-\section{Lựa chọn và Huấn luyện Mô hình}
+\section{Lựa chọn và huấn luyện mô hình}
 
-\subsection{Chuẩn bị Dữ liệu cho Mô hình}
+\subsection{Chuẩn bị dữ liệu cho mô hình}
 \begin{frame}
+    \textbf{Phân chia tập dữ liệu chống rò rỉ}\\
+    \vspace{0.1cm}
+    Tập dữ liệu sạch gồm 7.149 ảnh được phân chia thành ba tập theo tỷ lệ chuẩn $70:15:15$ bằng kỹ thuật Stratified Sampling.
+
+    \vspace{0.2cm}
+    \begin{table}[h]
+        \centering
+        \caption{Phân bố số lượng ảnh theo tập con, miền và lớp bệnh}
+        \label{tab:slide_split_dist}
+        \footnotesize
+        \setlength{\tabcolsep}{10pt}
+        \begin{tabular}{lrrrr}
+            \toprule
+            Miền dữ liệu                   & Train (70\%)   & Val (15\%)     & Test (15\%)    & Tổng cộng      \\
+            \midrule
+            Lúa                            & 2.346          & 502            & 503            & 3.351          \\
+            Cà phê                         & 2.658          & 570            & 570            & 3.798          \\
+            \midrule
+            \textbf{Tổng toàn cục (8 lớp)} & \textbf{5.004} & \textbf{1.072} & \textbf{1.073} & \textbf{7.149} \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
 \end{frame}
 
-\subsection{Lựa chọn và Kiến trúc Mô hình}
 \begin{frame}
+    \textbf{Tiền xử lý và tăng cường dữ liệu}\\
+    \footnotesize
+    \justifying
+    Để tăng khả năng tổng quát hóa và chống overfitting, nhóm áp dụng các kỹ thuật chuẩn hóa và tăng cường dữ liệu trong quá trình huấn luyện:
+
+    \begin{table}[h]
+        \centering
+        \caption{Các kỹ thuật tiền xử lý và tăng cường dữ liệu}
+        \label{tab:slide_data_aug}
+        \scriptsize
+        \setlength{\tabcolsep}{6pt}
+        \begin{tabular}{lp{9.8cm}}
+            \toprule
+            Phương pháp               & Chi tiết thiết lập và tác dụng                                                                                              \\
+            \midrule
+            Letterbox                 & Đưa ảnh về kích thước $640 \times 640$ hoặc $256 \times 256$ px giữ nguyên tỷ lệ khung hình thực, tránh méo dạng vùng bệnh. \\
+            Cắt và đổi kích thước     & Cắt và thay đổi kích thước ngẫu nhiên với tỷ lệ diện tích từ $0,75$ đến $1,0$.                                              \\
+            Lật hình học              & Lật ngang với xác suất $p=0,5$, lật dọc với xác suất $p=0,2$.                                                               \\
+            Biến đổi affine           & Xoay ngẫu nhiên trong khoảng góc $\pm 30^\circ$.                                                                            \\
+            Biến thiên quang học      & Điều chỉnh ngẫu nhiên độ sáng và màu sắc ảnh.                                                                               \\
+            Trộn mẫu (\textit{MixUp}) & Mixup với hệ số $\alpha=0,4$.                                                                                               \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
 \end{frame}
 
-\subsection{Cấu hình Huấn luyện}
+\subsection{Lựa chọn và kiến trúc mô hình}
 \begin{frame}
+    \footnotesize
+    \justifying
+    Nhóm khảo sát, huấn luyện và so sánh năm kiến trúc tiên tiến thuộc hai trường phái Convolutional Neural Network (CNN) và Vision Transformer (ViT) nhằm tối ưu điểm cân bằng giữa độ chính xác và tốc độ suy luận:
+
+    \vspace{0.1cm}
+    \begin{table}[h]
+        \centering
+        \caption{Tổng quan năm kiến trúc cho bài toán instance segmentation}
+        \label{tab:slide_model_overview}
+        \scriptsize
+        \setlength{\tabcolsep}{4pt}
+        \begin{tabular}{llp{9.4cm}}
+            \toprule
+            Mô hình                                                 & Họ  & Đặc điểm nổi bật và lý do lựa chọn                                                                             \\
+            \midrule
+            Mask R-CNN \cite{he2017mask}                            & CNN & Kiến trúc hai giai đoạn kinh điển, mang lại độ chính xác cao, được chọn làm baseline đối chiếu hiệu suất.      \\
+            YOLO26m-seg \cite{jocher2023ultralytics,jocher2024yolo} & CNN & Kiến trúc một giai đoạn với tốc độ thời gian thực xuất sắc, cỡ medium tối ưu điểm cân bằng chính xác - tốc độ. \\
+            RF-DETR \cite{carion2020end,lv2023detrs}                & ViT & Thiết kế end-to-end loại bỏ NMS, DINOv2 feature extraction, real-time Transformer.                             \\
+            MobileSAM \cite{zhang2023faster,kirillov2023segment}    & ViT & Phiên bản thu gọn siêu nhẹ của SAM, khả năng zero-shot với câu lệnh đầu vào, tối ưu cho edge devices.          \\
+            Mask2Former \cite{cheng2022masked}                      & ViT & Kiến trúc phân vùng hợp nhất dựa trên mask classification, đạt hiệu năng đa tác vụ vượt trội.                  \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\subsection{Cấu hình huấn luyện}
+\begin{frame}
+    \begin{columns}[T]
+        \begin{column}{0.44\textwidth}
+            \textbf{Thiết lập cấu hình chung}
+            \vspace{0.1cm}
+            \begin{table}[h]
+                \centering
+                \caption{Cấu hình huấn luyện chung}
+                \label{tab:slide_common_train}
+                \footnotesize
+                \setlength{\tabcolsep}{4pt}
+                \begin{tabular}{ll}
+                    \toprule
+                    Tham số              & Giá trị thiết lập \\
+                    \midrule
+                    Phần cứng GPU        & NVIDIA Tesla T4   \\
+                    Tỷ lệ chia dữ liệu   & $70:15:15$        \\
+                    Thuật toán tối ưu    & AdamW             \\
+                    Effective batch size & 8                 \\
+                    Số epoch tối đa      & 30                \\
+                    Dừng sớm             & 5                 \\
+                    Seed                 & 3407              \\
+                    \bottomrule
+                \end{tabular}
+            \end{table}
+        \end{column}
+        \begin{column}{0.54\textwidth}
+            \textbf{Tham số riêng theo kiến trúc}
+            \vspace{0.1cm}
+            \begin{table}[h]
+                \centering
+                \caption{Cấu hình riêng cho từng mô hình}
+                \label{tab:slide_specific_train}
+                \scriptsize
+                \setlength{\tabcolsep}{3pt}
+                \begin{tabular}{lrrp{2.6cm}}
+                    \toprule
+                    Mô hình     & $\text{lr}_0$     & Kích thước         & Ghi chú kỹ thuật    \\
+                    \midrule
+                    Mask R-CNN  & $1 \cdot 10^{-4}$ & $256 \times 256$   & Batch 2, grad acc 4 \\
+                    YOLO26m-seg & $8 \cdot 10^{-4}$ & $640 \times 640$   & Batch 8             \\
+                    RF-DETR     & $1 \cdot 10^{-4}$ & $640 \times 640$   & Batch 2, grad acc 4 \\
+                    MobileSAM   & $1 \cdot 10^{-5}$ & $1024 \times 1024$ & Batch 2, grad acc 4 \\
+                    Mask2Former & $5 \cdot 10^{-5}$ & $384 \times 384$   & Batch 4, grad acc 2 \\
+                    \bottomrule
+                \end{tabular}
+            \end{table}
+        \end{column}
+    \end{columns}
+    \vspace{0.1cm}
+    \scriptsize
+    \textit{*Ghi chú: Batch: batch size, grad acc: tích lũy đạo hàm.}
+\end{frame}
+
+
+\subsection{Tinh chỉnh siêu tham số}
+\begin{frame}
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \textbf{Tối ưu tự động bằng Ray Tune}
+            \vspace{0.1cm}
+            \footnotesize
+            \justifying
+            \begin{itemize}
+                \setlength{\itemsep}{3pt}
+                \item Tinh chỉnh siêu tham số cho mô hình tốt nhất YOLO26m-seg bằng Ray Tune.
+                \item Áp dụng thuật toán lập lịch bất đồng bộ ASHA.
+                \item Đánh giá song song nhiều cấu hình thử nghiệm, dừng sớm các cấu hình kém hiệu quả ngay từ những epoch đầu giúp tối ưu hóa tài nguyên tính toán.
+                \item Thực nghiệm 20 thử nghiệm độc lập trên không gian sáu siêu tham số cốt lõi.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \centering
+            \vspace{0.15cm}
+            \begin{table}[h]
+                \centering
+                \caption{Không gian tìm kiếm siêu tham số}
+                \label{tab:slide_raytune_space}
+                \scriptsize
+                \setlength{\tabcolsep}{3pt}
+                \begin{tabular}{llr}
+                    \toprule
+                    Siêu tham số                           & Phân phối   & Khoảng/Tập giá trị                   \\
+                    \midrule
+                    Learning rate ($\text{lr}_0$)          & Log-uniform & $[1 \cdot 10^{-5}, 1 \cdot 10^{-2}]$ \\
+                    Momentum                               & Uniform     & $[0,85, 0,95]$                       \\
+                    Weight decay                           & Log-uniform & $[1 \cdot 10^{-5}, 1 \cdot 10^{-3}]$ \\
+                    Warmup epochs                          & Choice      & $\{1, 2, 3\}$                        \\
+                    Hệ số khung bao $\lambda_{\text{box}}$ & Uniform     & $[5,0, 10,0]$                        \\
+                    Hệ số phân loại $\lambda_{\text{cls}}$ & Uniform     & $[0,3, 0,8]$                         \\
+                    \bottomrule
+                \end{tabular}
+            \end{table}
+        \end{column}
+    \end{columns}
 \end{frame}

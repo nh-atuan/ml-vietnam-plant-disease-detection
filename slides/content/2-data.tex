@@ -1,13 +1,217 @@
-\section{Thu thập và Phân tích Dữ liệu}
+\section{Thu thập và phân tích dữ liệu}
 
-\subsection{Nguồn và Phương pháp Thu thập}
+\subsection{Nguồn và phương pháp thu thập}
 \begin{frame}
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \textbf{Nguồn và mở rộng dữ liệu}
+            \vspace{0.1cm}
+            \begin{itemize}
+                \setlength{\itemsep}{1pt}
+                \item Kế thừa từ hai bộ tập dữ liệu có sẵn: Rice Diseases Image Dataset và Detect Disease On Coffee Leaves.
+                \item Thu thập bổ sung qua hình thức cào dữ liệu từ các trang web, blog chuyên ngành bằng công cụ Crawl4AI.
+                \item Khám phá và lọc URL tự động nhờ DuckDuckGo và Serper.dev.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \centering
+            \begin{tikzpicture}[
+                node distance=0.18cm,
+                box/.style={rectangle, draw=Logo1, thick, rounded corners=2pt, minimum width=4.8cm, minimum height=0.42cm, align=center, font=\tiny},
+                arrow/.style={-{Stealth[scale=0.7]}, thick, color=Logo1}
+                ]
+                \node[box] (step1) {\textbf{1. Xây dựng truy vấn từ khóa}};
+                \node[box, below=of step1] (step2) {\textbf{2. Khám phá và lọc trùng URL}};
+                \node[box, below=of step2] (step3) {\textbf{3. Cào ảnh và văn bản ngữ cảnh}};
+                \node[box, below=of step3] (step4) {\textbf{4. Lưu trữ theo chuẩn hóa}};
+                \node[box, below=of step4] (step5) {\textbf{5. AI đề xuất nhãn và SAM 3 tạo pseudo-mask}};
+                \node[box, below=of step5] (step6) {\textbf{6. Kiểm duyệt thủ công (Streamlit)}};
+                \node[box, fill=Logo1!10, below=of step6] (final) {\textbf{Tập dữ liệu cuối (7.300 ảnh)}};
+
+                \draw[arrow] (step1) -- (step2);
+                \draw[arrow] (step2) -- (step3);
+                \draw[arrow] (step3) -- (step4);
+                \draw[arrow] (step4) -- (step5);
+                \draw[arrow] (step5) -- (step6);
+                \draw[arrow] (step6) -- (final);
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
 \end{frame}
 
-\subsection{Tiền xử lý và Làm sạch}
+
+\subsection{Nguồn và phương pháp thu thập}
 \begin{frame}
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \textbf{Vòng lặp có sự tham gia của con người}
+            \vspace{0.1cm}
+            \begin{itemize}
+                \setlength{\itemsep}{1pt}
+                \item Gán nhãn theo hướng vòng lặp có sự tham gia của con người.
+                \item AI đề xuất nhãn (Gemma 4) và tạo pseudo-mask tự động bằng mô hình SAM 3.
+                \item Kiểm duyệt thủ công trên công cụ Streamlit để xác nhận hoặc sửa nhãn.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \centering
+            \begin{tikzpicture}[
+                node distance=0.18cm,
+                box/.style={rectangle, draw=Logo1, thick, rounded corners=2pt, minimum width=4.8cm, minimum height=0.42cm, align=center, font=\tiny},
+                arrow/.style={-{Stealth[scale=0.7]}, thick, color=Logo1}
+                ]
+                \node[box] (step1) {\textbf{1. Xây dựng truy vấn từ khóa}};
+                \node[box, below=of step1] (step2) {\textbf{2. Khám phá và lọc trùng URL}};
+                \node[box, below=of step2] (step3) {\textbf{3. Cào ảnh và văn bản ngữ cảnh}};
+                \node[box, below=of step3] (step4) {\textbf{4. Lưu trữ theo chuẩn hóa}};
+                \node[box, below=of step4] (step5) {\textbf{5. AI đề xuất nhãn và SAM 3 tạo pseudo-mask}};
+                \node[box, below=of step5] (step6) {\textbf{6. Kiểm duyệt thủ công (Streamlit)}};
+                \node[box, fill=Logo1!10, below=of step6] (final) {\textbf{Tập dữ liệu cuối (7.300 ảnh)}};
+
+                \draw[arrow] (step1) -- (step2);
+                \draw[arrow] (step2) -- (step3);
+                \draw[arrow] (step3) -- (step4);
+                \draw[arrow] (step4) -- (step5);
+                \draw[arrow] (step5) -- (step6);
+                \draw[arrow] (step6) -- (final);
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
 \end{frame}
 
-\subsection{Phân tích Khám phá Dữ liệu (EDA)}
 \begin{frame}
+    \textbf{Quy mô bộ dữ liệu hợp nhất}\\
+    Tập dữ liệu thu thập được bao gồm 7.300 ảnh với tổng cộng 7.562 COCO format annotation phục vụ cho bài toán instance segmentation.
+
+    \begin{table}[h]
+        \centering
+        \caption{Quy mô bộ dữ liệu hợp nhất}
+        \label{tab:slide_data_overview}
+        \footnotesize
+        \setlength{\tabcolsep}{5pt}
+        \begin{tabular}{lrr}
+            \toprule
+            Miền cây trồng     & Số lượng ảnh   & Số annotation  \\
+            \midrule
+            Lúa                & 3.421          & 3.720          \\
+            Cà phê             & 3.879          & 3.842          \\
+            \midrule
+            \textbf{Tổng cộng} & \textbf{7.300} & \textbf{7.562} \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\subsection{Tiền xử lý và làm sạch}
+\begin{frame}
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \textbf{Quy trình kiểm duyệt hai bước}\\
+            \vspace{0.15cm}
+            \footnotesize
+            \justifying
+            Dữ liệu thô thu thập từ nhiều nguồn được lọc qua quy trình kiểm duyệt chất lượng nghiêm ngặt:
+            \begin{enumerate}
+                \setlength{\itemsep}{3pt}
+                \item Khử trùng lặp: tính toán hàm băm MD5 trên nội dung nhị phân để phát hiện và loại bỏ chính xác các ảnh trùng lặp hoàn toàn.
+                \item Lọc ảnh mờ nhòe: đánh giá độ sắc nét dựa trên phương sai của phép biến đổi Laplacian với ngưỡng loại bỏ $\tau = 100$.
+            \end{enumerate}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \centering
+            \vspace{0.2cm}
+            \begin{table}[h]
+                \centering
+                \caption{Kết quả làm sạch toàn bộ tập ảnh}
+                \label{tab:slide_clean_summary}
+                \footnotesize
+                \setlength{\tabcolsep}{5pt}
+                \begin{tabular}{lrr}
+                    \toprule
+                    Lý do xử lý              & Số ảnh         & Tỷ lệ (\%)     \\
+                    \midrule
+                    Ảnh trùng lặp            & 1              & 0,01           \\
+                    Ảnh mờ nhòe              & 150            & 2,05           \\
+                    \textbf{Giữ lại sử dụng} & \textbf{7.149} & \textbf{97,93} \\
+                    \bottomrule
+                \end{tabular}
+            \end{table}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    Phân bố chi tiết số ảnh sau khi làm sạch
+    \vspace{0.1cm}
+    \begin{table}[h]
+        \centering
+        \caption{Phân bố số lượng ảnh và tỷ lệ theo lớp và miền sau làm sạch}
+        \label{tab:slide_class_dist_clean}
+        \footnotesize
+        \setlength{\tabcolsep}{12pt}
+        \begin{tabular}{llrr}
+            \toprule
+            Miền dữ liệu       & Lớp bệnh        & Số lượng ảnh & Tỷ lệ trong miền (\%) \\
+            \midrule
+            Lúa (3.351 ảnh)    & Lá khỏe mạnh    & 1.472        & 43,93                 \\
+                               & Bệnh đạo ôn     & 777          & 23,19                 \\
+                               & Sâu đục lá      & 571          & 17,04                 \\
+                               & Bệnh đốm nâu    & 531          & 15,85                 \\
+            \midrule
+            Cà phê (3.798 ảnh) & Bệnh rỉ sắt     & 1.387        & 36,52                 \\
+                               & Sâu đục lá      & 1.200        & 31,60                 \\
+                               & Bệnh đốm rong   & 949          & 24,99                 \\
+                               & Bệnh phấn trắng & 262          & 6,90                  \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\subsection{Phân tích và khám phá dữ liệu}
+\begin{frame}
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \textbf{Mất cân bằng lớp và hình học ảnh}
+            \vspace{0.1cm}
+            \scriptsize
+            \justifying
+            \begin{itemize}
+                \setlength{\itemsep}{2pt}
+                \item Mất cân bằng lớp: tỷ số mất cân bằng $\text{IR} = N_{\max}/N_{\min}$ trên Lúa là 2,77 và trên Cà phê là 5,28 (lớp phấn trắng chỉ chiếm 6,9\%).
+                \item Chênh lệch độ phân giải: ảnh lúa trung bình $2.031 \times 2.026$ px, chủ yếu vuông; ảnh cà phê nhỏ hơn rõ rệt, $971 \times 1.154$ px, thiên về khung dọc.
+            \end{itemize}
+            $\implies$ Chuẩn hóa kích thước ảnh giữ nguyên tỷ lệ khung hình thực bằng kỹ thuhật letterbox. Sử dụng các kỹ thuật tăng cường dữ liệu.
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \centering
+            \includegraphics[height=3.6cm,width=0.96\textwidth,keepaspectratio]{eda/class_distribution.png}
+            \captionof{figure}{Phân bố số lượng và tỷ lệ các lớp bệnh}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \textbf{Màu sắc và cặp bệnh dễ nhầm lẫn}
+            \scriptsize
+            \justifying
+            \begin{itemize}
+                \item Đặc trưng chiếu sáng: ảnh Lúa sáng rõ rệt (độ sáng trung bình 198 - 202) so với ảnh Cà phê (116 - 129). Kênh Green chiếm ưu thế nhưng độ tương phản giữa các lớp giao thoa mạnh.
+                \item Khoảng cách Bhattacharyya $D_B$ trên histogram RGB chuẩn hóa:
+                      \begin{itemize}
+                          \scriptsize
+                          \justifying
+                          \item Lúa: cặp đốm nâu và đạo ôn có $D_B$ nhỏ trên cả 3 kênh (lớn nhất ở kênh Red với $D_B = 0,132$).
+                          \item Cà phê: cặp đốm rong và rỉ sắt có phân bố màu gần trùng khớp hoàn toàn ($D_B \approx 0,003 - 0,005$).
+                      \end{itemize}
+            \end{itemize}
+            $\implies$ Mô hình không thể dựa vào màu toàn cục mà bắt buộc phải học kết cấu cục bộ cùng ngữ cảnh không gian.
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \centering
+            \includegraphics[height=3.4cm,width=0.96\textwidth,keepaspectratio]{eda/confusable_histograms.png}
+            \captionof{figure}{Histogram RGB của các cặp bệnh dễ nhầm lẫn}
+        \end{column}
+    \end{columns}
 \end{frame}
