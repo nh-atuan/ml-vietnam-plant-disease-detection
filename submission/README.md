@@ -1,6 +1,6 @@
 # HỆ THỐNG PHÂN VÙNG THỰC THỂ CHẨN ĐOÁN BỆNH TRÊN LÁ CÂY NÔNG NGHIỆP ĐẶC SẢN CÀ PHÊ VÀ LÚA
 
-**Đồ án môn học:** Học Máy (Machine Learning)  
+**Đồ án môn học:** Nhập Môn Học Máy (Machine Learning)  
 **Đề tài:** Hệ thống phân vùng thực thể chẩn đoán bệnh trên lá cây nông nghiệp đặc sản cà phê và lúa  
 **Giảng viên hướng dẫn:** Thầy Bùi Tiến Lên  
 
@@ -10,11 +10,11 @@
 
 | STT | Họ và tên | MSSV |
 |-----|-----------|------|
-| 1 | Lê Xuân Trí | 23120099 |
-| 2 | Đàm Tiến Đạt | 23120118 |
-| 3 | Tống Thanh Phúc | 23120158 |
-| 4 | Dương Tuấn Anh | 23120208 |
-| 5 | Nguyễn Hồ Anh Tuấn | 23120185 |
+| 1 | Nguyễn Hồ Anh Tuấn | 23120185 |
+| 2 | Lê Xuân Trí | 23120099 |
+| 3 | Đàm Tiến Đạt | 23120118 |
+| 4 | Tống Thanh Phúc | 23120158 |
+| 5 | Dương Tuấn Anh | 23120208 |
 
 ---
 
