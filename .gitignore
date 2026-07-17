@@ -160,8 +160,9 @@ submission/data/*
 
 # Node / frontend
 node_modules/
-frontend/node_modules/
-frontend/.next/
+**/node_modules/
+.next/
+**/.next/
 frontend/out/
 frontend/.turbo/
 frontend/npm-debug.log*
