@@ -12,7 +12,7 @@ Do dung lượng tập dữ liệu rất lớn (~9.0 GB bao gồm ảnh gốc v�
 2. **Hướng dẫn thiết lập cục bộ:**
    Để chạy thử mã nguồn cục bộ hoặc chạy huấn luyện lại, hãy tải bộ dữ liệu từ Kaggle về và giải nén vào đúng thư mục gốc của dự án:
    ```text
-   ml-vietnam-plant-disease-detection/
+   .
    └── data/
        ├── raw/
        │   ├── coffee_leaf_disease/

@@ -92,3 +92,4 @@ async def api_v1_root():
 async def health_check():
     """Health check endpoint."""
     return {"status": "ok"}
+

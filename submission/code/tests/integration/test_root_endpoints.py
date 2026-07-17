@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+
 def test_root_redirects_to_docs(client: TestClient) -> None:
     # Test that accessing the root "/" redirects to "/docs"
     # We pass follow_redirects=False to verify the 307 Temporary Redirect status and headers
