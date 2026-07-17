@@ -4,7 +4,7 @@ Nhóm tích hợp mô hình YOLO26-seg đã lượng tử hóa vào ứng dụng
 
 \subsection{Kiến trúc Hệ thống}
 
-Hệ thống tách giao diện, nghiệp vụ, suy luận và lưu trữ thành các tầng độc lập. Người dùng truy cập Next.js qua Traefik; frontend gọi REST API FastAPI tại tiền tố \texttt{/api/v1}; backend điều phối ONNX Runtime, cơ sở tri thức, PostgreSQL và MinIO. Các dịch vụ dữ liệu chỉ dùng \texttt{ClusterIP} và không mở trực tiếp ra Internet. Hình~\ref{fig:ch5-deployment-architecture} thể hiện cả luồng truy cập, workload trong k3s và đường triển khai từ GitHub Actions.
+Hệ thống tách giao diện, nghiệp vụ, suy luận và lưu trữ thành các tầng độc lập. Người dùng truy cập Next.js qua Traefik; frontend gọi REST API FastAPI tại tiền tố \texttt{/api/v1}; backend điều phối ONNX Runtime, cơ sở tri thức, PostgreSQL và MinIO như được mô tả trong Bảng~\ref{tab:ch5-system-components}. Các dịch vụ dữ liệu chỉ dùng \texttt{ClusterIP} và không mở trực tiếp ra Internet. Hình~\ref{fig:ch5-deployment-architecture} thể hiện cả luồng truy cập, workload trong k3s và đường triển khai từ GitHub Actions.
 
 \begin{figure}[htbp]
   \centering
@@ -18,14 +18,14 @@ Hệ thống tách giao diện, nghiệp vụ, suy luận và lưu trữ thành 
   \caption{Các thành phần chính trong kiến trúc ứng dụng}
   \label{tab:ch5-system-components}
   \small
-  \begin{tabularx}{\textwidth}{|p{2.7cm}|p{3.1cm}|X|}
-    \hline
-    \textbf{Thành phần} & \textbf{Công nghệ} & \textbf{Vai trò} \\ \hline
-    Giao diện & Next.js 15, React 19 & Tải/chụp ảnh, xác thực, hiển thị kết quả, lịch sử và cơ sở tri thức. \\ \hline
-    API và suy luận & FastAPI, ONNX Runtime & Kiểm tra yêu cầu, chạy \texttt{yolo26\_quantized.onnx} và bổ sung khuyến nghị. \\ \hline
-    Dữ liệu & PostgreSQL 16, MinIO & Lưu tài khoản, lịch sử, metadata dự đoán và ảnh người dùng. \\ \hline
-    Tri thức & JSON theo luật & Ánh xạ tám nhãn sang mô tả, triệu chứng, xử lý và phòng bệnh tiếng Việt. \\ \hline
-    Điều phối & k3s, Helm, Traefik & Quản lý workload, volume, định tuyến và HTTPS. \\ \hline
+  \begin{tabularx}{\textwidth}{p{2.7cm} p{3.1cm} X}
+    \toprule
+    \textbf{Thành phần} & \textbf{Công nghệ} & \textbf{Vai trò} \\ \midrule
+    Giao diện & Next.js 15, React 19 & Tải/chụp ảnh, xác thực, hiển thị kết quả, lịch sử và cơ sở tri thức. \\
+    API và suy luận & FastAPI, ONNX Runtime & Kiểm tra yêu cầu, chạy \texttt{yolo26\_quantized.onnx} và bổ sung khuyến nghị. \\
+    Dữ liệu & PostgreSQL 16, MinIO & Lưu tài khoản, lịch sử, metadata dự đoán và ảnh người dùng. \\
+    Tri thức & JSON theo luật & Ánh xạ tám nhãn sang mô tả, triệu chứng, xử lý và phòng bệnh tiếng Việt. \\
+    Điều phối & k3s, Helm, Traefik & Quản lý workload, volume, định tuyến và HTTPS. \\ \bottomrule
   \end{tabularx}
 \end{table}
 
@@ -85,13 +85,13 @@ Cơ sở tri thức trong Hình~\ref{fig:ch5-knowledge} bao phủ tám nhãn v�
   \caption{Workload và lưu trữ trên cụm k3s}
   \label{tab:ch5-k3s-workloads}
   \small
-  \begin{tabularx}{\textwidth}{|p{3.0cm}|p{3.1cm}|p{2.4cm}|X|}
-    \hline
-    \textbf{Workload} & \textbf{Kiểu tài nguyên} & \textbf{Lưu trữ} & \textbf{Dữ liệu chính} \\ \hline
-    Frontend và Backend & Deployment & Model 10 GiB & Bundle Next.js, API và model ONNX. \\ \hline
-    PostgreSQL & StatefulSet & 20 GiB & Tài khoản và lịch sử chẩn đoán. \\ \hline
-    MinIO & StatefulSet & 30 GiB & Ảnh người dùng tải hoặc chụp. \\ \hline
-    Redis và Backup & StatefulSet và CronJob & 1 GiB/5 GiB & Cache dự phòng và bản sao PostgreSQL. \\ \hline
+  \begin{tabularx}{\textwidth}{p{3.0cm} p{3.1cm} p{2.4cm} X}
+    \toprule
+    \textbf{Workload} & \textbf{Kiểu tài nguyên} & \textbf{Lưu trữ} & \textbf{Dữ liệu chính} \\ \midrule
+    Frontend và Backend & Deployment & Model 10 GiB & Bundle Next.js, API và model ONNX. \\
+    PostgreSQL & StatefulSet & 20 GiB & Tài khoản và lịch sử chẩn đoán. \\
+    MinIO & StatefulSet & 30 GiB & Ảnh người dùng tải hoặc chụp. \\
+    Redis và Backup & StatefulSet và CronJob & 1 GiB/5 GiB & Cache dự phòng và bản sao PostgreSQL. \\ \bottomrule
   \end{tabularx}
 \end{table}
 
