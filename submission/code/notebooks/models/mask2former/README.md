@@ -1,7 +1,5 @@
 # Mask2Former — VN Plant Disease Segmentation
 
-**Tác giả:** Dương Tuấn Anh (23120208)
-**Task:** 3.5 (Phase 3+4) + Sáng tạo S2
 **Status:** Metrics filled from Kaggle outputs
 
 ## Mục tiêu

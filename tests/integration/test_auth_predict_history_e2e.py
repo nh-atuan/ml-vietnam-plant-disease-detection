@@ -4,16 +4,16 @@ from fastapi.testclient import TestClient
 
 # A valid PNG header is sufficient because image decoding is an ONNX concern,
 # which is replaced by the deterministic inference boundary in this API test.
-SAMPLE_LEAF_PNG = b"\x89PNG\r\n\x1a\nphase-6-e2e-leaf"
+SAMPLE_LEAF_PNG = b"\x89PNG\r\n\x1a\ne2e-leaf"
 
 
 def test_authenticated_user_can_predict_and_review_history(client: TestClient) -> None:
-    username = "phase6_e2e_user"
-    password = "phase6-safe-password"
+    username = "e2e_user"
+    password = "e2e-safe-password"
 
     registration = client.post(
         "/api/v1/auth/register",
-        json={"username": username, "email": "phase6@example.test", "password": password},
+        json={"username": username, "email": "e2e_user@example.test", "password": password},
     )
     assert registration.status_code == 201, registration.text
     assert registration.json()["username"] == username

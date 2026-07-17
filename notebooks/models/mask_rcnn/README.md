@@ -1,8 +1,6 @@
 # Mask R-CNN ResNet50-FPN
 
-Owner: Le Xuan Tri
-
-This folder contains the Phase 3 Mask R-CNN baseline notebooks for plant disease instance segmentation. Both notebooks were executed on Kaggle GPU and include training, validation, tuning, test evaluation, visualization, error analysis, CPU inference benchmark, model export, and HuggingFace upload logs.
+This folder contains the Mask R-CNN baseline notebooks for plant disease instance segmentation. Both notebooks were executed on Kaggle GPU and include training, validation, tuning, test evaluation, visualization, error analysis, CPU inference benchmark, model export, and HuggingFace upload logs.
 
 ## Notebooks
 
@@ -23,7 +21,7 @@ This folder contains the Phase 3 Mask R-CNN baseline notebooks for plant disease
 ## Stage 3 Coverage
 
 - Model: Mask R-CNN ResNet50-FPN, CNN-based baseline.
-- Dataset: Phase 2 processed COCO splits mounted in Kaggle.
+- Dataset: Processed COCO splits mounted in Kaggle.
 - Training flow: load data, augment, train, validate, evaluate, tune, export.
 - Metrics: mAP@50, mAP@50:95, mIoU, Dice, Macro F1, Weighted F1, Accuracy, CPU latency, throughput, model size.
 - Visual checks: prediction masks versus ground truth on 10 test images, PR curves, and row-normalized confusion matrix.

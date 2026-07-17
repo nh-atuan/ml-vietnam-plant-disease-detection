@@ -89,8 +89,8 @@ async def main_pipeline(args):
     processed_log = Path(args.output_dir) / "processed_urls.txt"
     file_lock = asyncio.Lock()
 
-    # 1. SCRAPING PHASE
-    print("\n PHASE 1: SCRAPING & DOWNLOADING ")
+    # 1. Scraping
+    print("\n Scraping & downloading...")
     processed_urls = set()
     if processed_log.exists():
         processed_urls = set(processed_log.read_text(encoding="utf-8").splitlines())
@@ -125,8 +125,8 @@ async def main_pipeline(args):
     else:
         print("No new URLs to scrape.")
 
-    # 2. CLASSIFICATION PHASE
-    print("\n PHASE 2: AI CLASSIFICATION (Gemma 4) ")
+    # 2. Classification
+    print("\n AI classification (Gemma 4)...")
     if not pending_file.exists():
         print("No pending images found. Skipping classification.")
         return

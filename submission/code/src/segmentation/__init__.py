@@ -1,4 +1,4 @@
-"""Optional SAM 3 segmentation module for Phase 6."""
+"""Optional SAM 3 segmentation module."""
 
 from src.segmentation.sam3_segmenter import SAM3Segmenter
 
