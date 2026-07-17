@@ -1,13 +1,80 @@
 \section{Giới thiệu}
 
-\subsection{Phân tích Vấn đề (Problem Definition)}
-\begin{frame}
+\subsection{Phân tích Vấn đề}
+\begin{frame}{Phân tích Vấn đề - Tính cấp thiết}
+    \begin{columns}[t]
+        \begin{column}{0.48\textwidth}
+            \justifying
+            \centerline{\textbf{Bối cảnh nông nghiệp Việt Nam}}
+            \vspace{0.3cm}
+            
+            Lúa gạo và cà phê Robusta là hai nông sản đặc sản xuất khẩu chủ lực của Việt Nam. Dịch bệnh hại lá thường xuyên đe dọa nghiêm trọng đến sinh kế của hàng triệu hộ nông dân tại Đồng bằng sông Cửu Long và Tây Nguyên.
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \justifying
+            \centerline{\textbf{Thách thức trong canh tác}}
+            \vspace{0.3cm}
+            
+            Nông dân khó tiếp cận chuyên gia bệnh học, thường chẩn đoán cảm quan dẫn đến sử dụng sai hoặc lạm dụng thuốc bảo vệ thực vật. Điều này làm tăng chi phí và gây ô nhiễm môi trường nghiêm trọng.
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Phân tích Vấn đề - Phát biểu bài toán}
+    Bài toán được mô hình hóa dưới dạng phân vùng thực thể (\textit{instance segmentation}) với:
+    \vspace{0.2cm}
+    \begin{itemize}
+        \item[-] Đầu vào: Ảnh lá cây nông nghiệp $I \in \mathbb{R}^{H \times W \times 3}$
+        \item[-] Đầu ra: Tập hợp $K$ thực thể bệnh $E = \{e_1, e_2, \dots, e_K\}$
+    \end{itemize}
+    \vspace{0.2cm}
+    Trong đó, mỗi thực thể vết bệnh $e_k = (b_k, c_k, m_k)$ bao gồm hộp bao $b_k$, nhãn $c_k$ và mặt nạ $m_k$.
+    
+    \vspace{0.3cm}
+    Thách thức trong điều kiện thực tế bao gồm vết bệnh nhỏ trên nền phức tạp, độ tương đồng thị giác cao ở giai đoạn sớm, và điều kiện ánh sáng tự nhiên biến động mạnh.
 \end{frame}
 
 \subsection{Mục tiêu của Đồ án}
-\begin{frame}
+\begin{frame}{Mục tiêu của Đồ án}
+    \begin{columns}[t]
+        \begin{column}{0.48\textwidth}
+            \justifying
+            \centerline{\textbf{Định lượng \& Học máy}}
+            \vspace{0.3cm}
+            
+            Xây dựng bộ dữ liệu 7.149 ảnh thuộc 8 lớp bệnh. Huấn luyện so sánh hiệu năng 5 kiến trúc phân vùng thực thể, và tinh chỉnh siêu tham số (Ray Tune \& ASHA) nhằm đạt độ chính xác tối ưu.
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \justifying
+            \centerline{\textbf{Thực tiễn \& Triển khai}}
+            \vspace{0.3cm}
+            
+            Phát triển ứng dụng Web chẩn đoán thời gian thực với độ trễ dưới 200 ms/ảnh. Triển khai cụm Kubernetes (k3s) trên GCP có chứng chỉ bảo mật SSL và tự động hóa CI/CD.
+        \end{column}
+    \end{columns}
 \end{frame}
 
 \subsection{Tổng quan về Phương pháp}
-\begin{frame}
+\begin{frame}{Tổng quan về Phương pháp}
+    \begin{figure}
+        \centering
+        \begin{tikzpicture}[
+            node distance=0.6cm and 0.8cm,
+            block/.style={rectangle, draw, fill=Logo1!10, text width=3.5cm, text centered, rounded corners, minimum height=1.6cm, font=\small},
+            line/.style={draw, -{Stealth[scale=1.2]}, thick}
+        ]
+            % Nodes
+            \node [block] (p1) {\textbf{Pha 1 - Dữ liệu} \\ Thu thập Crawl4AI \\ Gán nhãn Streamlit \\ SAM 3 \& Phân tầng};
+            \node [block] (p2) [right=of p1] {\textbf{Pha 2 - Mô hình} \\ So sánh 5 kiến trúc \\ Ray Tune \& ASHA \\ Lượng tử hóa ONNX};
+            \node [block] (p3) [right=of p2] {\textbf{Pha 3 - Triển khai} \\ Backend FastAPI \\ Web Next.js \\ K8s \& GCP Cloud};
+
+            % Lines
+            \path [line] (p1) -- (p2);
+            \path [line] (p2) -- (p3);
+        \end{tikzpicture}
+        \caption{Quy trình phát triển hệ thống end-to-end}
+    \end{figure}
+    \vspace{0.1cm}
+    
+    Hệ thống được thiết kế theo quy trình end-to-end khép kín, đảm bảo tính nhất quán từ dữ liệu thô được thu thập trong môi trường thực tế cho tới ứng dụng chạy thực tế trên hạ tầng đám mây.
 \end{frame}
