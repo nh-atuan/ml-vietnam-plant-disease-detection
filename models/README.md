@@ -11,5 +11,7 @@ Thư mục này chứa các file cấu hình và thông tin của mô hình ph�
    Hãy tải các file từ Google Drive và đặt vào đúng thư mục `ml-vietnam-plant-disease-detection/models/` trên máy của bạn.
 
    Các file cần có trong thư mục này bao gồm:
-   - `yolo26_quantized.onnx`: Mô hình YOLO26-seg đã được lượng tử hóa (quantized) dạng ONNX, được backend sử dụng mặc định.
-   - `class_names.json`: Danh sách tên các nhãn (class labels) tương ứng để phục vụ cho việc suy luận.
+   - `yolo26_rice_quantized.onnx`: Mô hình YOLO26-seg lượng tử hóa (quantized) dạng ONNX cho Lúa.
+   - `yolo26_coffee_quantized.onnx`: Mô hình YOLO26-seg lượng tử hóa (quantized) dạng ONNX cho Cà phê.
+   - `class_names.json`: Danh sách nhãn tổng hợp của cả Lúa và Cà phê phục vụ suy luận.
+   
