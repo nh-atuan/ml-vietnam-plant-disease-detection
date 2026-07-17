@@ -11,10 +11,21 @@
 \usepackage{subcaption}
 \usepackage{multirow}
 \usepackage{tikz}
-\usetikzlibrary{positioning, arrows.meta, fit, backgrounds}
-\usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+\usetikzlibrary{shapes.geometric, arrows, arrows.meta, positioning, calc}
 
+\tikzset{
+    base/.style={rectangle, rounded corners, draw=black, minimum width=4.8cm, minimum height=1.5cm, text centered, font=\sffamily},
+    step1/.style={base, fill=blue!15, text width=4.6cm},
+    step2/.style={base, fill=gray!15, text width=4.6cm},
+    step3/.style={base, fill=green!15, text width=4.6cm},
+    step4/.style={base, fill=yellow!15, text width=4.6cm},
+    step5/.style={base, fill=orange!15, text width=4.6cm},
+    stepSAM/.style={base, fill=cyan!15, text width=4.6cm},
+    step6/.style={base, fill=red!15, text width=4.6cm},
+    final/.style={base, fill=purple!15, text width=4.6cm},
+    hitl/.style={base, fill=white, minimum width=10.4cm, text width=10.0cm, minimum height=1cm, font=\sffamily\small},
+    arrow/.style={thick, ->, >=stealth'}
+}
 
 % Disable indentation on new paragraphs
 \setlength{\parindent}{0pt}
