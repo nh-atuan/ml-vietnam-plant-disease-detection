@@ -11,7 +11,7 @@ Chi tiết phân bố số lượng ảnh theo từng tập con và lớp bệnh
     \label{tab:split_distribution}
     \begin{tabular}{llrrrr}
         \toprule
-        Miền dữ liệu  & Lớp bệnh        & Train (70\%) & Val (15\%) & Test (15\%) & Tổng cộng \\
+        \textbf{Miền dữ liệu}  & \textbf{Lớp bệnh}        & \textbf{Train (70\%)} & \textbf{Val (15\%)} & \textbf{Test (15\%)} & \textbf{Tổng cộng} \\
         \midrule
         \multirow{4}{*}{Lúa}
                       & Lá khỏe mạnh    & 1.030        & 221        & 221         & 1.472     \\
@@ -41,7 +41,7 @@ Chi tiết phân bố số lượng ảnh theo từng tập con và lớp bệnh
     \label{tab:model_overview}
     \begin{tabular}{llp{9.5cm}}
         \toprule
-        Mô hình     & Họ kiến trúc & Đặc điểm nổi bật và lý do lựa chọn                                                                                                                                                                                                 \\
+        \textbf{Mô hình}     & \textbf{Họ kiến trúc} & \textbf{Đặc điểm nổi bật và lý do lựa chọn}                                                                                                                                                                                        \\
         \midrule
         Mask R-CNN  & CNN          & Kiến trúc hai giai đoạn kinh điển, mang lại độ chính xác cao trong phân vùng thực thể. Được chọn làm baseline để đánh giá và đối chiếu hiệu suất.                                                                                  \\
         YOLO26m-seg & CNN          & Kiến trúc một giai đoạn với tốc độ suy luận thời gian thực xuất sắc. Phiên bản cỡ medium được chọn nhằm tối ưu hóa điểm cân bằng giữa độ chính xác và tốc độ trong thực tế.                                                        \\
@@ -61,7 +61,7 @@ Toàn bộ quá trình huấn luyện các mô hình được thực hiện trê
     \label{tab:common_train_config}
     \begin{tabular}{ll}
         \toprule
-        Tham số              & Giá trị thiết lập \\
+        \textbf{Tham số}              & \textbf{Giá trị thiết lập} \\
         \midrule
         GPU                  & NVIDIA Tesla T4   \\
         Tỷ lệ chia dữ liệu   & $70:15:15$        \\
@@ -80,7 +80,7 @@ Toàn bộ quá trình huấn luyện các mô hình được thực hiện trê
     \label{tab:specific_train_config}
     \begin{tabular}{lrrl}
         \toprule
-        Mô hình     & Learning Rate khởi tạo & Kích thước ảnh     & Ghi chú kỹ thuật                      \\
+        \textbf{Mô hình}     & \textbf{Learning Rate khởi tạo} & \textbf{Kích thước ảnh}     & \textbf{Ghi chú kỹ thuật}                      \\
         \midrule
         Mask R-CNN  & $1 \times 10^{-4}$     & $256 \times 256$   & Batch size 2, gradient accumulation 4 \\
         YOLO26m-seg & $8 \times 10^{-4}$     & $640 \times 640$   & Batch size 8                          \\
@@ -102,7 +102,7 @@ Quá trình tìm kiếm được thực hiện với 20 thử nghiệm độc l�
     \label{tab:raytune_search_space}
     \begin{tabular}{lll}
         \toprule
-        Siêu tham số                                     & Kiểu phân phối tìm kiếm & Khoảng giá trị hoặc tập lựa chọn       \\
+        \textbf{Siêu tham số}                                     & \textbf{Kiểu phân phối tìm kiếm} & \textbf{Khoảng giá trị hoặc tập lựa chọn}       \\
         \midrule
         Learning rate ban đầu ($\text{lr}_0$)            & Log-uniform             & $[1 \times 10^{-5}, 1 \times 10^{-2}]$ \\
         Momentum                                         & Uniform                 & $[0,85, 0,95]$                         \\
