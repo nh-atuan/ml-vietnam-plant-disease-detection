@@ -30,7 +30,8 @@ def export_openapi() -> None:
     with open(output_path, "w", encoding="utf-8") as file:
         json.dump(openapi_schema, file, indent=2, ensure_ascii=False)
         
-    print(f"Successfully exported OpenAPI schema to {output_path}")
+    rel_path = os.path.relpath(output_path, PROJECT_ROOT)
+    print(f"Successfully exported OpenAPI schema to {rel_path}")
 
 
 if __name__ == "__main__":

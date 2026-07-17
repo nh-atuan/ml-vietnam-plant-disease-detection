@@ -287,6 +287,40 @@
         }
       }
     },
+    "/": {
+      "get": {
+        "summary": "Root Redirect",
+        "description": "Redirect root to API documentation.",
+        "operationId": "root_redirect__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1": {
+      "get": {
+        "summary": "Api V1 Root",
+        "description": "Welcome endpoint for API v1.",
+        "operationId": "api_v1_root_api_v1_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health Check",
