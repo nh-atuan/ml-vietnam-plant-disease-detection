@@ -23,7 +23,7 @@ Hệ thống Học máy End-to-End ứng dụng kỹ thuật **Phân vùng Thự
 - **Web Application:** [https://plant-disease-demo.duckdns.org](https://plant-disease-demo.duckdns.org)
 - **Backend API Documentation:** [https://plant-disease-demo.duckdns.org/docs](https://plant-disease-demo.duckdns.org/docs) (Swagger UI) hoặc `/redoc` (ReDoc UI)
 - **Video Demo Hệ thống:** [https://youtu.be/k4cGGiSH1Ts](https://youtu.be/k4cGGiSH1Ts)
-- **Thư mục Lưu trữ Mô hình & Artifacts:** [Google Drive Folder](https://drive.google.com/drive/folders/1OS0M2uW8KuWymKMtZwIY8XMUGCBcBGwo?usp=sharing) (Chứa các file mô hình ONNX, nhãn lớp cấu hình và dữ liệu kiểm thử)
+- **Thư mục Lưu trữ Mô hình & Artifacts:** [Google Drive Folder](https://drive.google.com/drive/folders/1OS0M2uW8KuWymKMtZwIY8XMUGCBcBGwo?usp=sharing) (Chứa các file mô hình ONNX, nhãn lớp cấu hình)
 
 ---
 
