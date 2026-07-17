@@ -1,15 +1,133 @@
 \section{Kết quả và Thảo luận}
 
 \subsection{Kết quả Thực nghiệm}
-\begin{itemize}
-  \item Trình bày biểu đồ quá trình học (Learning Curves: Loss, Accuracy,\ldots) trên tập Train và Validation, kèm theo nhận xét.
-  \item Báo cáo các chỉ số đánh giá (Accuracy, Precision, Recall, F1-Score, RMSE,\ldots) trên tập Test.
-  \item Hiển thị và phân tích ma trận nhầm lẫn (Confusion Matrix).
-\end{itemize}
+Trong phần này, chúng tôi trình bày kết quả đánh giá hiệu năng của 5 mô hình phân vùng thực thể (MobileSAM, YOLO26-seg, RF-DETR, Mask R-CNN, Mask2Former) trên tập dữ liệu kiểm thử (Test set) của hai miền dữ liệu lúa và cà phê. Các chỉ số được sử dụng để đánh giá bao gồm mAP@50, mAP@50:95 (đối với mask), mIoU, và hệ số Dice. Ngoài ra, tốc độ suy luận (Inference time) tính bằng mili-giây (ms) và kích thước mô hình (Size) tính bằng MB cũng được đo lường để đánh giá khả năng triển khai thực tế.
+
+Bảng~\ref{tab:results_rice} và Bảng~\ref{tab:results_coffee} tóm tắt các chỉ số trên tập kiểm thử của hai loại cây trồng.
+
+\begin{table}[H]
+  \centering
+  \caption{So sánh hiệu năng của các mô hình trên tập dữ liệu Lúa (Rice)}
+  \label{tab:results_rice}
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{lcccccc}
+    \toprule
+    \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Inference (ms)} & \textbf{Size (MB)} \\
+    \midrule
+    MobileSAM & 0.5637 & 0.5141 & 0.5440 & 0.5712 & 1487.54 & 41.30 \\
+    Mask R-CNN & 0.5966 & 0.5294 & 0.8669 & 0.8935 & 760.50 & 503.44 \\
+    Mask2Former & 0.6971 & 0.6762 & 0.6507 & 0.6618 & 96.81 & 181.07 \\
+    RF-DETR & 0.7038 & 0.6874 & 0.8132 & 0.8308 & 198.31 & 127.10 \\
+    YOLO26-seg & 0.8247 & 0.7891 & 0.8543 & 0.8712 & 65.72 & 6.23 \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{So sánh hiệu năng của các mô hình trên tập dữ liệu Cà phê (Coffee)}
+  \label{tab:results_coffee}
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{lcccccc}
+    \toprule
+    \textbf{Mô hình} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Inference (ms)} & \textbf{Size (MB)} \\
+    \midrule
+    MobileSAM & 0.6923 & 0.6591 & 0.6671 & 0.6848 & 1616.84 & 41.30 \\
+    RF-DETR & 0.8428 & 0.8251 & 0.8575 & 0.8718 & 70.31 & 127.10 \\
+    YOLO26-seg & 0.9012 & 0.8637 & 0.8921 & 0.9087 & 20.21 & 6.23 \\
+    Mask2Former & 0.9200 & 0.8998 & 0.8870 & 0.8999 & 62.88 & 181.07 \\
+    Mask R-CNN & 0.9480 & 0.9041 & 0.9128 & 0.9356 & 702.36 & 501.73 \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table}
+
+Nhìn chung, Mask R-CNN và Mask2Former cho độ chính xác rất cao trên tập Cà phê nhưng lại có dấu hiệu kém ổn định hơn trên tập Lúa (đặc biệt là Mask R-CNN ở chỉ số mAP). YOLO26-seg thể hiện sự cân bằng tốt khi đứng đầu về mAP trên tập Lúa và đứng thứ ba với khoảng cách rất nhỏ trên tập Cà phê, trong khi sở hữu tốc độ suy luận cực nhanh và kích thước gọn nhẹ.
+
+Để thấy rõ hơn quá trình hội tụ, Hình~\ref{fig:learning_curves} thể hiện đường cong học tập (learning curves) của mô hình YOLO26-seg trên hai tập dữ liệu.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{img/yolo/rice/results.png}
+    \caption{Tập dữ liệu Lúa (Rice)}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{img/yolo/coffee/results.png}
+    \caption{Tập dữ liệu Cà phê (Coffee)}
+  \end{subfigure}
+  \caption{Đường cong học tập (Loss và mAP) của YOLO26-seg qua các vòng lặp (epochs)}
+  \label{fig:learning_curves}
+\end{figure}
+
+Từ biểu đồ, có thể thấy hàm mất mát (loss) giảm ổn định và các chỉ số mAP tăng nhanh chóng trong khoảng 30 epochs đầu tiên. Sau epoch thứ 40, đồ thị dần đi vào trạng thái bão hòa và hội tụ tốt tại epoch thứ 50 mà không có dấu hiệu bị nhiễu động mạnh, chứng tỏ quá trình huấn luyện đã thiết lập được các siêu tham số học tập (learning rate) phù hợp.
 
 \subsection{So sánh và Thảo luận}
+
+\subsubsection{Đánh giá Trade-off và Lựa chọn Mô hình}
+Mặc dù Mask R-CNN đạt chỉ số mAP cao nhất trên tập Cà phê (0.9480), nhưng kích thước mô hình lên tới 503 MB và thời gian suy luận hơn 700 ms trên CPU khiến việc triển khai trực tiếp lên ứng dụng web thời gian thực là không khả thi. MobileSAM có kích thước gọn hơn (41.3 MB) nhưng lại rất chậm (hơn 1400 ms) do kiến trúc phức tạp của mô hình nền tảng.
+
+YOLO26-seg nổi bật như một ứng cử viên xuất sắc nhất khi đạt mAP@50 0.8247 (Lúa) và 0.9012 (Cà phê), xếp sau Mask R-CNN trên tập Cà phê nhưng nhanh hơn gấp 35 lần (20.21 ms) và kích thước siêu nhỏ (6.23 MB). Nhờ khả năng suy luận theo thời gian thực và tiêu thụ rất ít tài nguyên, YOLO26-seg đã được nhóm chọn làm mô hình chính thức để triển khai.
+
+\subsubsection{Cải thiện với RayTune và ASHA}
+Để tối ưu hóa thêm cho mô hình YOLO26-seg, chúng tôi đã sử dụng thuật toán RayTune kết hợp với bộ lập lịch ASHA để tìm kiếm siêu tham số. 
+
+\begin{table}[H]
+  \centering
+  \caption{Kết quả của YOLO26-seg trước và sau khi tinh chỉnh bằng RayTune}
+  \label{tab:results_yolo_tuned}
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{llcccccc}
+    \toprule
+    \textbf{Tập dữ liệu} & \textbf{Trạng thái} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Inference (ms)} & \textbf{Size (MB)} \\
+    \midrule
+    \multirow{2}{*}{Lúa (Rice)} & Baseline & 0.8247 & 0.7891 & 0.8543 & 0.8712 & 65.72 & 6.23 \\
+    & Tuned & \textbf{0.8481} & \textbf{0.8034} & \textbf{0.8697} & \textbf{0.8856} & \textbf{65.41} & 6.23 \\
+    \midrule
+    \multirow{2}{*}{Cà phê (Coffee)} & Baseline & 0.9012 & 0.8637 & 0.8921 & 0.9087 & 20.21 & 6.23 \\
+    & Tuned & \textbf{0.9234} & \textbf{0.8845} & \textbf{0.9053} & \textbf{0.9192} & \textbf{19.85} & 6.23 \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table}
+
+Việc tinh chỉnh siêu tham số đã giúp tăng mAP@50 thêm hơn 2\% cho cả hai tập dữ liệu, khẳng định tính hiệu quả của phương pháp tìm kiếm tự động kết hợp loại bỏ sớm (early stopping) của thuật toán ASHA.
+
+\subsubsection{Phân tích Ma trận nhầm lẫn (Confusion Matrix)}
+Ma trận nhầm lẫn chuẩn hóa của mô hình YOLO26-seg được trình bày tại Hình~\ref{fig:confusion_matrix}.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{img/yolo/rice/confusion_matrix_3.png}
+    \caption{Tập dữ liệu Lúa (Rice)}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{img/yolo/coffee/confusion_matrix_3.png}
+    \caption{Tập dữ liệu Cà phê (Coffee)}
+  \end{subfigure}
+  \caption{Ma trận nhầm lẫn (Confusion Matrix) của mô hình YOLO26-seg}
+  \label{fig:confusion_matrix}
+\end{figure}
+
+Dựa trên ma trận nhầm lẫn, có thể thấy một số nhãn có tỷ lệ đoán sai đáng chú ý (confusion pairs):
 \begin{itemize}
-  \item Lập bảng so sánh hiệu năng giữa các mô hình đã thử nghiệm.
-  \item Phân tích hiện tượng Overfitting/Underfitting và các biện pháp đã áp dụng.
-  \item Phân tích các trường hợp dự đoán sai điển hình và đưa ra giả thuyết nguyên nhân.
+  \item Đối với tập dữ liệu Lúa: Mô hình dễ nhầm lẫn giữa bệnh đốm nâu (BrownSpot) và bọ xít gai (Hispa), hoặc giữa BrownSpot và LeafBlast. Nguyên nhân chủ yếu xuất phát từ sự tương đồng hình thái ở giai đoạn đầu của bệnh, khi cả ba vết bệnh đều biểu hiện dưới dạng các chấm nhỏ li ti màu nâu nhạt trên bề mặt lá.
+  \item Đối với tập dữ liệu Cà phê: Mô hình đôi khi nhầm lẫn giữa bệnh rỉ sắt (Rust) và đốm rong (AlgalLeafSpot). Cả hai loại bệnh này đều có xu hướng gây ra những vùng đốm tròn màu vàng hoặc gỉ sắt ở mặt dưới lá, gây khó khăn cho việc phân loại chính xác khi ảnh chụp không đủ độ phân giải hoặc bị ngược sáng.
 \end{itemize}
+
+\subsubsection{Hiện tượng Overfitting và Underfitting}
+Qua các biểu đồ và chỉ số, chúng tôi ghi nhận một số vấn đề liên quan đến hiện tượng khớp quá mức (overfitting) và chưa khớp (underfitting):
+\begin{itemize}
+  \item Hiện tượng chưa khớp (underfitting) xảy ra với MobileSAM khi mô hình đạt mAP thấp nhất trên tập Lúa (0.5637). Do kiến trúc là Zero-shot segmentation được fine-tune, mô hình khó nắm bắt các chi tiết cực kỳ nhỏ gọn như vết bệnh Hispa trên lá lúa. Biện pháp khắc phục là sử dụng mô hình chuyên biệt (như YOLO) kết hợp với các anchor box phù hợp với đối tượng kích thước nhỏ.
+  \item Hiện tượng khớp quá mức (overfitting) xuất hiện ở Mask R-CNN và Mask2Former do cả hai mô hình này đều có kích thước tham số rất lớn. Khi thực hiện tinh chỉnh (RayTune) hoặc áp dụng các augment mạnh hơn, kết quả đánh giá trên tập test thậm chí còn giảm sâu so với baseline (mAP của Mask2Former giảm từ 0.69 xuống 0.10 khi tăng size backbone). Điều này minh chứng cho việc các kiến trúc khổng lồ dễ dàng "ghi nhớ" tập dữ liệu huấn luyện nhỏ. Để khắc phục, cần thu thập thêm dữ liệu (thực tế hoặc qua các phương pháp sinh ảnh), áp dụng thêm cơ chế regularization mạnh (Dropout/Weight decay) và Early Stopping nghiêm ngặt hơn.
+\end{itemize}
+
+
