@@ -4,8 +4,9 @@
 \begin{frame}
     \begin{columns}[T]
         \begin{column}{0.48\textwidth}
-            \textbf{Nguồn và mở rộng dữ liệu}
-            \vspace{0.1cm}
+            \justifying
+            \centerline{\textbf{Nguồn và mở rộng dữ liệu}}
+            \vspace{0.2cm}
             \begin{itemize}
                 \setlength{\itemsep}{1pt}
                 \item Kế thừa từ hai bộ tập dữ liệu có sẵn: Rice Diseases Image Dataset và Detect Disease On Coffee Leaves.
@@ -20,10 +21,10 @@
                 box/.style={rectangle, draw=Logo1, thick, rounded corners=2pt, minimum width=4.8cm, minimum height=0.42cm, align=center, font=\tiny},
                 arrow/.style={-{Stealth[scale=0.7]}, thick, color=Logo1}
                 ]
-                \node[box] (step1) {\textbf{1. Xây dựng truy vấn từ khóa}};
-                \node[box, below=of step1] (step2) {\textbf{2. Khám phá và lọc trùng URL}};
-                \node[box, below=of step2] (step3) {\textbf{3. Cào ảnh và văn bản ngữ cảnh}};
-                \node[box, below=of step3] (step4) {\textbf{4. Lưu trữ theo chuẩn hóa}};
+                \node[box, fill=Logo1!15] (step1) {\textbf{1. Xây dựng truy vấn từ khóa}};
+                \node[box, fill=Logo1!15, below=of step1] (step2) {\textbf{2. Khám phá và lọc trùng URL}};
+                \node[box, fill=Logo1!15, below=of step2] (step3) {\textbf{3. Cào ảnh và văn bản ngữ cảnh}};
+                \node[box, fill=Logo1!15, below=of step3] (step4) {\textbf{4. Lưu trữ theo chuẩn hóa}};
                 \node[box, below=of step4] (step5) {\textbf{5. AI đề xuất nhãn và SAM 3 tạo pseudo-mask}};
                 \node[box, below=of step5] (step6) {\textbf{6. Kiểm duyệt thủ công (Streamlit)}};
                 \node[box, fill=Logo1!10, below=of step6] (final) {\textbf{Tập dữ liệu cuối (7.300 ảnh)}};
@@ -40,12 +41,12 @@
 \end{frame}
 
 
-\subsection{Nguồn và phương pháp thu thập}
 \begin{frame}
     \begin{columns}[T]
         \begin{column}{0.48\textwidth}
-            \textbf{Vòng lặp có sự tham gia của con người}
-            \vspace{0.1cm}
+            \justifying
+            \centerline{\textbf{Vòng lặp có sự tham gia của con người}}
+            \vspace{0.2cm}
             \begin{itemize}
                 \setlength{\itemsep}{1pt}
                 \item Gán nhãn theo hướng vòng lặp có sự tham gia của con người.
@@ -64,9 +65,9 @@
                 \node[box, below=of step1] (step2) {\textbf{2. Khám phá và lọc trùng URL}};
                 \node[box, below=of step2] (step3) {\textbf{3. Cào ảnh và văn bản ngữ cảnh}};
                 \node[box, below=of step3] (step4) {\textbf{4. Lưu trữ theo chuẩn hóa}};
-                \node[box, below=of step4] (step5) {\textbf{5. AI đề xuất nhãn và SAM 3 tạo pseudo-mask}};
-                \node[box, below=of step5] (step6) {\textbf{6. Kiểm duyệt thủ công (Streamlit)}};
-                \node[box, fill=Logo1!10, below=of step6] (final) {\textbf{Tập dữ liệu cuối (7.300 ảnh)}};
+                \node[box, fill=Logo1!15, below=of step4] (step5) {\textbf{5. AI đề xuất nhãn và SAM 3 tạo pseudo-mask}};
+                \node[box, fill=Logo1!15, below=of step5] (step6) {\textbf{6. Kiểm duyệt thủ công (Streamlit)}};
+                \node[box, fill=Logo1!15, below=of step6] (final) {\textbf{Tập dữ liệu cuối (7.300 ảnh)}};
 
                 \draw[arrow] (step1) -- (step2);
                 \draw[arrow] (step2) -- (step3);
@@ -106,8 +107,8 @@
 \begin{frame}
     \begin{columns}[T]
         \begin{column}{0.48\textwidth}
-            \textbf{Quy trình kiểm duyệt hai bước}\\
-            \vspace{0.15cm}
+            \centerline{\textbf{Quy trình kiểm duyệt hai bước}}
+            \vspace{0.2cm}
             \footnotesize
             \justifying
             Dữ liệu thô thu thập từ nhiều nguồn được lọc qua quy trình kiểm duyệt chất lượng nghiêm ngặt:
@@ -167,20 +168,53 @@
     \end{table}
 \end{frame}
 
+\begin{frame}{Trực quan các lớp bệnh thực tế}
+    \begin{columns}[T]
+        \begin{column}{0.45\textwidth}
+            \justifying
+            \centerline{\textbf{Triệu chứng và hình ảnh}}
+            \vspace{0.2cm}
+            
+            \begin{itemize}
+                \setlength{\itemsep}{1pt}
+                \item[-] \textbf{Đặc trưng}: Vết bệnh nhỏ, màu sắc tương đồng ở giai đoạn sớm (đốm nâu vs đạo ôn trên lúa, rỉ sắt vs đốm rong trên cà phê).
+                \item[-] \textbf{Độ tương phản}: Vùng bệnh chiếm diện tích rất nhỏ trên nền lá.
+                \item[-] \textbf{Độ nhiễu}: Chụp thực địa chứa lá chồng lấn và ánh sáng thay đổi.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.51\textwidth}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.48\textwidth}
+                    \centering
+                    \includegraphics[width=\textwidth]{eda/samples_rice.jpg}
+                    \caption*{Mẫu lá Lúa}
+                \end{minipage}\hfill
+                \begin{minipage}{0.48\textwidth}
+                    \centering
+                    \includegraphics[width=\textwidth]{eda/samples_coffee.jpg}
+                    \caption*{Mẫu lá Cà phê}
+                \end{minipage}
+                \vspace{0.1cm}
+                \caption{Hình ảnh các loại vết bệnh trên thực địa}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+
 \subsection{Phân tích và khám phá dữ liệu}
 \begin{frame}
     \begin{columns}[T]
         \begin{column}{0.48\textwidth}
-            \textbf{Mất cân bằng lớp và hình học ảnh}
-            \vspace{0.1cm}
-            \scriptsize
             \justifying
+            \centerline{\textbf{Mất cân bằng lớp và hình học ảnh}}
+            \vspace{0.2cm}
             \begin{itemize}
                 \setlength{\itemsep}{2pt}
                 \item Mất cân bằng lớp: tỷ số mất cân bằng $\text{IR} = N_{\max}/N_{\min}$ trên Lúa là 2,77 và trên Cà phê là 5,28 (lớp phấn trắng chỉ chiếm 6,9\%).
                 \item Chênh lệch độ phân giải: ảnh lúa trung bình $2.031 \times 2.026$ px, chủ yếu vuông; ảnh cà phê nhỏ hơn rõ rệt, $971 \times 1.154$ px, thiên về khung dọc.
             \end{itemize}
-            $\implies$ Chuẩn hóa kích thước ảnh giữ nguyên tỷ lệ khung hình thực bằng kỹ thuhật letterbox. Sử dụng các kỹ thuật tăng cường dữ liệu.
+            $\implies$ Chuẩn hóa kích thước ảnh giữ nguyên tỷ lệ khung hình thực bằng kỹ thuật letterbox. Sử dụng các kỹ thuật tăng cường dữ liệu.
         \end{column}
         \begin{column}{0.48\textwidth}
             \centering
@@ -193,7 +227,8 @@
 \begin{frame}
     \begin{columns}[T]
         \begin{column}{0.48\textwidth}
-            \textbf{Màu sắc và cặp bệnh dễ nhầm lẫn}
+            \justifying
+            \centerline{\textbf{Màu sắc và cặp bệnh dễ nhầm lẫn}}
             \scriptsize
             \justifying
             \begin{itemize}

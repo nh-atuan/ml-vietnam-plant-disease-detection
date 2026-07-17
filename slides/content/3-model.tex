@@ -71,7 +71,7 @@
             Mô hình                                                 & Họ  & Đặc điểm nổi bật và lý do lựa chọn                                                                             \\
             \midrule
             Mask R-CNN \cite{he2017mask}                            & CNN & Kiến trúc hai giai đoạn kinh điển, mang lại độ chính xác cao, được chọn làm baseline đối chiếu hiệu suất.      \\
-            YOLO26m-seg \cite{jocher2023ultralytics,jocher2024yolo} & CNN & Kiến trúc một giai đoạn với tốc độ thời gian thực xuất sắc, cỡ medium tối ưu điểm cân bằng chính xác - tốc độ. \\
+            YOLO26-seg \cite{jocher2023ultralytics,jocher2024yolo} & CNN & Kiến trúc một giai đoạn với tốc độ thời gian thực xuất sắc, cỡ medium tối ưu điểm cân bằng chính xác - tốc độ. \\
             RF-DETR \cite{carion2020end,lv2023detrs}                & ViT & Thiết kế end-to-end loại bỏ NMS, DINOv2 feature extraction, real-time Transformer.                             \\
             MobileSAM \cite{zhang2023faster,kirillov2023segment}    & ViT & Phiên bản thu gọn siêu nhẹ của SAM, khả năng zero-shot với câu lệnh đầu vào, tối ưu cho edge devices.          \\
             Mask2Former \cite{cheng2022masked}                      & ViT & Kiến trúc phân vùng hợp nhất dựa trên mask classification, đạt hiệu năng đa tác vụ vượt trội.                  \\
@@ -80,12 +80,79 @@
     \end{table}
 \end{frame}
 
+\begin{frame}{Kiến trúc mô hình YOLO26-seg}
+    \begin{columns}[T]
+        \begin{column}{0.45\textwidth}
+            \justifying
+            \centerline{\textbf{Cấu trúc phân tầng của mô hình}}
+            \vspace{0.2cm}
+            
+            YOLO26-seg sử dụng mạng tích chập sâu với ba khối chức năng chính:
+            \begin{itemize}
+                \setlength{\itemsep}{1pt}
+                \item[-] \textbf{Backbone}: Trích xuất đa quy mô đặc trưng ngữ cảnh từ hình ảnh lá bằng các khối C2f và SPPF.
+                \item[-] \textbf{Neck}: Kết hợp luồng thông tin PANet để tổng hợp các đặc trưng không gian và ngữ nghĩa cấp cao.
+                \item[-] \textbf{Head}: Nhánh dự đoán song song (Decoupled Head) tách biệt cho hộp bao và mặt nạ phân vùng.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.51\textwidth}
+            \centering
+            \resizebox{\textwidth}{!}{
+            \begin{tikzpicture}[
+                node distance=0.8cm and 0.4cm,
+                block/.style={rectangle, draw, fill=Logo1!10, text width=2.8cm, text centered, rounded corners, minimum height=1.0cm, font=\small},
+                branch/.style={rectangle, draw, fill=Logo2!10, text width=3.2cm, text centered, rounded corners, minimum height=1.0cm, font=\small},
+                outblock/.style={rectangle, draw, fill=Logo1!20, text width=2.8cm, text centered, rounded corners, minimum height=1.0cm, font=\small},
+                line/.style={draw, -{Stealth[scale=1.2]}, thick}
+            ]
+                % Nodes
+                \node [block] (input) {Ảnh đầu vào \\ $640 \times 640 \times 3$};
+                \node [block] (backbone) [below=of input] {Backbone \\ (C2f, SPPF)};
+                \node [block] (neck) [below=of backbone] {Neck (PANet) \\ (FPN + PAN)};
+                
+                % Branches
+                \node [branch] (boxhead) [below left=0.6cm and 0.1cm of neck] {Nhánh dự đoán hộp bao \\ (Box \& Class)};
+                \node [branch] (maskhead) [below right=0.6cm and 0.1cm of neck] {Nhánh dự đoán mặt nạ \\ (Proto \& Coefficients)};
+                
+                \node [outblock] (output) [below=1.8cm of neck] {Kết quả phân vùng \\ (Segmentation)};
+            
+                % Lines
+                \path [line] (input) -- (backbone);
+                \path [line] (backbone) -- (neck);
+                \path [line] (neck.south) -- ++(0,-0.3) -| (boxhead.north);
+                \path [line] (neck.south) -- ++(0,-0.3) -| (maskhead.north);
+                \path [line] (boxhead.south) -- ++(0,-0.3) -| (output.west);
+                \path [line] (maskhead.south) -- ++(0,-0.3) -| (output.east);
+            \end{tikzpicture}
+            }
+            \captionof{figure}{Sơ đồ kiến trúc YOLO26-seg}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Hàm mất mát của YOLO26-seg}
+    Bài toán phân vùng thực thể vết bệnh được tối ưu hóa thông qua hàm mất mát tổng hợp:
+    \begin{equation}
+        \mathcal{L}_{total} = \lambda_{box} \mathcal{L}_{box} + \lambda_{cls} \mathcal{L}_{cls} + \lambda_{dfl} \mathcal{L}_{dfl} + \lambda_{mask} \mathcal{L}_{mask}
+    \end{equation}
+    \vspace{0.2cm}
+    Trong đó:
+    \begin{itemize}
+        \setlength{\itemsep}{3pt}
+        \item[-] $\mathcal{L}_{box}$ (Complete IoU Loss): Đo lường sai lệch vị trí, tỷ lệ khung hình và kích thước hộp bao.
+        \item[-] $\mathcal{L}_{cls}$ (Binary Cross Entropy): Phân loại nhãn lớp bệnh cho từng thực thể.
+        \item[-] $\mathcal{L}_{dfl}$ (Distribution Focal Loss): Tinh chỉnh biên hộp bao trong các trường hợp ranh giới mờ nhòe.
+        \item[-] $\mathcal{L}_{mask}$ (BCE + Dice Loss): Tối ưu hóa sự trùng khớp mặt nạ phân vùng ở cấp độ điểm ảnh.
+    \end{itemize}
+\end{frame}
+
 \subsection{Cấu hình huấn luyện}
 \begin{frame}
     \begin{columns}[T]
         \begin{column}{0.44\textwidth}
-            \textbf{Thiết lập cấu hình chung}
-            \vspace{0.1cm}
+            \justifying
+            \centerline{\textbf{Thiết lập cấu hình chung}}
+            \vspace{0.2cm}
             \begin{table}[h]
                 \centering
                 \caption{Cấu hình huấn luyện chung}
@@ -108,8 +175,9 @@
             \end{table}
         \end{column}
         \begin{column}{0.54\textwidth}
-            \textbf{Tham số riêng theo kiến trúc}
-            \vspace{0.1cm}
+            \justifying
+            \centerline{\textbf{Tham số riêng theo kiến trúc}}
+            \vspace{0.2cm}
             \begin{table}[h]
                 \centering
                 \caption{Cấu hình riêng cho từng mô hình}
@@ -121,7 +189,7 @@
                     Mô hình     & $\text{lr}_0$     & Kích thước         & Ghi chú kỹ thuật    \\
                     \midrule
                     Mask R-CNN  & $1 \cdot 10^{-4}$ & $256 \times 256$   & Batch 2, grad acc 4 \\
-                    YOLO26m-seg & $8 \cdot 10^{-4}$ & $640 \times 640$   & Batch 8             \\
+                    YOLO26-seg  & $8 \cdot 10^{-4}$ & $640 \times 640$   & Batch 8             \\
                     RF-DETR     & $1 \cdot 10^{-4}$ & $640 \times 640$   & Batch 2, grad acc 4 \\
                     MobileSAM   & $1 \cdot 10^{-5}$ & $1024 \times 1024$ & Batch 2, grad acc 4 \\
                     Mask2Former & $5 \cdot 10^{-5}$ & $384 \times 384$   & Batch 4, grad acc 2 \\
@@ -140,13 +208,13 @@
 \begin{frame}
     \begin{columns}[T]
         \begin{column}{0.48\textwidth}
-            \textbf{Tối ưu tự động bằng Ray Tune}
-            \vspace{0.1cm}
-            \footnotesize
             \justifying
+            \centerline{\textbf{Tối ưu tự động bằng Ray Tune}}
+            \vspace{0.2cm}
+            \footnotesize
             \begin{itemize}
                 \setlength{\itemsep}{3pt}
-                \item Tinh chỉnh siêu tham số cho mô hình tốt nhất YOLO26m-seg bằng Ray Tune.
+                \item Tinh chỉnh siêu tham số cho mô hình tốt nhất YOLO26-seg bằng Ray Tune.
                 \item Áp dụng thuật toán lập lịch bất đồng bộ ASHA.
                 \item Đánh giá song song nhiều cấu hình thử nghiệm, dừng sớm các cấu hình kém hiệu quả ngay từ những epoch đầu giúp tối ưu hóa tài nguyên tính toán.
                 \item Thực nghiệm 20 thử nghiệm độc lập trên không gian sáu siêu tham số cốt lõi.

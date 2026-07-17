@@ -29,6 +29,42 @@
   \end{itemize}
 \end{frame}
 
+\subsection{Quá trình hội tụ}
+\begin{frame}{Đường cong học tập (Learning Curves)}
+    \begin{columns}[T]
+        \begin{column}{0.42\textwidth}
+            \justifying
+            \centerline{\textbf{Phân tích hội tụ}}
+            \vspace{0.3cm}
+            
+            Quá trình huấn luyện YOLO26-seg qua 50 epochs:
+            \begin{itemize}
+                \setlength{\itemsep}{3pt}
+                \item[-] Hàm mất mát (Loss) giảm ổn định, hội tụ tốt sau epoch 40.
+                \item[-] Chỉ số mAP@50 tăng nhanh trong 30 epochs đầu và bão hòa ổn định ở các epoch cuối.
+                \item[-] Không xảy ra hiện tượng nhiễu động mạnh hoặc overfitting sớm.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.54\textwidth}
+            \begin{figure}
+                \centering
+                \begin{minipage}{0.48\textwidth}
+                    \centering
+                    \includegraphics[width=\textwidth]{yolo/rice/results.png}
+                    \caption*{Tập Lúa}
+                \end{minipage}\hfill
+                \begin{minipage}{0.48\textwidth}
+                    \centering
+                    \includegraphics[width=\textwidth]{yolo/coffee/results.png}
+                    \caption*{Tập Cà phê}
+                \end{minipage}
+                \vspace{0.1cm}
+                \caption{Đường cong học tập (Loss và mAP) của YOLO26-seg}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+
 \subsection{Cải tiến với RayTune}
 \begin{frame}{Kết quả tinh chỉnh YOLO26-seg bằng RayTune và ASHA}
   \begin{table}
