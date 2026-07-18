@@ -11,6 +11,11 @@ import onnxruntime as ort
 from PIL import Image
 
 
+class InvalidImageError(ValueError):
+    """Exception raised when the uploaded file cannot be parsed as an image."""
+    pass
+
+
 class InferenceService:
     """ONNX Runtime inference service."""
 
@@ -62,11 +67,14 @@ class InferenceService:
 
     def preprocess(self, image_bytes: bytes) -> np.ndarray:
         """Convert image bytes to a normalized NCHW float32 tensor."""
-        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        image = image.resize((self.input_size, self.input_size))
-        array = np.asarray(image, dtype=np.float32) / 255.0
-        array = np.transpose(array, (2, 0, 1))
-        return np.expand_dims(array, axis=0).astype(np.float32)
+        try:
+            image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+            image = image.resize((self.input_size, self.input_size))
+            array = np.asarray(image, dtype=np.float32) / 255.0
+            array = np.transpose(array, (2, 0, 1))
+            return np.expand_dims(array, axis=0).astype(np.float32)
+        except Exception as exc:
+            raise InvalidImageError(f"Failed to decode or preprocess image: {exc}") from exc
 
     @staticmethod
     def _softmax(scores: np.ndarray) -> np.ndarray:
@@ -84,7 +92,7 @@ class InferenceService:
 
             # Check if this is an End-to-End YOLO model (e.g. [300, 38] with box, conf, class_id, mask_coeffs)
             # Standard YOLO output shape for End-to-End is (300, 6 + num_masks) = (300, 38)
-            if output.shape[1] == 38 or (output.shape[1] > 5 and output.shape[1] < 45):
+            if output.shape[1] in (38, 6):
                 scores = np.zeros(class_count, dtype=np.float32)
                 for row in output:
                     conf = float(row[4])
@@ -108,40 +116,61 @@ class InferenceService:
         class_count = len(self.rice_class_names) if self.has_both else len(self.class_names)
         return self._class_scores_from_output_for_classes(output, class_count)
 
-    def predict(self, image_bytes: bytes, top_k: int = 5) -> list[tuple[str, float]]:
+    def predict(
+        self,
+        image_bytes: bytes,
+        filename: str | None = None,
+        crop: str | None = None,
+        top_k: int = 5,
+    ) -> list[tuple[str, float]]:
         """Run inference and return top-k (label, confidence) pairs."""
         tensor = self.preprocess(image_bytes)
 
+        # Determine crop
+        inferred_crop = None
+        if crop:
+            inferred_crop = crop.lower()
+        elif filename:
+            name_lower = filename.lower()
+            if any(k in name_lower for k in ("coffee", "caphe", "ca_phe", "ca-phe")):
+                inferred_crop = "coffee"
+            elif any(k in name_lower for k in ("rice", "lua", "rice-leaf", "lalua")):
+                inferred_crop = "rice"
+
         if self.has_both:
-            # 1. Run Coffee model inference to check confidence
+            # 1. Run Coffee model inference to get scores and max confidence
             coffee_outputs = self.coffee_session.run(None, {self.coffee_input_name: tensor})
-            coffee_output = np.asarray(coffee_outputs[0])
-            if coffee_output.ndim == 3 and coffee_output.shape[0] == 1:
-                coffee_output = coffee_output[0]
+            coffee_scores = self._class_scores_from_output_for_classes(coffee_outputs[0], len(self.coffee_class_names))
+            max_coffee_conf = float(coffee_scores.max())
 
-            max_coffee_conf = 0.0
-            if coffee_output.ndim == 2 and coffee_output.shape[0] > 0 and coffee_output.shape[1] > 4:
-                max_coffee_conf = float(coffee_output[:, 4].max())
+            # 2. Run Rice model inference to get scores and max confidence
+            rice_outputs = self.rice_session.run(None, {self.rice_input_name: tensor})
+            rice_scores = self._class_scores_from_output_for_classes(rice_outputs[0], len(self.rice_class_names))
+            max_rice_conf = float(rice_scores.max())
 
-            # If Coffee disease detected with confidence > 0.15, route to Coffee
-            if max_coffee_conf > 0.15:
-                scores = self._class_scores_from_output_for_classes(coffee_outputs[0], len(self.coffee_class_names))
-                probabilities = self._softmax(scores)
+            # Determine routing
+            if inferred_crop == "coffee":
+                use_coffee = True
+            elif inferred_crop == "rice":
+                use_coffee = False
+            else:
+                # Fallback to max confidence comparison
+                use_coffee = max_coffee_conf > max_rice_conf
+
+            if use_coffee:
+                probabilities = coffee_scores
                 k = min(top_k, len(self.coffee_class_names))
                 indexes = np.argsort(probabilities)[::-1][:k]
                 return [(self.coffee_class_names[index], float(probabilities[index])) for index in indexes]
-
-            # Otherwise default to Rice
-            outputs = self.rice_session.run(None, {self.rice_input_name: tensor})
-            scores = self._class_scores_from_output_for_classes(outputs[0], len(self.rice_class_names))
-            probabilities = self._softmax(scores)
-            k = min(top_k, len(self.rice_class_names))
-            indexes = np.argsort(probabilities)[::-1][:k]
-            return [(self.rice_class_names[index], float(probabilities[index])) for index in indexes]
+            else:
+                probabilities = rice_scores
+                k = min(top_k, len(self.rice_class_names))
+                indexes = np.argsort(probabilities)[::-1][:k]
+                return [(self.rice_class_names[index], float(probabilities[index])) for index in indexes]
         else:
             outputs = self.session.run(None, {self.input_name: tensor})
             scores = self._class_scores_from_output(outputs[0])
-            probabilities = self._softmax(scores)
+            probabilities = scores
             k = min(top_k, len(self.class_names))
             indexes = np.argsort(probabilities)[::-1][:k]
             return [(self.class_names[index], float(probabilities[index])) for index in indexes]

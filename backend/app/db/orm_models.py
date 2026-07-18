@@ -2,9 +2,14 @@
 ORM models for SQLModel database.
 """
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
+
+
+def utc_now_naive() -> datetime:
+    """Returns the current UTC time as a timezone-naive datetime object (for DB compatibility)."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class User(SQLModel, table=True):
@@ -15,7 +20,7 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True, index=True, nullable=False)
     hashed_password: str = Field(nullable=False)
     is_active: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    created_at: datetime = Field(default_factory=utc_now_naive, nullable=False)
 
     # Relationships
     images: list["Image"] = Relationship(back_populates="user")
@@ -31,7 +36,7 @@ class Image(SQLModel, table=True):
     original_filename: str | None = Field(default=None, nullable=True)
     content_type: str | None = Field(default=None, nullable=True)
     size_bytes: int | None = Field(default=None, nullable=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    created_at: datetime = Field(default_factory=utc_now_naive, nullable=False)
 
     # Relationships
     user: User | None = Relationship(back_populates="images")
@@ -53,7 +58,7 @@ class Prediction(SQLModel, table=True):
 
     model_version: str | None = Field(default=None, nullable=True)
     latency_ms: float | None = Field(default=None, nullable=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False, index=True)
+    created_at: datetime = Field(default_factory=utc_now_naive, nullable=False, index=True)
 
     # Relationships
     image: Image = Relationship(back_populates="predictions")
