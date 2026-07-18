@@ -10,7 +10,7 @@
       
       Tích hợp mô hình YOLO26-seg đã lượng tử hóa dạng ONNX để thực thi suy luận trên CPU.
       
-      Hệ thống chia làm ba thành phần độc lập: giao diện Next.js, backend FastAPI điều phối ONNX Runtime, lưu trữ với PostgreSQL và MinIO.
+      Hệ thống chia làm các thành phần độc lập: giao diện Next.js, backend FastAPI điều phối ONNX Runtime, lưu trữ với PostgreSQL, MinIO và Redis.
     \end{column}
     \begin{column}{0.51\textwidth}
       \begin{figure}
@@ -32,7 +32,7 @@
       
       Hệ thống hỗ trợ xác thực tài khoản qua JWT thời hạn 24 giờ.
       
-      Nông dân tải ảnh hoặc chụp trực tiếp từ camera. Ảnh được gửi đến API để nhận diện mặt nạ bệnh kèm độ tin cậy. Kết quả được lưu lịch sử và hiển thị khuyến nghị từ chuyên gia.
+      Nông dân tải ảnh hoặc chụp trực tiếp từ camera. Ảnh được gửi đến API sử dụng mô hình YOLO26-seg để dự đoán nhãn bệnh kèm độ tin cậy. Kết quả được lưu lịch sử và hiển thị khuyến nghị từ chuyên gia.
     \end{column}
     \begin{column}{0.51\textwidth}
       \begin{figure}
