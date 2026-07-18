@@ -21,7 +21,13 @@ from backend.app.routers import predict as predict_router
 class FakeInference:
     """Deterministic ONNX boundary used to keep E2E tests self-contained."""
 
-    def predict(self, image_bytes: bytes, top_k: int = 5) -> list[tuple[str, float]]:
+    def predict(
+        self,
+        image_bytes: bytes,
+        filename: str | None = None,
+        crop: str | None = None,
+        top_k: int = 5,
+    ) -> list[tuple[str, float]]:
         assert image_bytes
         assert top_k == 5
         return [("LeafBlast", 0.91), ("BrownSpot", 0.07)]

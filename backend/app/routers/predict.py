@@ -4,8 +4,9 @@ Prediction endpoint for plant disease diagnosis.
 
 import time
 from functools import lru_cache
+from typing import Literal
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlmodel import Session
 
 from backend.app.config import settings
@@ -14,7 +15,7 @@ from backend.app.db.orm_models import User
 from backend.app.knowledge.knowledge_base import KnowledgeBase
 from backend.app.models.schemas import PredictionResponse, TopKPrediction
 from backend.app.security import get_optional_current_user
-from backend.app.services.inference import InferenceService
+from backend.app.services.inference import InferenceService, InvalidImageError
 from backend.app.services.storage import StorageService
 
 router = APIRouter(tags=["prediction"])
@@ -71,6 +72,7 @@ def build_recommendation(prediction: str, confidence: float) -> dict | None:
 @router.post("/predict", response_model=PredictionResponse)
 async def predict(
     file: UploadFile = File(...),
+    crop: Literal["rice", "coffee"] | None = Query(None, description="Optional crop filter: 'rice' or 'coffee'"),
     session: Session = Depends(get_session),
     current_user: User | None = Depends(get_optional_current_user),
 ):
@@ -87,7 +89,12 @@ async def predict(
 
     started_at = time.perf_counter()
     try:
-        top_k = inference.predict(image_bytes, top_k=5)
+        top_k = inference.predict(image_bytes, filename=file.filename, crop=crop, top_k=5)
+    except InvalidImageError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid image file: {exc}",
+        ) from exc
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -130,8 +137,6 @@ async def predict(
             commit=False,
         )
         session.commit()
-        session.refresh(image)
-        session.refresh(prediction_record)
     except Exception as exc:
         session.rollback()
         if object_key:
@@ -143,6 +148,12 @@ async def predict(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Storage or database unavailable: {exc}",
         ) from exc
+
+    try:
+        session.refresh(image)
+        session.refresh(prediction_record)
+    except Exception as exc:
+        print(f"Warning: Failed to refresh db instances post-commit: {exc}")
 
     return PredictionResponse(
         prediction=prediction,

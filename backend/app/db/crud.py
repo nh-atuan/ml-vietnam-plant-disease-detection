@@ -4,6 +4,7 @@ CRUD (Create, Read, Update, Delete) operations using SQLModel.
 import uuid
 
 import bcrypt
+from sqlalchemy.orm import joinedload
 from sqlmodel import Session, select
 
 from backend.app.db.orm_models import Image, Prediction, User
@@ -124,6 +125,7 @@ def get_predictions_by_user(
     statement = (
         select(Prediction)
         .where(Prediction.user_id == user_id)
+        .options(joinedload(Prediction.image))
         .order_by(Prediction.created_at.desc())
         .offset(skip)
         .limit(limit)

@@ -51,3 +51,13 @@ def test_authenticated_user_can_predict_and_review_history(client: TestClient) -
 def test_history_requires_a_logged_in_user(client: TestClient) -> None:
     response = client.get("/api/v1/history")
     assert response.status_code == 401
+
+
+def test_predict_rejects_invalid_crop_type(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/predict",
+        files={"file": ("leaf.png", SAMPLE_LEAF_PNG, "image/png")},
+        params={"crop": "banana"},
+    )
+    assert response.status_code == 422
+
