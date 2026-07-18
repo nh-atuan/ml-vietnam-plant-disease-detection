@@ -14,6 +14,7 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from backend.app.db.database import get_session
 from backend.app.main import app
+from backend.app.routers import history as history_router
 from backend.app.routers import predict as predict_router
 
 
@@ -54,6 +55,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
 
     monkeypatch.setattr(predict_router, "get_inference_service", lambda: FakeInference())
     monkeypatch.setattr(predict_router, "get_storage_service", lambda: FakeStorage())
+    monkeypatch.setattr(history_router, "get_storage_service", lambda: FakeStorage())
     app.dependency_overrides[get_session] = override_session
     try:
         with TestClient(app) as test_client:

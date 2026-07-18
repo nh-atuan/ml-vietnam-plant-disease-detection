@@ -56,3 +56,13 @@ class StorageService:
             object_name=object_key,
             expires=timedelta(hours=expires_hours)
         )
+
+    def delete_image(self, object_key: str) -> None:
+        """
+        Xóa ảnh khỏi MinIO (dùng để thu hồi tệp tin mồ côi khi lỗi DB).
+        """
+        try:
+            self.client.remove_object(self.bucket, object_key)
+        except Exception as e:
+            print(f"Warning: Failed to delete image '{object_key}' from MinIO: {e}")
+

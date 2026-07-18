@@ -130,8 +130,18 @@ def test_predict_upload_runs_inference_storage_and_db(monkeypatch):
         def get_url(self, object_key: str):
             return f"https://storage.local/{object_key}"
 
+        def delete_image(self, object_key: str):
+            pass
+
     class FakeSession:
         rolled_back = False
+        committed = False
+
+        def commit(self):
+            self.committed = True
+
+        def refresh(self, instance):
+            pass
 
         def rollback(self):
             self.rolled_back = True

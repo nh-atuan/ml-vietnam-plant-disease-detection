@@ -99,8 +99,9 @@ async def predict(
     top_k_payload = [{"label": label, "confidence": score} for label, score in top_k]
     recommendation = build_recommendation(prediction, confidence)
 
+    storage = get_storage_service()
+    object_key = None
     try:
-        storage = get_storage_service()
         object_key = storage.upload_image(
             image_bytes,
             filename=file.filename or "leaf.jpg",
@@ -114,6 +115,7 @@ async def predict(
             original_filename=file.filename,
             content_type=file.content_type,
             size_bytes=len(image_bytes),
+            commit=False,
         )
         prediction_record = crud.create_prediction_record(
             session=session,
@@ -125,9 +127,18 @@ async def predict(
             recommendation=recommendation,
             model_version=settings.MODEL_VERSION,
             latency_ms=latency_ms,
+            commit=False,
         )
+        session.commit()
+        session.refresh(image)
+        session.refresh(prediction_record)
     except Exception as exc:
         session.rollback()
+        if object_key:
+            try:
+                storage.delete_image(object_key)
+            except Exception as storage_exc:
+                print(f"Warning: Failed to clean up orphaned image '{object_key}': {storage_exc}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Storage or database unavailable: {exc}",

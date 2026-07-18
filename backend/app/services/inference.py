@@ -115,18 +115,12 @@ class InferenceService:
         if self.has_both:
             # 1. Run Coffee model inference to check confidence
             coffee_outputs = self.coffee_session.run(None, {self.coffee_input_name: tensor})
-            coffee_output = np.asarray(coffee_outputs[0])
-            if coffee_output.ndim == 3 and coffee_output.shape[0] == 1:
-                coffee_output = coffee_output[0]
-
-            max_coffee_conf = 0.0
-            if coffee_output.ndim == 2 and coffee_output.shape[0] > 0 and coffee_output.shape[1] > 4:
-                max_coffee_conf = float(coffee_output[:, 4].max())
+            coffee_scores = self._class_scores_from_output_for_classes(coffee_outputs[0], len(self.coffee_class_names))
+            max_coffee_conf = float(coffee_scores.max())
 
             # If Coffee disease detected with confidence > 0.15, route to Coffee
             if max_coffee_conf > 0.15:
-                scores = self._class_scores_from_output_for_classes(coffee_outputs[0], len(self.coffee_class_names))
-                probabilities = self._softmax(scores)
+                probabilities = self._softmax(coffee_scores)
                 k = min(top_k, len(self.coffee_class_names))
                 indexes = np.argsort(probabilities)[::-1][:k]
                 return [(self.coffee_class_names[index], float(probabilities[index])) for index in indexes]
