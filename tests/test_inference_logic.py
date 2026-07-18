@@ -6,7 +6,35 @@ from backend.app.services.inference import InferenceService
 
 
 @pytest.fixture
-def inference_service():
+def inference_service(monkeypatch):
+    import pathlib
+    import onnxruntime
+
+    # Mock Path.exists to return True for the expected ONNX model paths
+    original_exists = pathlib.Path.exists
+    def mock_exists(self):
+        if self.name in ("yolo26_rice_quantized.onnx", "yolo26_coffee_quantized.onnx"):
+            return True
+        return original_exists(self)
+    monkeypatch.setattr(pathlib.Path, "exists", mock_exists)
+
+    # Mock onnxruntime.InferenceSession
+    class MockInferenceSession:
+        def __init__(self, model_path, providers=None):
+            self.model_path = model_path
+            self.providers = providers
+
+        def get_inputs(self):
+            class MockInput:
+                def __init__(self, name):
+                    self.name = name
+            return [MockInput("images")]
+
+        def run(self, output_names, input_feed, run_options=None):
+            return [np.zeros((1, 300, 38), dtype=np.float32)]
+
+    monkeypatch.setattr(onnxruntime, "InferenceSession", MockInferenceSession)
+
     class_names = InferenceService.load_class_names("models/class_names.json")
     return InferenceService("models/yolo26_rice_quantized.onnx", class_names)
 
