@@ -8,6 +8,7 @@ from backend.app.services.inference import InferenceService
 @pytest.fixture
 def inference_service(monkeypatch):
     import pathlib
+
     import onnxruntime
 
     # Mock Path.exists to return True for the expected ONNX model paths
