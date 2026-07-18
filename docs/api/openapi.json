@@ -187,15 +187,44 @@
         "summary": "Predict",
         "description": "Receive a leaf image, run ONNX inference, save metadata, and return top-k predictions.",
         "operationId": "predict_api_v1_predict_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "crop",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "rice",
+                    "coffee"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional crop filter: 'rice' or 'coffee'",
+              "title": "Crop"
+            },
+            "description": "Optional crop filter: 'rice' or 'coffee'"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/Body_predict_api_v1_predict_post"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -218,12 +247,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/v1/history": {

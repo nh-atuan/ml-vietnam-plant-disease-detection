@@ -2,14 +2,14 @@
 ORM models for SQLModel database.
 """
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 
 def utc_now_naive() -> datetime:
     """Returns the current UTC time as a timezone-naive datetime object (for DB compatibility)."""
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class User(SQLModel, table=True):

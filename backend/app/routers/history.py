@@ -2,6 +2,8 @@
 Prediction history routes for authenticated users.
 """
 
+from functools import lru_cache
+
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, func, select
 
@@ -11,8 +13,6 @@ from backend.app.db.orm_models import User
 from backend.app.models.schemas import HistoryItem, HistoryResponse
 from backend.app.security import get_current_user
 from backend.app.services.storage import StorageService
-
-from functools import lru_cache
 
 router = APIRouter(prefix="/history", tags=["history"])
 

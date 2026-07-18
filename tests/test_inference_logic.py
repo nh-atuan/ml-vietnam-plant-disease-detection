@@ -1,8 +1,9 @@
+
 import numpy as np
 import pytest
-from pathlib import Path
 
 from backend.app.services.inference import InferenceService
+
 
 @pytest.fixture
 def inference_service():
@@ -42,8 +43,9 @@ def test_onnx_shape_parsing_logic(inference_service):
 
 def test_crop_routing_by_filename(inference_service):
     # Dummy leaf image (1x1 black image converted to bytes)
-    from PIL import Image
     import io
+
+    from PIL import Image
     img = Image.new("RGB", (100, 100), color="green")
     img_byte_arr = io.BytesIO()
     img.save(img_byte_arr, format="JPEG")
@@ -61,8 +63,9 @@ def test_crop_routing_by_filename(inference_service):
         assert label in inference_service.rice_class_names
 
 def test_crop_routing_by_explicit_parameter(inference_service):
-    from PIL import Image
     import io
+
+    from PIL import Image
     img = Image.new("RGB", (100, 100), color="green")
     img_byte_arr = io.BytesIO()
     img.save(img_byte_arr, format="JPEG")
@@ -78,8 +81,9 @@ def test_crop_routing_by_explicit_parameter(inference_service):
         assert label in inference_service.rice_class_names
 
 def test_raw_probabilities_not_deflated_by_softmax(inference_service):
-    from PIL import Image
     import io
+
+    from PIL import Image
     img = Image.new("RGB", (100, 100), color="green")
     img_byte_arr = io.BytesIO()
     img.save(img_byte_arr, format="JPEG")
