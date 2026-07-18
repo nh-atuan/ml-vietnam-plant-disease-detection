@@ -63,9 +63,11 @@
 \makeatother
 \AtBeginSection[]{
   \ifbool{showtocatsection}{
+    \boolfalse{showsectnum}
     \begin{frame}[t]{Mục lục}
       \tableofcontents[currentsection,subsectionstyle=hide]
     \end{frame}
+    \booltrue{showsectnum}
   }{}
 }
 
@@ -74,6 +76,9 @@
 \addtobeamertemplate{block begin}{}{\justifying}
 \makeatletter
 \apptocmd{\beamer@column}{\justifying}{}{}
+
+\newbool{showsectnum}
+\booltrue{showsectnum}
 
 % Tự động thêm frametitle từ subsection nếu slide chưa có tiêu đề
 \patchcmd{\endbeamer@frameslide}{\ifx\beamer@frametitle\@empty}{\iffalse}{}{\typeout{patch failed}}
@@ -86,13 +91,33 @@
     \else
       \nointerlineskip%
       \begin{beamercolorbox}[wd=\paperwidth,leftskip=0.3cm,rightskip=0.3cm,sep=0.3cm,dp=0.2ex]{frametitle}%
-        \usebeamerfont{frametitle}\thesection.\thesubsection. \insertsubsection%
+        \usebeamerfont{frametitle}%
+        \ifbool{showsectnum}{%
+          \ifnumgreater{\value{section}}{0}{%
+            \thesection.%
+            \ifnumgreater{\value{subsection}}{0}{%
+              \thesubsection.%
+            }{}%
+            \ ~%
+          }{}%
+        }{}%
+        \insertsubsection%
       \end{beamercolorbox}%
     \fi
   \else
     \nointerlineskip%
     \begin{beamercolorbox}[wd=\paperwidth,leftskip=0.3cm,rightskip=0.3cm,sep=0.3cm,dp=0.2ex]{frametitle}%
-      \usebeamerfont{frametitle}\insertframetitle%
+      \usebeamerfont{frametitle}%
+      \ifbool{showsectnum}{%
+        \ifnumgreater{\value{section}}{0}{%
+          \thesection.%
+          \ifnumgreater{\value{subsection}}{0}{%
+            \thesubsection.%
+          }{}%
+          \ ~%
+        }{}%
+      }{}%
+      \insertframetitle%
     \end{beamercolorbox}%
   \fi
 }
