@@ -219,9 +219,11 @@ backend:
 # or override existingClaim to use a pre-populated claim.
 # =============================================
 model:
-  downloadUrl: ""
+  riceDownloadUrl: "https://github.com/nh-atuan/ml-vietnam-plant-disease-detection/releases/download/v1.0-models/yolo26_rice_quantized.onnx"
+  coffeeDownloadUrl: "https://github.com/nh-atuan/ml-vietnam-plant-disease-detection/releases/download/v1.0-models/yolo26_coffee_quantized.onnx"
+  classNamesDownloadUrl: "https://github.com/nh-atuan/ml-vietnam-plant-disease-detection/releases/download/v1.0-models/class_names.json"
   persistence:
-    enabled: false
+    enabled: true
     existingClaim: ""
     claimName: plant-disease-models
     size: 10Gi
