@@ -26,6 +26,7 @@ spec:
         - name: wait-for-deps
           image: alpine:3.18
           command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done']
+        {{- if .Values.model.persistence.enabled }}
         - name: download-model
           image: alpine:3.18
           env:
@@ -46,6 +47,7 @@ spec:
           volumeMounts:
             - name: models
               mountPath: /models
+        {{- end }}
       containers:
         - name: backend
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
@@ -86,13 +88,17 @@ spec:
               cpu: {{ .Values.backend.resources.limits.cpu }}
               memory: {{ .Values.backend.resources.limits.memory }}
           volumeMounts:
+            {{- if .Values.model.persistence.enabled }}
             - name: models
               mountPath: /models
               readOnly: true
+            {{- end }}
       volumes:
+        {{- if .Values.model.persistence.enabled }}
         - name: models
           persistentVolumeClaim:
             claimName: {{ default .Values.model.persistence.claimName .Values.model.persistence.existingClaim }}
+        {{- end }}
 ---
 apiVersion: v1
 kind: Service

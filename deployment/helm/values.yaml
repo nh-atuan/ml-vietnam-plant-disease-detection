@@ -105,6 +105,113 @@ backend:
       port: 8000
     initialDelaySeconds: 10
     periodSeconds: 5
+# =============================================
+# Global Configuration
+# =============================================
+global:
+  namespace: plant-disease
+  domain: plant-disease-demo.duckdns.org
+
+# =============================================
+# Image Configuration
+# =============================================
+images:
+  registry: ghcr.io
+  pullPolicy: IfNotPresent
+  pullSecretName: ghcr-registry-credentials
+
+# =============================================
+# Secret placeholders
+# Override these through --set-string, a private values file, or an external secret mechanism.
+# Do not commit real production secrets.
+# =============================================
+secretsRaw:
+  jwt-secret: change-me-in-production
+  postgres-user: admin
+  postgres-password: changeme
+  minio-access-key: minioadmin
+  minio-secret-key: minioadmin
+
+# =============================================
+# Backend Configuration (FastAPI)
+# =============================================
+backend:
+  replicaCount: 1
+  
+  image:
+    repository: ghcr.io/hcmus-ml-plant-disease-detection/plant-backend
+    tag: "latest"
+  
+  service:
+    type: ClusterIP
+    port: 8000
+    targetPort: 8000
+  
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2Gi"
+    limits:
+      cpu: "2000m"
+      memory: "6Gi"
+  
+  env:
+    - name: APP_ENV
+      value: "production"
+    - name: MODEL_PATH
+      value: "/models/yolo26_quantized.onnx"
+    - name: CLASS_NAMES_PATH
+      value: "/models/class_names.json"
+    - name: MODEL_INPUT_SIZE
+      value: "640"
+    - name: MODEL_VERSION
+      value: "yolo26-seg-onnx"
+    - name: SKIP_DB_INIT
+      value: "false"
+    - name: ACCESS_TOKEN_EXPIRE_MINUTES
+      value: "1440"
+    - name: POSTGRES_HOST
+      value: "postgres"
+    - name: POSTGRES_PORT
+      value: "5432"
+    - name: POSTGRES_DB
+      value: "plant_disease"
+    - name: REDIS_URL
+      value: "redis://redis:6379/0"
+    - name: MINIO_ENDPOINT
+      value: "minio:9000"
+    - name: MINIO_BUCKET
+      value: "plant-disease-images"
+    - name: MINIO_SECURE
+      value: "false"
+    - name: MLFLOW_TRACKING_URI
+      value: ""
+  
+  secrets:
+    - name: SECRET_KEY
+      key: jwt-secret
+    - name: POSTGRES_USER
+      key: postgres-user
+    - name: POSTGRES_PASSWORD
+      key: postgres-password
+    - name: MINIO_ACCESS_KEY
+      key: minio-access-key
+    - name: MINIO_SECRET_KEY
+      key: minio-secret-key
+
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 15
+  
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 5
 
 # =============================================
 # Model artifact storage
@@ -114,7 +221,7 @@ backend:
 model:
   downloadUrl: ""
   persistence:
-    enabled: true
+    enabled: false
     existingClaim: ""
     claimName: plant-disease-models
     size: 10Gi
