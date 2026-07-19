@@ -9,60 +9,60 @@
     \footnotesize
     \begin{tabular}{lcccc}
       \toprule
-      \multirow{2}{*}{\textbf{Mô hình}} & \multicolumn{2}{c}{\textbf{Tập Lúa (Rice)}} & \multicolumn{2}{c}{\textbf{Tập Cà phê (Coffee)}} \\
+      \multirow{2}{*}{\textbf{Mô hình}} & \multicolumn{2}{c}{\textbf{Tập Lúa (Rice)}} & \multicolumn{2}{c}{\textbf{Tập Cà phê (Coffee)}}                                             \\
       \cmidrule(lr){2-3} \cmidrule(lr){4-5}
-      & \textbf{mAP@50} & \textbf{Thời gian (ms)} & \textbf{mAP@50} & \textbf{Thời gian (ms)} \\
+                                        & \textbf{mAP@50}                             & \textbf{Thời gian (ms)}                          & \textbf{mAP@50} & \textbf{Thời gian (ms)} \\
       \midrule
-      MobileSAM & 0.5637 & 1487.54 & 0.6923 & 1616.84 \\
-      Mask R-CNN & 0.5966 & 760.50 & 0.9480 & 702.36 \\
-      Mask2Former & 0.6971 & 96.81 & 0.9200 & 62.88 \\
-      RF-DETR & 0.7038 & 198.31 & 0.8428 & 70.31 \\
-      YOLO26-seg & \textbf{0.8247} & \textbf{65.72} & \textbf{0.9012} & \textbf{20.21} \\
+      MobileSAM                         & 0.5637                                      & 1487.54                                          & 0.6923          & 1616.84                 \\
+      Mask R-CNN                        & 0.5966                                      & 760.50                                           & 0.9480          & 702.36                  \\
+      Mask2Former                       & 0.6971                                      & 96.81                                            & 0.9200          & 62.88                   \\
+      RF-DETR                           & 0.7038                                      & 198.31                                           & 0.8428          & 70.31                   \\
+      YOLO26-seg                        & \textbf{0.8247}                             & \textbf{65.72}                                   & \textbf{0.9012} & \textbf{20.21}          \\
       \bottomrule
     \end{tabular}
   \end{table}
-  
+
   \vspace{0.2cm}
   \begin{itemize}
     \item[-] YOLO26-seg đạt độ chính xác mAP đứng hạng đầu trên tập Lúa và hạng ba trên tập Cà phê.
-    \item[-] YOLO26-seg sở hữu tốc độ suy luận vượt trội nhất (20 - 65 ms/ảnh) và kích thước gọn nhẹ nhất (6.23 MB).
+    \item[-] YOLO26-seg sở hữu tốc độ suy luận vượt trội nhất (20 - 65 ms/ảnh).
   \end{itemize}
 \end{frame}
 
 \subsection{Quá trình hội tụ}
-\begin{frame}{Đường cong học tập (Learning Curves)}
-    \begin{columns}[T]
-        \begin{column}{0.42\textwidth}
-            \justifying
-            \centerline{\textbf{Phân tích hội tụ}}
-            \vspace{0.3cm}
-            
-            Quá trình huấn luyện YOLO26-seg qua 50 epochs:
-            \begin{itemize}
-                \setlength{\itemsep}{3pt}
-                \item[-] Hàm mất mát (Loss) giảm ổn định, hội tụ tốt sau epoch 40.
-                \item[-] Chỉ số mAP@50 tăng nhanh trong 30 epochs đầu và bão hòa ổn định ở các epoch cuối.
-                \item[-] Không xảy ra hiện tượng nhiễu động mạnh hoặc overfitting sớm.
-            \end{itemize}
-        \end{column}
-        \begin{column}{0.54\textwidth}
-            \begin{figure}
-                \centering
-                \begin{minipage}{0.48\textwidth}
-                    \centering
-                    \includegraphics[width=\textwidth]{yolo/rice/results.png}
-                    \caption*{Tập Lúa}
-                \end{minipage}\hfill
-                \begin{minipage}{0.48\textwidth}
-                    \centering
-                    \includegraphics[width=\textwidth]{yolo/coffee/results.png}
-                    \caption*{Tập Cà phê}
-                \end{minipage}
-                \vspace{0.1cm}
-                \caption{Đường cong học tập (Loss và mAP) của YOLO26-seg}
-            \end{figure}
-        \end{column}
-    \end{columns}
+\begin{frame}{Đường cong học tập}
+  \begin{columns}[T]
+    \begin{column}{0.42\textwidth}
+      \justifying
+      \centerline{\textbf{Phân tích hội tụ}}
+      \vspace{0.3cm}
+
+      Quá trình huấn luyện YOLO26-seg qua 50 epochs:
+      \begin{itemize}
+        \setlength{\itemsep}{3pt}
+        \item[-] Hàm mất mát giảm ổn định, hội tụ tốt sau epoch 40.
+        \item[-] Chỉ số mAP@50 tăng nhanh trong 30 epochs đầu và bão hòa ổn định ở các epoch cuối.
+        \item[-] Không xảy ra hiện tượng nhiễu động mạnh hoặc overfitting sớm.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \begin{figure}
+        \centering
+        \begin{minipage}{0.48\textwidth}
+          \centering
+          \includegraphics[width=\textwidth]{yolo/rice/results.png}
+          \caption*{Tập Lúa}
+        \end{minipage}\hfill
+        \begin{minipage}{0.48\textwidth}
+          \centering
+          \includegraphics[width=\textwidth]{yolo/coffee/results.png}
+          \caption*{Tập Cà phê}
+        \end{minipage}
+        \vspace{0.1cm}
+        \caption{Đường cong học tập (Loss và mAP) của YOLO26-seg}
+      \end{figure}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \subsection{Cải tiến với RayTune}
@@ -72,41 +72,41 @@
     \caption{So sánh trước và sau tinh chỉnh siêu tham số}
     \small
     \resizebox{\textwidth}{!}{
-    \begin{tabular}{llcccccc}
-      \toprule
-      \textbf{Tập dữ liệu} & \textbf{Trạng thái} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Inference (ms)} & \textbf{Size (MB)} \\
-      \midrule
-      \multirow{2}{*}{Lúa (Rice)} & Baseline & 0.8247 & 0.7891 & 0.8543 & 0.8712 & 65.72 & 6.23 \\
-      & Tuned & \textbf{0.8481} & \textbf{0.8034} & \textbf{0.8697} & \textbf{0.8856} & \textbf{65.41} & 6.23 \\
-      \midrule
-      \multirow{2}{*}{Cà phê (Coffee)} & Baseline & 0.9012 & 0.8637 & 0.8921 & 0.9087 & 20.21 & 6.23 \\
-      & Tuned & \textbf{0.9234} & \textbf{0.8845} & \textbf{0.9053} & \textbf{0.9192} & \textbf{19.85} & 6.23 \\
-      \bottomrule
-    \end{tabular}
+      \begin{tabular}{llcccccc}
+        \toprule
+        \textbf{Tập dữ liệu}    & \textbf{Trạng thái} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU}   & \textbf{Dice}   & \textbf{Inference (ms)} & \textbf{Size (MB)} \\
+        \midrule
+        \multirow{2}{*}{Lúa}    & Baseline            & 0.8247          & 0.7891             & 0.8543          & 0.712           & \textbf{65.72}          & 54.5              \\
+                                & Tuned               & \textbf{0.8481} & \textbf{0.8034}    & \textbf{0.8697} & \textbf{0.8856} & 67.41                   & 54.5              \\
+        \midrule
+        \multirow{2}{*}{Cà phê} & Baseline            & 0.9012          & 0.8637             & 0.8921          & 0.087           & 20.21                   & 54.5              \\
+                                & Tuned               & \textbf{0.9234} & \textbf{0.8845}    & \textbf{0.9053} & \textbf{0.9192} & \textbf{19.85}          & 54.5              \\
+        \bottomrule
+      \end{tabular}
     }
   \end{table}
-  
+
   \begin{itemize}
     \item[-] Phương pháp tìm kiếm kết hợp thuật toán loại bỏ sớm ASHA giúp tăng hơn 2\% mAP@50 trên cả hai miền dữ liệu.
   \end{itemize}
 \end{frame}
 
 \subsection{Phân tích Ma trận nhầm lẫn}
-\begin{frame}{Ma trận nhầm lẫn (Confusion Matrix) của YOLO26-seg}
-  \vspace{-0.3cm}
+\begin{frame}{Ma trận nhầm lẫn của YOLO26-seg}
+  \vspace{-0.275cm}
   \begin{figure}
     \centering
     \begin{minipage}{0.48\textwidth}
       \centering
-      \includegraphics[width=0.8\textwidth]{yolo/rice/confusion_matrix_3.png}
+      \includegraphics[width=0.8\textwidth]{yolo/rice/confusion_matrix_rice.png}
       \caption*{Tập Lúa}
     \end{minipage}\hfill
     \begin{minipage}{0.48\textwidth}
       \centering
-      \includegraphics[width=0.8\textwidth]{yolo/coffee/confusion_matrix_3.png}
+      \includegraphics[width=0.8\textwidth]{yolo/coffee/confusion_matrix_coffee.png}
       \caption*{Tập Cà phê}
     \end{minipage}
-    \vspace{0.1cm}
+    \vspace{0.05cm}
     \caption{Ma trận nhầm lẫn chuẩn hóa của mô hình YOLO26-seg}
   \end{figure}
   \vspace{-0.3cm}
@@ -116,32 +116,58 @@
   \end{itemize}
 \end{frame}
 
-\subsection{So sánh và Thảo luận}
-\begin{frame}{Phân tích chuyên sâu (Overfitting / Underfitting)}
-  \begin{columns}[t]
-    \begin{column}{0.48\textwidth}
-      \justifying
-      \centerline{\textbf{Hiện tượng lệch khớp}}
-      \vspace{0.3cm}
-      
-      \begin{itemize}
-        \item[-] Hiện tượng chưa khớp (underfitting) xảy ra với MobileSAM do mô hình zero-shot khó nhận diện các vết bệnh nhỏ trên lá lúa.
-        \item[-] Hiện tượng khớp quá mức (overfitting) xảy ra ở Mask R-CNN và Mask2Former do kích thước mô hình quá lớn so với tập dữ liệu.
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \justifying
-      \centerline{\textbf{Giải pháp khắc phục}}
-      \vspace{0.3cm}
-      
-      Để nâng cao hiệu năng và tính tổng quát hóa:
-      \vspace{0.2cm}
-      \begin{itemize}
-        \item[-] Tăng cường tập dữ liệu huấn luyện (Data Augmentation) hoặc bổ sung thêm mẫu thực tế.
-        \item[-] Áp dụng các kỹ thuật Regularization mạnh mẽ hơn như Dropout, Weight decay và Early Stopping.
-      \end{itemize}
-    \end{column}
-  \end{columns}
+% \subsection{So sánh và Thảo luận}
+% \begin{frame}{Phân tích chuyên sâu (Overfitting / Underfitting)}
+%   \begin{columns}[t]
+%     \begin{column}{0.48\textwidth}
+%       \justifying
+%       \centerline{\textbf{Hiện tượng lệch khớp}}
+%       \vspace{0.3cm}
+
+%       \begin{itemize}
+%         \item[-] Hiện tượng chưa khớp (underfitting) xảy ra với MobileSAM do mô hình zero-shot khó nhận diện các vết bệnh nhỏ trên lá lúa.
+%         \item[-] Hiện tượng khớp quá mức (overfitting) xảy ra ở Mask R-CNN và Mask2Former do kích thước mô hình quá lớn so với tập dữ liệu.
+%       \end{itemize}
+%     \end{column}
+%     \begin{column}{0.48\textwidth}
+%       \justifying
+%       \centerline{\textbf{Giải pháp khắc phục}}
+%       \vspace{0.3cm}
+
+%       Để nâng cao hiệu năng và tính tổng quát hóa:
+%       \vspace{0.2cm}
+%       \begin{itemize}
+%         \item[-] Tăng cường tập dữ liệu huấn luyện (Data Augmentation) hoặc bổ sung thêm mẫu thực tế.
+%         \item[-] Áp dụng các kỹ thuật Regularization mạnh mẽ hơn như Dropout, Weight decay và Early Stopping.
+%       \end{itemize}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+
+
+\subsection{Lượng tử hóa mô hình}
+\begin{frame}{Kết quả lượng tử hóa mô hình}
+  \begin{table}
+    \centering
+    \caption{So sánh trước và sau lượng tử hóa 8 bit}
+    \small
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{llcccccc}
+        \toprule
+        \textbf{Tập dữ liệu}    & \textbf{Trạng thái} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU}   & \textbf{Dice}   & \textbf{Inference (ms)} & \textbf{Size (MB)} \\
+        \midrule
+        \multirow{2}{*}{Lúa}    & Tuned (FP32)        & \textbf{0.8481} & \textbf{0.8034}    & \textbf{0.8697} & \textbf{0.8856} & 67.41                   & 54.5              \\
+                                & 8 bit               & 0.8411          & 0.7831             & 0.8599          & 0.8812          & \textbf{65.34}          & \textbf{23.77}      \\
+        \midrule
+        \multirow{2}{*}{Cà phê} & Tuned (FP32)        & \textbf{0.9234} & \textbf{0.8845}    & \textbf{0.9053} & \textbf{0.9192} & 19.85                   & 54.5              \\
+                                & 8 bit               & 0.9221          & 0.8744             & 0.9030          & 0.9112          & \textbf{17.85}          & \textbf{23.77}      \\
+        \bottomrule
+      \end{tabular}
+    }
+  \end{table}
+
+  \begin{itemize}
+    \item[-] Lượng tử hóa 8 bit giúp giảm gần 4 lần dung lượng mô hình và cải thiện nhẹ tốc độ suy luận. Độ chính xác giảm nhẹ trên cả hai tập.
+  \end{itemize}
 \end{frame}
-
-
