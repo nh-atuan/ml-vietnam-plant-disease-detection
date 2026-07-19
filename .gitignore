@@ -247,5 +247,8 @@ docs/plans/
 docs/notes/
 docs/superpowers/
 docs/reports/
+docs/testing/
+docs/deployment/GCP_K3S_PLAN.md
+docs/README.md
 openspec/
 reports/
