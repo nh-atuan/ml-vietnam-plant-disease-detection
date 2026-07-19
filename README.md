@@ -229,13 +229,13 @@ ml-vietnam-plant-disease-detection/
 
 Dự án được thực hiện bởi nhóm sinh viên Khoa Công nghệ Thông tin - Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM:
 
-| Họ và Tên | MSSV | Vai trò chính trong dự án |
+| Họ và Tên | MSSV | Phân công công việc |
 |---|---|---|
-| **Nguyễn Hồ Anh Tuấn** | 23120185 | Nhóm trưởng, ML Pipeline, Backend & Kubernetes Deployment |
-| **Lê Xuân Trí** | 23120099 | UI/UX Design, phát triển Frontend Next.js |
-| **Đàm Tiến Đạt** | 23120118 | Data Collection, Preprocessing & Labeling Pipeline |
-| **Tống Thanh Phúc** | 23120158 | Triển khai mô hình thử nghiệm, Tinh chỉnh siêu tham số |
-| **Dương Tuấn Anh** | 23120208 | Viết tài liệu tri thức bệnh chuyên gia, Viết báo cáo & Slide |
+| **Nguyễn Hồ Anh Tuấn** | 23120185 | Tiền xử lý & augmentation; Huấn luyện YOLO-seg; Phát triển Backend FastAPI (ONNX Runtime, DB integration), integration testing; Tổ chức lưu trữ Cloud |
+| **Lê Xuân Trí** | 23120099 | Phân tích EDA dữ liệu; Huấn luyện Mask R-CNN; Xây dựng Expert Knowledge Base, OpenAPI specs; Thiết lập K8s (k3s), CI/CD, Helm Chart, Traefik & DuckDNS |
+| **Đàm Tiến Đạt** | 23120118 | Thu thập & merge dữ liệu; Huấn luyện MobileSAM; Hyperparameter tuning (RayTune/ASHA), push HuggingFace; Tối ưu YOLO-seg (ONNX Quantization), setup model serving |
+| **Tống Thanh Phúc** | 23120158 | Huấn luyện RF-DETR; Thiết kế SQLModel DB, cấu hình MinIO, load testing |
+| **Dương Tuấn Anh** | 23120208 | Huấn luyện Mask2Former; Phát triển Frontend Next.js, storage scaling; Biên tập Video Demo |
 
 - **Giảng viên hướng dẫn:** Thầy Bùi Tiến Lên
 - **Môn học:** CSC14005 - Nhập môn Học máy (Học kỳ 2, năm học 2025-2026)
