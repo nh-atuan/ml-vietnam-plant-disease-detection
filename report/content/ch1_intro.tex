@@ -40,7 +40,7 @@ Hệ thống chẩn đoán thực tế phải đối mặt với nhiều thách 
 Đồ án hướng tới việc giải quyết toàn diện bài toán chẩn đoán bệnh trên lá cây đặc sản thông qua các mục tiêu cụ thể sau:
 \begin{itemize}
   \item Xây dựng và chuẩn hóa một bộ dữ liệu thực địa gồm 7.149 ảnh sạch gán nhãn chất lượng cao cho 8 lớp mục tiêu (Healthy, BrownSpot, Hispa, LeafBlast đối với lúa; LeafMiner, PowderyMildew, Rust, AlgalLeafSpot đối với cà phê).
-  \item Nghiên cứu, huấn luyện và đánh giá so sánh hiệu năng của 5 mô hình phân vùng thực thể hiện đại (Mask R-CNN, YOLO26-seg trung bình, RF-DETR, MobileSAM, Mask2Former) trên tập dữ liệu đã xây dựng.
+  \item Nghiên cứu, huấn luyện và đánh giá so sánh hiệu năng của 5 mô hình phân vùng thực thể hiện đại (Mask R-CNN, YOLO26-seg phiên bản Nano, RF-DETR, MobileSAM, Mask2Former) trên tập dữ liệu đã xây dựng.
   \item Tinh chỉnh tối ưu hóa siêu tham số bằng thuật toán tìm kiếm thông minh Ray Tune và bộ lập lịch ASHA để nâng cao chất lượng dự đoán của mô hình tốt nhất, hướng tới vượt qua các mô hình SOTA (State-of-the-Art) trên tập kiểm thử tĩnh.
   \item Phát triển ứng dụng Web hoàn chỉnh tích hợp mô hình đã được tối ưu hóa (ONNX Runtime, FastAPI, Next.js) đạt độ trễ suy luận dưới 200 ms/ảnh để phục vụ người dùng thời gian thực.
   \item Triển khai ứng dụng lên nền tảng đám mây công khai sử dụng cụm Kubernetes (k3s) trên GCP, cấu hình tên miền động DuckDNS và mã hóa SSL bảo mật, đi kèm quy trình tự động hóa CI/CD.
