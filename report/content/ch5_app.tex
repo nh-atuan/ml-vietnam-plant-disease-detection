@@ -1,0 +1,125 @@
+\section{Xây dựng và Triển khai Ứng dụng}
+
+Nhóm tích hợp mô hình YOLO26-seg đã lượng tử hóa vào ứng dụng Web cho phép tải hoặc chụp ảnh lá lúa, cà phê, nhận kết quả dự đoán và tham khảo hướng xử lý bệnh. Hệ thống được triển khai công khai tại \url{https://plant-disease-demo.duckdns.org/} trên máy ảo Google Cloud Platform (GCP), sử dụng k3s để điều phối các dịch vụ.
+
+\subsection{Kiến trúc Hệ thống}
+
+Hệ thống tách giao diện, nghiệp vụ, suy luận và lưu trữ thành các tầng độc lập. Người dùng truy cập Next.js qua Traefik; frontend gọi REST API FastAPI tại tiền tố \texttt{/api/v1}; backend điều phối ONNX Runtime, cơ sở tri thức, PostgreSQL và MinIO như được mô tả trong Bảng~\ref{tab:ch5-system-components}. Các dịch vụ dữ liệu chỉ dùng \texttt{ClusterIP} và không mở trực tiếp ra Internet. Hình~\ref{fig:ch5-deployment-architecture} thể hiện cả luồng truy cập, workload trong k3s và đường triển khai từ GitHub Actions.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.94\textwidth,height=0.50\textheight,keepaspectratio]{img/ch5/deployment-architecture-gcp-k3s.png}
+  \caption{Kiến trúc triển khai ứng dụng trên GCP và k3s}
+  \label{fig:ch5-deployment-architecture}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Các thành phần chính trong kiến trúc ứng dụng}
+  \label{tab:ch5-system-components}
+  \small
+  \begin{tabularx}{\textwidth}{p{2.7cm} p{3.1cm} X}
+    \toprule
+    \textbf{Thành phần} & \textbf{Công nghệ} & \textbf{Vai trò} \\ \midrule
+    Giao diện & Next.js 15, React 19 & Tải/chụp ảnh, xác thực, hiển thị kết quả, lịch sử và cơ sở tri thức. \\
+    API và suy luận & FastAPI, ONNX Runtime & Kiểm tra yêu cầu, chạy \texttt{yolo26\_quantized.onnx} và bổ sung khuyến nghị. \\
+    Dữ liệu & PostgreSQL 16, MinIO & Lưu tài khoản, lịch sử, metadata dự đoán và ảnh người dùng. \\
+    Tri thức & JSON theo luật & Ánh xạ tám nhãn sang mô tả, triệu chứng, xử lý và phòng bệnh tiếng Việt. \\
+    Điều phối & k3s, Helm, Traefik & Quản lý workload, volume, định tuyến và HTTPS. \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+Luồng chẩn đoán gồm năm bước: \textbf{(1)} frontend gửi ảnh JPEG, PNG hoặc WebP tối đa 10 MB đến \texttt{POST /api/v1/predict}; \textbf{(2)} backend tiền xử lý ảnh $640\times640$ và gọi phiên ONNX được lưu trong bộ nhớ tiến trình; \textbf{(3)} mô hình trả top-$5$, nhãn đứng đầu và độ trễ; \textbf{(4)} nhãn được ánh xạ sang khuyến nghị chuyên gia, đồng thời ảnh được lưu ở MinIO và metadata được ghi vào PostgreSQL; \textbf{(5)} frontend nhận kết quả, URL ảnh và cảnh báo chụp lại nếu độ tin cậy dưới 60\%. Bản ghi được gắn với \texttt{user\_id} khi người dùng đã đăng nhập.
+
+\subsection{Đóng gói và Tích hợp Mô hình}
+
+Các checkpoint của từng miền cây trồng được lượng tử hóa sang định dạng ONNX (\path{models/yolo26_rice_quantized.onnx} cho Lúa và \path{models/yolo26_coffee_quantized.onnx} cho Cà phê) và phục vụ bằng ONNX Runtime~\cite{onnxruntime2026} trên CPU. Tiến trình Backend tự động nạp đồng thời cả hai phiên suy luận (sessions) cho hai miền cây trồng vào bộ nhớ; trong trường hợp yêu cầu chẩn đoán không chỉ định trước loại cây trồng qua tham số hay tên tệp, hệ thống sẽ thực thi suy luận song song trên cả hai mô hình và so sánh ngưỡng tin cậy cao nhất ($\max(\text{conf}_{\text{coffee}}), \max(\text{conf}_{\text{rice}})$) để tự động định tuyến (auto-routing) kết quả chính xác cho người dùng. Backend đọc danh sách nhãn lớp từ \path{models/class_names.json}, nhận đường dẫn qua các biến môi trường cấu hình mô hình và lưu thông tin phiên bản \texttt{yolo26-seg-onnx} cùng mỗi kết quả chẩn đoán. Trên Kubernetes, thư mục \texttt{/models} được gắn với PVC 10 GiB; init container kiểm tra các artifact, tải từ \texttt{MODEL\_DOWNLOAD\_URL} nếu được cấu hình hoặc yêu cầu nạp thủ công. Việc tách biệt file trọng số mô hình khỏi container image giúp nâng cấp pod linh hoạt mà không cần phải đóng gói sao chép lại trọng số lớn.
+
+Backend dùng image \texttt{python:3.12-slim}; \texttt{uv} cài dependency từ lockfile, Alembic cập nhật schema và Uvicorn phục vụ cổng 8000. Frontend được build nhiều giai đoạn trên \texttt{node:22-alpine}, chỉ đưa standalone bundle của Next.js~\cite{nextjs2026} vào image cuối. Liveness/readiness probe cùng gọi \texttt{/health}; biến \texttt{NEXT\_PUBLIC\_API\_BASE\_URL} giúp bundle gọi đúng API công khai.
+
+\subsection{Giao diện và Chức năng}
+
+Giao diện cung cấp ba khu vực chính: chẩn đoán mới, cơ sở tri thức và lịch sử. Khách có thể chẩn đoán nhanh; tài khoản đăng nhập bằng JWT HS256 thời hạn mặc định 24 giờ để lưu lịch sử cá nhân. Flow xác thực là \textbf{đăng nhập $\rightarrow$ lưu JWT $\rightarrow$ gọi \texttt{/auth/me} $\rightarrow$ gửi dự đoán kèm Bearer token $\rightarrow$ xem lịch sử theo tài khoản}. Khi token hết hạn hoặc API trả 401, frontend xóa phiên và yêu cầu đăng nhập lại. Hình~\ref{fig:ch5-auth-ui} minh họa trang chính và hộp thoại xác thực.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=0.25\textheight,keepaspectratio]{img/ch5/web-home.png}
+    \caption{Trang chẩn đoán}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=0.25\textheight,keepaspectratio]{img/ch5/web-login.png}
+    \caption{Đăng nhập tài khoản}
+  \end{subfigure}
+  \caption{Giao diện chẩn đoán và xác thực người dùng}
+  \label{fig:ch5-auth-ui}
+\end{figure}
+
+Người dùng có thể kéo-thả, chọn tệp hoặc nhấn nút camera. Trên thiết bị di động, thuộc tính \texttt{capture} ưu tiên camera sau; ảnh được kiểm tra định dạng, dung lượng và hiển thị preview trước khi gửi. Kết quả gồm tên bệnh Việt-Anh, cây trồng, độ tin cậy, top-$5$, độ trễ và khuyến nghị; trường hợp độ tin cậy thấp được cảnh báo để tránh xem dự đoán như kết luận chuyên môn. Hình~\ref{fig:ch5-predict} minh họa kết quả trên ảnh cà phê.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.82\textwidth,height=0.66\textheight,keepaspectratio]{img/ch5/web-predict-coffee-v2.png}
+  \caption{Kết quả dự đoán và khuyến nghị cho ảnh lá cà phê}
+  \label{fig:ch5-predict}
+\end{figure}
+
+Cơ sở tri thức trong Hình~\ref{fig:ch5-knowledge} bao phủ tám nhãn với mô tả, triệu chứng, nguyên nhân, biện pháp xử lý, phòng ngừa và nguồn đối chiếu. Lịch sử yêu cầu JWT, phân trang theo tài khoản và hiển thị ảnh, nhãn, độ tin cậy, thời điểm cùng khuyến nghị mở rộng; ảnh được truy xuất bằng URL MinIO có thời hạn. FastAPI đồng thời công bố đặc tả OpenAPI tại \path{/docs}; ảnh Swagger và trang tri thức chi tiết được chuyển sang Phụ lục~\ref{appendix:ch5-evidence} để tránh làm gián đoạn luồng báo cáo chính.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\textwidth,height=0.50\textheight,keepaspectratio]{img/ch5/web-knowledge.png}
+  \caption{Danh sách cơ sở tri thức bệnh trên lúa và cà phê}
+  \label{fig:ch5-knowledge}
+\end{figure}
+
+\subsection{Triển khai trên GCP}
+
+Ứng dụng chạy trên một VM Ubuntu 22.04 LTS của GCP. k3s~\cite{k3s2026} giảm chi phí so với cụm Kubernetes được quản lý nhiều node; Helm~\cite{helm2026} quản lý namespace và release \texttt{plant-disease}. Frontend/backend dùng Deployment; PostgreSQL, MinIO và Redis dùng StatefulSet; PostgreSQL có CronJob sao lưu lúc 02:00 và giữ bảy bản gần nhất. Các cấu hình lưu trữ chính được tổng hợp trong Bảng~\ref{tab:ch5-k3s-workloads}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Workload và lưu trữ trên cụm k3s}
+  \label{tab:ch5-k3s-workloads}
+  \small
+  \begin{tabularx}{\textwidth}{p{3.0cm} p{3.1cm} p{2.4cm} X}
+    \toprule
+    \textbf{Workload} & \textbf{Kiểu tài nguyên} & \textbf{Lưu trữ} & \textbf{Dữ liệu chính} \\ \midrule
+    Frontend và Backend & Deployment & Model 10 GiB & Bundle Next.js, API và model ONNX. \\
+    PostgreSQL & StatefulSet & 20 GiB & Tài khoản và lịch sử chẩn đoán. \\
+    MinIO & StatefulSet & 30 GiB & Ảnh người dùng tải hoặc chụp. \\
+    Redis và Backup & StatefulSet và CronJob & 1 GiB/5 GiB & Cache dự phòng và bản sao PostgreSQL. \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+Traefik định tuyến \texttt{/} đến frontend và \texttt{/api/v1}, \texttt{/health}, \texttt{/docs} đến backend. DuckDNS ánh xạ tên miền công khai; cert-manager dùng ACME HTTP-01 của Let's Encrypt để cấp chứng chỉ \texttt{plant-disease-tls}, nên giao diện và API cùng hoạt động qua HTTPS. Secret JWT, PostgreSQL và MinIO được truyền khi deploy, không ghi trực tiếp trong repository.
+
+Workflow \texttt{deploy.yml} thực hiện chuỗi \textbf{lint/test $\rightarrow$ build image $\rightarrow$ push GHCR $\rightarrow$ Helm deploy qua SSH $\rightarrow$ smoke test}. Image được gắn tag SHA để truy vết; smoke test kiểm tra rollout, \texttt{/health}, tri thức và đăng ký tài khoản. Hình~\ref{fig:ch5-cicd} cho thấy năm job lint, test, build, deploy và smoke test đều hoàn tất thành công.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.46\textheight,keepaspectratio]{img/ch5/cicd-pipeline-success.png}
+  \caption{Các bước CI/CD hoàn tất thành công trên GitHub Actions}
+  \label{fig:ch5-cicd}
+\end{figure}
+
+\subsubsection{Minh chứng trạng thái vận hành}
+
+Sau triển khai, nhóm kiểm tra node, pod, service, ingress, PVC và Helm release. Hình~\ref{fig:ch5-kubernetes-status} cho thấy node \texttt{plant-demo-k3s} ở trạng thái \texttt{Ready}; các workload ở trạng thái \texttt{Running}; job sao lưu đã \texttt{Completed}; ingress công bố cổng 80/443 và Helm release ở trạng thái \texttt{deployed}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.46\textheight,keepaspectratio]{img/ch5/kubernetes-status.png}
+  \caption{Trạng thái cụm k3s và Helm release trên GCP}
+  \label{fig:ch5-kubernetes-status}
+\end{figure}
+
+\subsection{Đánh giá và Giới hạn Triển khai}
+
+Chuỗi giao diện - API - ONNX - tri thức - PostgreSQL - MinIO đã hoạt động trên cloud công khai; Docker, Helm, probe, lưu trữ bền vững, sao lưu và CI/CD nâng khả năng tái lập. Tuy nhiên, cụm một node vẫn là điểm lỗi đơn; volume \texttt{local-path} không replication; frontend/backend chỉ có một replica; Redis chưa tham gia luồng nghiệp vụ; CORS còn cho phép mọi origin; smoke test chưa bao phủ dự đoán ảnh đầu-cuối. Hướng mở rộng là dùng cụm nhiều node và storage replication, tăng replica stateless, giới hạn CORS, tự động phân phối model, bổ sung quan sát hệ thống và đưa ảnh mẫu vào smoke test.
+
+\FloatBarrier
+\clearpage

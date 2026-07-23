@@ -1,0 +1,177 @@
+\section{Lựa chọn và Huấn luyện Mô hình}
+
+\subsection{Chuẩn bị Dữ liệu cho Mô hình}
+Trước khi đưa vào huấn luyện, tập dữ liệu sạch gồm 7.149 ảnh được phân chia thành ba tập đào tạo, thẩm định và kiểm thử theo tỷ lệ chuẩn $70:15:15$. Để đảm bảo tính khách quan và ngăn chặn tuyệt đối hiện tượng rò rỉ dữ liệu, nhóm áp dụng kỹ thuật Stratified Sampling đảm bảo tỷ lệ các lớp.
+
+Chi tiết phân bố số lượng ảnh theo từng tập con và lớp bệnh được tổng hợp tại Bảng \ref{tab:split_distribution}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Phân bố số lượng ảnh theo tập con, miền và lớp bệnh}
+    \label{tab:split_distribution}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{llrrrr}
+        \toprule
+        \textbf{Miền dữ liệu}  & \textbf{Lớp bệnh}        & \textbf{Train (70\%)} & \textbf{Val (15\%)} & \textbf{Test (15\%)} & \textbf{Tổng cộng} \\
+        \midrule
+        \multirow{4}{*}{Lúa}
+                      & Lá khỏe mạnh    & 1.030        & 221        & 221         & 1.472     \\
+                      & Bệnh đạo ôn     & 544          & 116        & 117         & 777       \\
+                      & Sâu đục lá      & 400          & 85         & 86          & 571       \\
+                      & Bệnh đốm nâu    & 372          & 80         & 79          & 531       \\
+        \midrule
+        \multirow{4}{*}{Cà phê}
+                      & Bệnh rỉ sắt     & 971          & 208        & 208         & 1.387     \\
+                      & Sâu đục lá      & 840          & 180        & 180         & 1.200     \\
+                      & Bệnh đốm rong   & 664          & 142        & 143         & 949       \\
+                      & Bệnh phấn trắng & 183          & 40         & 39          & 262       \\
+        \midrule
+        Tổng toàn cục & 8 lớp bệnh      & 5.004        & 1.072      & 1.073       & 7.149     \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}
+
+Để tăng khả năng tổng quát hóa, nhóm đã sử dụng kỹ thuật tăng cường dữ liệu. Các phép biến đổi hình thái và màu sắc được áp dụng ngẫu nhiên trong quá trình huấn luyện. Cụ thể như sau: cắt và thay đổi kích thước ngẫu nhiên (tỷ lệ $0,75$ đến $1,0$), lật ngang với xác suất $p=0,5$, lật dọc với $p=0,2$, biến đổi affine xoay $\pm 30^\circ$, điều chỉnh màu sắc và trộn ảnh ngẫu nhiên với hệ số $\alpha=0,4$.
+
+\subsection{Lựa chọn và Kiến trúc Mô hình}
+Để giải quyết trọn vẹn bài toán phân vùng thực thể lá cây bị bệnh với hai mục tiêu song hành là độ chính xác cao và tốc độ suy luận nhanh đáp ứng triển khai thực tế, nhóm đã khảo sát, huấn luyện và so sánh năm kiến trúc tiên tiến thuộc hai trường phái mạng nơ-ron tích chập (CNN) và mạng thị giác sử dụng cơ chế chú ý (Vision Transformer) (được tổng hợp tại Bảng \ref{tab:model_overview}).
+
+\begin{table}[htbp]
+    \centering
+    \caption{Tổng quan và đặc điểm của năm mô hình segmentation được thử nghiệm}
+    \label{tab:model_overview}
+    \begin{tabular}{llp{9.5cm}}
+        \toprule
+        \textbf{Mô hình}     & \textbf{Họ kiến trúc} & \textbf{Đặc điểm nổi bật và lý do lựa chọn}                                                                                                                                                                                        \\
+        \midrule
+        Mask R-CNN~\cite{he2017mask}  & CNN          & Kiến trúc hai giai đoạn kinh điển, mang lại độ chính xác cao trong phân vùng thực thể. Được chọn làm baseline để đánh giá và đối chiếu hiệu suất.                                                                                  \\
+        YOLO26-seg~\cite{jocher2023ultralytics, jocher2024yolo} & CNN          & Kiến trúc một giai đoạn với tốc độ suy luận thời gian thực xuất sắc. Phiên bản cỡ nano được chọn nhằm tối ưu hóa điểm cân bằng giữa độ chính xác và tốc độ trong thực tế.                                                        \\
+        RF-DETR~\cite{roboflow2024rfdetr, lv2023detrs}     & ViT          & Thiết kế end-to-end loại bỏ hoàn toàn bước hậu xử lý NMS, sử dụng DINOv2 feature extractor để tận dụng khả năng zero-shot và hiệu suất học ngữ cảnh mạnh mẽ. Được chọn làm đại diện cho dòng mô hình Transformer-based tốc độ cao. \\
+        MobileSAM~\cite{zhang2023mobilesam, zhang2023faster}   & ViT          & Phiên bản thu gọn siêu nhẹ của Segment Anything Model (SAM). Được chọn nhờ khả năng zero-shot linh hoạt với prompt và tối ưu hóa chuyên sâu để triển khai trên edge devices.                                                       \\
+        Mask2Former~\cite{cheng2022masked} & ViT          & Kiến trúc phân vùng hợp nhất dựa trên mask classification. Được chọn nhờ đạt hiệu năng đa tác vụ vượt trội (panoptic, instance, semantic).                                                                                         \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Sau khi khảo sát, nhóm lựa chọn mô hình YOLO26-seg làm mô hình hạt nhân cho việc lượng tử hóa và triển khai thực tế. Sơ đồ cấu trúc của mô hình được mô tả trong Hình~\ref{fig:yolo-architecture}. Mô hình sử dụng mạng tích chập sâu với cấu trúc phân tầng gồm ba khối chức năng chính:
+\begin{itemize}
+  \item Backbone (Xương sống): Sử dụng các khối liên kết cào đặc trưng cải tiến (C2f) và Spatial Pyramid Pooling Fast (SPPF) nhằm trích xuất đa quy mô các đặc trưng ngữ cảnh từ hình ảnh lá cây bị bệnh.
+  \item Neck (Cổ mạng): Sử dụng cấu trúc mạng kim tự tháp đặc trưng hai chiều (PANet) kết hợp luồng thông tin từ dưới lên và từ trên xuống để tổng hợp các đặc trưng ngữ cảnh không gian và thông tin ngữ nghĩa cấp cao.
+  \item Head (Đầu dự đoán phân vùng): Áp dụng kiến trúc Anchor-free dự đoán song song hai nhánh độc lập (Decoupled Head) bao gồm: một nhánh dự đoán hộp bao kèm nhãn bệnh lớp mục tiêu, và một nhánh dự đoán tập hợp các mặt nạ nguyên mẫu (Prototype Masks) kết hợp với các hệ số mặt nạ (Mask Coefficients) để tạo ra mặt nạ phân vùng thực thể cuối cùng ở cấp độ điểm ảnh.
+\end{itemize}
+
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[
+    node distance=1.0cm and 0.5cm,
+    block/.style={rectangle, draw, fill=blue!5, text width=3.0cm, text centered, rounded corners, minimum height=1.2cm, font=\small},
+    branch/.style={rectangle, draw, fill=green!5, text width=3.4cm, text centered, rounded corners, minimum height=1.2cm, font=\small},
+    outblock/.style={rectangle, draw, fill=purple!5, text width=3.0cm, text centered, rounded corners, minimum height=1.2cm, font=\small},
+    line/.style={draw, -{Stealth[scale=1.2]}, thick}
+]
+    % Nodes
+    \node [block] (input) {Ảnh đầu vào \\ $640 \times 640 \times 3$};
+    \node [block] (backbone) [right=of input] {Backbone \\ (Trích xuất đặc trưng C2f, SPPF)};
+    \node [block] (neck) [right=of backbone] {Neck (PANet) \\ (Đa quy mô FPN + PAN)};
+    
+    % Branches
+    \node [branch] (boxhead) [above right=0.2cm and 0.6cm of neck] {Nhánh dự đoán hộp bao \\ (Bounding Box \& Class)};
+    \node [branch] (maskhead) [below right=0.2cm and 0.6cm of neck] {Nhánh dự đoán mặt nạ \\ (Proto \& Coefficients)};
+    
+    \node [outblock] (output) [below right=0.2cm and 0.6cm of boxhead] {Kết quả phân vùng \\ (Instance Segmentation)};
+
+    % Lines
+    \path [line] (input) -- (backbone);
+    \path [line] (backbone) -- (neck);
+    \path [line] (neck.east) -- ++(0.3,0) |- (boxhead.west);
+    \path [line] (neck.east) -- ++(0.3,0) |- (maskhead.west);
+    \path [line] (boxhead.east) -- ++(0.3,0) |- (output.west);
+    \path [line] (maskhead.east) -- ++(0.3,0) |- (output.west);
+
+\end{tikzpicture}
+}
+\caption{Sơ đồ kiến trúc chi tiết của mô hình YOLO26-seg dùng cho phân vùng vết bệnh}
+\label{fig:yolo-architecture}
+\end{figure}
+
+
+\subsection{Cấu hình Huấn luyện}
+Toàn bộ quá trình huấn luyện các mô hình được thực hiện trên GPU NVIDIA Tesla T4. Cấu hình huấn luyện chung và tham số riêng cho từng mô hình được tổng hợp tại Bảng \ref{tab:common_train_config} và Bảng \ref{tab:specific_train_config}.
+
+Đối với mô hình YOLO26-seg, hàm mất mát toàn cục $\mathcal{L}_{total}$ được định nghĩa là sự kết hợp tuyến tính có trọng số của các hàm mất mát thành phần:
+\begin{equation}
+\mathcal{L}_{total} = \lambda_{box} \mathcal{L}_{box} + \lambda_{cls} \mathcal{L}_{cls} + \lambda_{dfl} \mathcal{L}_{dfl} + \lambda_{mask} \mathcal{L}_{mask},
+\end{equation}
+Trong đó:
+\begin{itemize}
+  \item $\mathcal{L}_{box}$ là hàm mất mát Complete Intersection over Union (CIoU) đo lường độ sai lệch về kích thước, tỷ lệ khung hình và vị trí tâm của hộp bao dự đoán so với nhãn thực tế.
+  \item $\mathcal{L}_{cls}$ là hàm mất mát entropy chéo nhị phân (Binary Cross Entropy - BCE) để phân loại nhãn lớp vết bệnh cho các hộp bao.
+  \item $\mathcal{L}_{dfl}$ là hàm mất mát phân bố tiêu điểm (Distribution Focal Loss) hỗ trợ việc tinh chỉnh biên hộp bao tốt hơn trong các trường hợp ranh giới mờ nhòe.
+  \item $\mathcal{L}_{mask}$ là hàm mất mát nhị phân kết hợp cấp độ điểm ảnh (gồm BCE loss và Dice loss) nhằm tối ưu hóa độ trùng khớp hình thái của mặt nạ phân vùng.
+\end{itemize}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Thiết lập cấu hình huấn luyện chung cho năm mô hình}
+    \label{tab:common_train_config}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Tham số}              & \textbf{Giá trị thiết lập} \\
+        \midrule
+        GPU                  & NVIDIA Tesla T4   \\
+        Tỷ lệ chia dữ liệu   & $70:15:15$        \\
+        Thuật toán tối ưu    & AdamW             \\
+        Effective batch size & 8                 \\
+        Số Epoch tối đa      & 50                \\
+        Dừng sớm             & 5                 \\
+        Seed                 & 42                \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Cấu hình tham số riêng theo yêu cầu kiến trúc từng mô hình}
+    \label{tab:specific_train_config}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{lrrl}
+        \toprule
+        \textbf{Mô hình}     & \textbf{Learning Rate khởi tạo} & \textbf{Kích thước ảnh}     & \textbf{Ghi chú kỹ thuật}                      \\
+        \midrule
+        Mask R-CNN  & $1 \times 10^{-4}$     & $256 \times 256$   & Batch size 2, gradient accumulation 4 \\
+        YOLO26-seg & $8 \times 10^{-4}$     & $640 \times 640$   & Batch size 8                          \\
+        RF-DETR     & $1 \times 10^{-4}$     & $640 \times 640$   & Batch size 2, gradient accumulation 4 \\
+        MobileSAM   & $1 \times 10^{-5}$     & $1024 \times 1024$ & Batch size 2, gradient accumulation 4 \\
+        Mask2Former & $5 \times 10^{-5}$     & $384 \times 384$   & Batch size 4, gradient accumulation 2 \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}
+
+\subsection{Tinh chỉnh siêu tham số}
+Sau khi so sánh 5 mô hình và chọn ra mô hình tốt nhất, nhóm áp dụng phương pháp tinh chỉnh siêu tham số của mô hình YOLO26-seg một cách tự động bằng thư viện Ray Tune~\cite{liaw2018tune} với thuật toán lập lịch bất đồng bộ ASHA. Thuật toán này cho phép đánh giá song song nhiều cấu hình thử nghiệm và sớm loại bỏ các cấu hình kém hiệu quả ngay từ những epoch đầu, giúp tiết kiệm đáng kể tài nguyên tính toán.
+
+Quá trình tìm kiếm được thực hiện với 20 thử nghiệm độc lập trên không gian sáu siêu tham số, được chi tiết hóa tại Bảng \ref{tab:raytune_search_space}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Không gian tìm kiếm siêu tham số cho YOLO26-seg bằng Ray Tune}
+    \label{tab:raytune_search_space}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Siêu tham số}                                     & \textbf{Kiểu phân phối tìm kiếm} & \textbf{Khoảng giá trị hoặc tập lựa chọn}       \\
+        \midrule
+        Learning rate ban đầu ($\text{lr}_0$)            & Log-uniform             & $[1 \times 10^{-5}, 1 \times 10^{-2}]$ \\
+        Momentum                                         & Uniform                 & $[0,85, 0,95]$                         \\
+        Weight decay                                     & Log-uniform             & $[1 \times 10^{-5}, 1 \times 10^{-3}]$ \\
+        Warmup epochs                                    & Choice                  & $\{1, 2, 3\}$                          \\
+        Hệ số mất mát khung bao ($\lambda_{\text{box}}$) & Uniform                 & $[5,0, 10,0]$                          \\
+        Hệ số mất mát phân loại ($\lambda_{\text{cls}}$) & Uniform                 & $[0,3, 0,8]$                           \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}
+
