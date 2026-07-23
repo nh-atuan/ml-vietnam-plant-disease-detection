@@ -26,26 +26,40 @@ spec:
         - name: wait-for-deps
           image: alpine:3.18
           command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done']
+        {{- if .Values.model.persistence.enabled }}
         - name: download-model
           image: alpine:3.18
           env:
-            - name: MODEL_DOWNLOAD_URL
-              value: {{ .Values.model.downloadUrl | quote }}
+            - name: RICE_MODEL_URL
+              value: {{ .Values.model.riceDownloadUrl | quote }}
+            - name: COFFEE_MODEL_URL
+              value: {{ .Values.model.coffeeDownloadUrl | quote }}
+            - name: CLASS_NAMES_URL
+              value: {{ .Values.model.classNamesDownloadUrl | quote }}
           command:
             - sh
             - -c
             - |
-              if [ -f /models/yolo26_quantized.onnx ]; then
-                echo "Model already exists. Skipping download."
-              elif [ -n "$MODEL_DOWNLOAD_URL" ]; then
-                echo "Model not found. Downloading from $MODEL_DOWNLOAD_URL..."
-                wget -O /models/yolo26_quantized.onnx "$MODEL_DOWNLOAD_URL"
-              else
-                echo "Model not found and MODEL_DOWNLOAD_URL is not set. Please upload the model manually."
-              fi
+              set -e
+              download_if_missing() {
+                local dest="$1" url="$2" label="$3"
+                if [ -f "$dest" ]; then
+                  echo "$label already exists. Skipping."
+                elif [ -n "$url" ]; then
+                  echo "Downloading $label from $url ..."
+                  wget -q -O "$dest" "$url"
+                  echo "$label downloaded successfully."
+                else
+                  echo "WARNING: $label missing and no URL provided."
+                fi
+              }
+              download_if_missing /models/yolo26_rice_quantized.onnx   "$RICE_MODEL_URL"   "Rice model"
+              download_if_missing /models/yolo26_coffee_quantized.onnx "$COFFEE_MODEL_URL" "Coffee model"
+              download_if_missing /models/class_names.json             "$CLASS_NAMES_URL"  "Class names"
           volumeMounts:
             - name: models
               mountPath: /models
+        {{- end }}
       containers:
         - name: backend
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
@@ -86,13 +100,17 @@ spec:
               cpu: {{ .Values.backend.resources.limits.cpu }}
               memory: {{ .Values.backend.resources.limits.memory }}
           volumeMounts:
+            {{- if .Values.model.persistence.enabled }}
             - name: models
               mountPath: /models
               readOnly: true
+            {{- end }}
       volumes:
+        {{- if .Values.model.persistence.enabled }}
         - name: models
           persistentVolumeClaim:
             claimName: {{ default .Values.model.persistence.claimName .Values.model.persistence.existingClaim }}
+        {{- end }}
 ---
 apiVersion: v1
 kind: Service

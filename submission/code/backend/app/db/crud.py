@@ -4,6 +4,7 @@ CRUD (Create, Read, Update, Delete) operations using SQLModel.
 import uuid
 
 import bcrypt
+from sqlalchemy.orm import joinedload
 from sqlmodel import Session, select
 
 from backend.app.db.orm_models import Image, Prediction, User
@@ -56,6 +57,7 @@ def create_image_record(
     original_filename: str | None = None,
     content_type: str | None = None,
     size_bytes: int | None = None,
+    commit: bool = True,
 ) -> Image:
     """Save upload metadata for an image."""
     db_image = Image(
@@ -66,8 +68,11 @@ def create_image_record(
         size_bytes=size_bytes,
     )
     session.add(db_image)
-    session.commit()
-    session.refresh(db_image)
+    if commit:
+        session.commit()
+        session.refresh(db_image)
+    else:
+        session.flush()
     return db_image
 
 
@@ -88,6 +93,7 @@ def create_prediction_record(
     recommendation: dict | None = None,
     model_version: str | None = None,
     latency_ms: float | None = None,
+    commit: bool = True,
 ) -> Prediction:
     """Save prediction details."""
     db_prediction = Prediction(
@@ -101,8 +107,11 @@ def create_prediction_record(
         latency_ms=latency_ms,
     )
     session.add(db_prediction)
-    session.commit()
-    session.refresh(db_prediction)
+    if commit:
+        session.commit()
+        session.refresh(db_prediction)
+    else:
+        session.flush()
     return db_prediction
 
 
@@ -116,6 +125,7 @@ def get_predictions_by_user(
     statement = (
         select(Prediction)
         .where(Prediction.user_id == user_id)
+        .options(joinedload(Prediction.image))
         .order_by(Prediction.created_at.desc())
         .offset(skip)
         .limit(limit)

@@ -14,13 +14,20 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from backend.app.db.database import get_session
 from backend.app.main import app
+from backend.app.routers import history as history_router
 from backend.app.routers import predict as predict_router
 
 
 class FakeInference:
     """Deterministic ONNX boundary used to keep E2E tests self-contained."""
 
-    def predict(self, image_bytes: bytes, top_k: int = 5) -> list[tuple[str, float]]:
+    def predict(
+        self,
+        image_bytes: bytes,
+        filename: str | None = None,
+        crop: str | None = None,
+        top_k: int = 5,
+    ) -> list[tuple[str, float]]:
         assert image_bytes
         assert top_k == 5
         return [("LeafBlast", 0.91), ("BrownSpot", 0.07)]
@@ -54,6 +61,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
 
     monkeypatch.setattr(predict_router, "get_inference_service", lambda: FakeInference())
     monkeypatch.setattr(predict_router, "get_storage_service", lambda: FakeStorage())
+    monkeypatch.setattr(history_router, "get_storage_service", lambda: FakeStorage())
     app.dependency_overrides[get_session] = override_session
     try:
         with TestClient(app) as test_client:

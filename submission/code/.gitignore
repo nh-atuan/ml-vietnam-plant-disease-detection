@@ -236,3 +236,19 @@ report/outputs
 .agent/
 .codex/
 skills-lock.json
+script_thuyet_trinh_tuan.md
+chuan_bi_thuyet_trinh_tuan.md
+test_samples/
+tai_lieu_thuyet_trinh.md
+luong_hoat_dong_he_thong.md
+
+# Development planning & AI agent artifacts (removed from repo)
+docs/plans/
+docs/superpowers/
+docs/reports/
+docs/testing/
+docs/deployment/GCP_K3S_PLAN.md
+docs/README.md
+openspec/
+reports/
+

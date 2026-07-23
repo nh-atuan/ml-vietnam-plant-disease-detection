@@ -111,7 +111,13 @@ def test_predict_upload_runs_inference_storage_and_db(monkeypatch):
     uploaded = {}
 
     class FakeInference:
-        def predict(self, image_bytes: bytes, top_k: int = 5):
+        def predict(
+            self,
+            image_bytes: bytes,
+            filename: str | None = None,
+            crop: str | None = None,
+            top_k: int = 5,
+        ):
             assert image_bytes == b"image-bytes"
             assert top_k == 5
             return [("LeafBlast", 0.82), ("BrownSpot", 0.12)]
@@ -130,8 +136,18 @@ def test_predict_upload_runs_inference_storage_and_db(monkeypatch):
         def get_url(self, object_key: str):
             return f"https://storage.local/{object_key}"
 
+        def delete_image(self, object_key: str):
+            pass
+
     class FakeSession:
         rolled_back = False
+        committed = False
+
+        def commit(self):
+            self.committed = True
+
+        def refresh(self, instance):
+            pass
 
         def rollback(self):
             self.rolled_back = True
@@ -176,3 +192,19 @@ def test_predict_upload_runs_inference_storage_and_db(monkeypatch):
     assert response.image_url == "https://storage.local/predictions/leaf.jpg"
     assert response.latency_ms is not None
     assert not session.rolled_back
+
+
+def test_predict_rejects_corrupted_image(monkeypatch):
+    from backend.app.services.inference import InvalidImageError
+    
+    class FakeInference:
+        def predict(self, *args, **kwargs):
+            raise InvalidImageError("Mocked invalid image content")
+
+    monkeypatch.setattr(predict_router, "get_inference_service", lambda: FakeInference())
+
+    with pytest.raises(HTTPException) as exc_info:
+        asyncio.run(predict(_upload_file(b"invalid-image-bytes")))
+    assert exc_info.value.status_code == 400
+    assert "Invalid image file" in exc_info.value.detail
+

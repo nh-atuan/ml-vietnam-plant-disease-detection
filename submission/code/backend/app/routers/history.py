@@ -2,6 +2,8 @@
 Prediction history routes for authenticated users.
 """
 
+from functools import lru_cache
+
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, func, select
 
@@ -15,17 +17,21 @@ from backend.app.services.storage import StorageService
 router = APIRouter(prefix="/history", tags=["history"])
 
 
-def _build_image_url(object_key: str | None) -> str | None:
+@lru_cache
+def get_storage_service() -> StorageService:
+    return StorageService(
+        endpoint=settings.MINIO_ENDPOINT,
+        access_key=settings.MINIO_ACCESS_KEY,
+        secret_key=settings.MINIO_SECRET_KEY,
+        bucket=settings.MINIO_BUCKET,
+        secure=settings.MINIO_SECURE,
+    )
+
+
+def _build_image_url(storage: StorageService, object_key: str | None) -> str | None:
     if not object_key:
         return None
     try:
-        storage = StorageService(
-            endpoint=settings.MINIO_ENDPOINT,
-            access_key=settings.MINIO_ACCESS_KEY,
-            secret_key=settings.MINIO_SECRET_KEY,
-            bucket=settings.MINIO_BUCKET,
-            secure=settings.MINIO_SECURE,
-        )
         return storage.get_url(object_key)
     except Exception:
         return None
@@ -43,6 +49,8 @@ def list_history(
     total = session.exec(
         select(func.count()).select_from(Prediction).where(Prediction.user_id == current_user.id)
     ).one()
+    
+    storage = get_storage_service()
     return HistoryResponse(
         items=[
             HistoryItem(
@@ -52,7 +60,7 @@ def list_history(
                 confidence=row.confidence,
                 top_k=row.top_k,
                 recommendation=row.recommendation,
-                image_url=_build_image_url(row.image.object_key if row.image else None),
+                image_url=_build_image_url(storage, row.image.object_key if row.image else None),
                 created_at=row.created_at,
             )
             for row in rows
