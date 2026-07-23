@@ -43,7 +43,7 @@ Bảng~\ref{tab:results_rice} và Bảng~\ref{tab:results_coffee} tóm tắt cá
   }
 \end{table}
 
-Nhìn chung, Mask R-CNN và Mask2Former cho độ chính xác rất cao trên tập Cà phê nhưng lại có dấu hiệu kém ổn định hơn trên tập Lúa (đặc biệt là Mask R-CNN ở chỉ số mAP). YOLO26-seg thể hiện sự cân bằng tốt khi đứng đầu về mAP trên tập Lúa và đứng thứ ba với khoảng cách rất nhỏ trên tập Cà phê, trong khi sở hữu tốc độ suy luận cực nhanh và kích thước gọn nhẹ.
+Nhìn chung, Mask R-CNN và Mask2Former cho độ chính xác rất cao trên tập Cà phê nhưng lại có dấu hiệu kém ổn định hơn trên tập Lúa (đặc biệt là Mask R-CNN ở chỉ số mAP). YOLO26-seg thể hiện sự cân bằng tốt khi đứng đầu về mAP trên tập Lúa và đứng thứ ba với khoảng cách rất nhỏ trên tập Cà phê, trong khi sở hữu tốc độ suy luận cực nhanh và kích thước gọn nhẹ (với 6,23 MB ở định dạng trọng số PyTorch \texttt{.pt} gốc và khoảng 24,9 MB khi xuất đóng gói sang định dạng ONNX INT8 phục vụ suy luận CPU).
 
 Để thấy rõ hơn quá trình hội tụ, Hình~\ref{fig:learning_curves} thể hiện đường cong học tập (learning curves) của mô hình YOLO26-seg trên hai tập dữ liệu.
 
