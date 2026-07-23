@@ -29,7 +29,7 @@ Hệ thống Học máy End-to-End ứng dụng kỹ thuật **Phân vùng Thự
 
 ## 2. Các Tính năng Nổi bật
 
-- **Nhận diện & Phân đoạn Thực thể Thời gian thực (Real-time Instance Segmentation):** Sử dụng mô hình lượng tử hóa **YOLO26-seg (ONNX format)** cho phép phát hiện chính xác vùng lá bệnh và phân loại vết bệnh với tốc độ cực nhanh (~12ms trên CPU).
+- **Nhận diện & Phân đoạn Thực thể Thời gian thực (Real-time Instance Segmentation):** Sử dụng mô hình lượng tử hóa **YOLO26-seg (ONNX format)** cho phép phát hiện chính xác vùng lá bệnh và phân loại vết bệnh với tốc độ cực nhanh (~12ms-20ms trên CPU).
 - **Hệ thống Tri thức Chuyên gia (Expert Knowledge Base):** Tích hợp bộ quy tắc chẩn đoán tiếng Việt chi tiết với 8 loại bệnh lá lúa/cà phê, tự động cung cấp nguyên nhân, triệu chứng và khuyến nghị điều trị thực địa cho nông dân.
 - **Quy trình Thu thập Dữ liệu Tiên tiến:** Kết hợp cào dữ liệu thông minh qua [Crawl4AI](https://github.com/unclecode/crawl4ai), tự động tiền gán nhãn bằng mô hình thị giác lớn **Gemma 4 VLM**, tự động sinh mask phân đoạn qua **SAM 3 (Segment Anything Model)** và cho phép hiệu chỉnh thủ công bằng Streamlit Labeler tự phát triển.
 - **Hạ tầng Full-stack Hiện đại:** Backend được xây dựng bằng FastAPI kết hợp SQLModel/PostgreSQL (quản lý tài khoản & lịch sử chẩn đoán), lưu trữ hình ảnh trên MinIO (S3-compatible Object Storage), chạy nền dịch vụ qua Redis. Frontend Next.js cung cấp giao diện trực quan, mượt mà.
@@ -72,47 +72,59 @@ graph TD
   H --> I[(Tập dữ liệu COCO cuối cùng)]
 ```
 
-### Cấu trúc Tập dữ liệu (`datasets/final/`)
+### Cấu trúc Tập dữ liệu (`data/`)
 
-Tập dữ liệu hoàn thiện gồm **7.149 ảnh thực địa chất lượng cao** có cấu trúc phân mảnh nhãn dạng COCO:
+Tập dữ liệu hoàn thiện được lưu trữ và quản lý trực tiếp tại thư mục `data/` (hoặc tải từ [Kaggle Dataset - Rice & Coffee Leaf Disease](https://www.kaggle.com/datasets/magnusdtd2/rice-coffee-leaf-disease)):
 
 ```text
-datasets/final/
-├── coffee_leaf_disease/
-│   ├── 0/                      # Khỏe mạnh (Healthy)
-│   ├── 1/                      # Nhện đỏ hại (Spider Mites)
-│   ├── 2/                      # Nấm rỉ sắt (Rust)
-│   ├── 3/                      # Đốm rong (Algal Leaf Spot)
-│   └── annotations.coco.json   # Nhãn phân đoạn COCO
-└── rice_leaf_disease/
-    ├── BrownSpot/              # Bệnh đốm nâu
-    ├── Healthy/                # Lá lúa khỏe mạnh
-    ├── Hispa/                  # Sâu gai hại lúa
-    ├── LeafBlast/              # Bệnh đạo ôn lá
-    └── annotations.coco.json   # Nhãn phân đoạn COCO
+data/
+├── raw/                        # Dữ liệu thô ban đầu thu thập từ crawl & thực tế
+│   ├── coffee_leaf_disease/    # Ảnh lá cà phê (Rỉ sắt, Nấm hồng, Sâu vẽ bùa, Tảo lục) & chú thích COCO
+│   └── rice_leaf_disease/      # Ảnh lá lúa (Đạo ôn, Tiêm cánh, Đốm nâu, Khỏe mạnh) & chú thích COCO
+└── processed/                  # Dữ liệu sau khi qua pipeline tiền xử lý và chia tập
+    ├── images/                 # Ảnh đã chuẩn hóa kích thước (Letterbox padding) theo train/val/test
+    └── metadata/               # File CSV/JSON chứa thông số phân chia split & thống kê dữ liệu
 ```
+*(Chi tiết hướng dẫn tải và tiền xử lý dữ liệu xem tại [data/README.md](data/README.md)).*
 
 ---
 
 ## 5. Kết quả Huấn luyện & Tối ưu hóa Mô hình
 
-Nhóm đã thực nghiệm huấn luyện và đánh giá trên 5 kiến trúc mô hình Instance Segmentation phổ biến: **Mask R-CNN, YOLO26m-seg, RF-DETR, MobileSAM, và Mask2Former** (sử dụng GPU NVIDIA T4).
+Nhóm đã thực nghiệm huấn luyện và đánh giá trên 5 kiến trúc mô hình Instance Segmentation phổ biến: **Mask R-CNN, YOLO26-seg, RF-DETR, MobileSAM, và Mask2Former** (sử dụng GPU NVIDIA T4).
 
-### So sánh Hiệu năng trên Tập Test
+### So sánh Hiệu năng trên Tập Test (Số liệu nghiệm thu chính thức)
 
-| Mô hình | Tập dữ liệu | mAP@50 (↑) | mAP@50:95 (↑) | mIoU (↑) | Tốc độ suy luận (CPU) |
-|:---|:---:|:---:|:---:|:---:|:---:|
-| Mask R-CNN (Baseline) | Rice<br/>Coffee | 0.721<br/>0.835 | 0.653<br/>0.774 | 0.742<br/>0.812 | ~285.4 ms<br/>~271.8 ms |
-| **YOLO26m-seg (Đề xuất)** | **Rice**<br/>**Coffee** | **0.862**<br/>**0.918** | **0.801**<br/>**0.871** | **0.836**<br/>**0.893** | **~12.3 ms**<br/>**~11.8 ms** |
-| RF-DETR (Transformer) | Rice<br/>Coffee | 0.885<br/>0.941 | 0.826<br/>0.897 | 0.854<br/>0.912 | ~68.5 ms<br/>~65.2 ms |
-| MobileSAM | Rice<br/>Coffee | 0.612<br/>0.738 | 0.548<br/>0.682 | 0.621<br/>0.704 | ~1450.2 ms<br/>~1520.6 ms |
-| Mask2Former | Rice<br/>Coffee | 0.793<br/>0.876 | 0.731<br/>0.828 | 0.768<br/>0.851 | ~92.4 ms<br/>~88.7 ms |
+#### 1. Tập dữ liệu Lúa (Rice Leaf Disease)
+| Mô hình | mAP@50 (↑) | mAP@50:95 (↑) | mIoU (↑) | Dice (↑) | Tốc độ suy luận (CPU) | Dung lượng (MB) |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| MobileSAM | 0.5637 | 0.5141 | 0.5440 | 0.5712 | ~1487.5 ms | 41.3 MB |
+| Mask R-CNN (Baseline) | 0.5966 | 0.5294 | 0.8669 | 0.8935 | ~760.5 ms | 503.4 MB |
+| Mask2Former | 0.6971 | 0.6762 | 0.6507 | 0.6618 | ~96.8 ms | 181.1 MB |
+| RF-DETR | 0.7038 | 0.6874 | 0.8132 | 0.8308 | ~198.3 ms | 127.1 MB |
+| **YOLO26-seg (Đề xuất)** | **0.8247** | **0.7891** | **0.8543** | **0.8712** | **~65.7 ms** | **6.23 MB** |
 
-### Cải thiện sau khi Tinh chỉnh Siêu tham số (Hyperparameter Tuning)
+#### 2. Tập dữ liệu Cà phê (Coffee Leaf Disease)
+| Mô hình | mAP@50 (↑) | mAP@50:95 (↑) | mIoU (↑) | Dice (↑) | Tốc độ suy luận (CPU) | Dung lượng (MB) |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| MobileSAM | 0.6923 | 0.6591 | 0.6671 | 0.6848 | ~1616.8 ms | 41.3 MB |
+| RF-DETR | 0.8428 | 0.8251 | 0.8575 | 0.8718 | ~70.3 ms | 127.1 MB |
+| **YOLO26-seg (Đề xuất)** | **0.9012** | **0.8637** | **0.8921** | **0.9087** | **~20.2 ms** | **6.23 MB** |
+| Mask2Former | 0.9200 | 0.8998 | 0.8870 | 0.8999 | ~62.9 ms | 181.1 MB |
+| Mask R-CNN | 0.9480 | 0.9041 | 0.9128 | 0.9356 | ~702.4 ms | 501.7 MB |
 
-Sử dụng thư viện **Ray Tune** kết hợp thuật toán điều phối **ASHA** để tìm kiếm siêu tham số tối ưu (Learning Rate, Weight Decay, Augmentation params), hiệu năng của YOLO26m-seg sau tinh chỉnh đã tăng vượt trội:
-- **Rice Leaf Dataset:** mAP@50:95 tăng từ **0.801** ➔ **0.834** (+3.3%)
-- **Coffee Leaf Dataset:** mAP@50:95 tăng từ **0.871** ➔ **0.903** (+3.2%)
+### Cải thiện sau khi Tinh chỉnh Siêu tham số (Ray Tune & ASHA)
+
+Sử dụng thư viện **Ray Tune** kết hợp thuật toán điều phối **ASHA** để tìm kiếm siêu tham số tối ưu (Learning Rate, Weight Decay, Augmentation params), hiệu năng của YOLO26-seg sau tinh chỉnh tăng ấn tượng:
+- **Rice Leaf Dataset:** mAP@50 tăng từ **0.8247** ➔ **0.8481** (+2.34%) | mAP@50:95 tăng từ **0.7891** ➔ **0.8034** (+1.43%).
+- **Coffee Leaf Dataset:** mAP@50 tăng từ **0.9012** ➔ **0.9234** (+2.22%) | mAP@50:95 tăng từ **0.8637** ➔ **0.8845** (+2.08%).
+
+### Lượng tử hóa Mô hình ONNX INT8 (Quantization)
+
+Để phục vụ triển khai thực tế trên môi trường máy chủ CPU với tài nguyên hạn chế:
+- Giảm dung lượng mô hình ONNX gần 4 lần: từ **94.8 MB** (ONNX FP32) xuống **23.77 MB** (ONNX INT8 Dynamic).
+- **Rice Leaf (ONNX INT8):** mAP@50 đạt `0.8411` (chỉ giảm nhẹ 0.7%), thời gian suy luận ~65.3 ms.
+- **Coffee Leaf (ONNX INT8):** mAP@50 đạt `0.9221` (chỉ giảm nhẹ 0.13%), thời gian suy luận ~17.9 ms.
 
 ---
 
@@ -149,9 +161,6 @@ Sau khi khởi động thành công, các dịch vụ sẽ sẵn sàng tại:
 ```bash
 # Sync môi trường Python backend
 uv sync
-
-# Cài đặt Playwright phục vụ Crawler
-crawl4ai-setup
 
 # Cài đặt Node dependencies cho frontend
 cd frontend
@@ -194,9 +203,9 @@ Mở trình duyệt truy cập: [http://localhost:3000](http://localhost:3000).
 
 Hệ thống được đảm bảo tính ổn định qua các kịch bản kiểm thử tích hợp (E2E) và kiểm thử hiệu năng tải (Load Testing):
 
-- **Kiểm thử Tích hợp (Integration Tests):** Xác minh luồng nghiệp vụ đăng ký/đăng nhập ➔ gửi ảnh chẩn đoán ➔ ghi nhận lịch sử và phản hồi khuyến nghị.
+- **Kiểm thử Tích hợp & Đơn vị (Unit & Integration Tests):** Xác minh luồng nghiệp vụ đăng ký/đăng nhập ➔ gửi ảnh chẩn đoán ➔ ghi nhận lịch sử và phản hồi khuyến nghị.
   ```bash
-  uv run pytest tests/integration/
+  uv run pytest tests/
   ```
 - **Kiểm thử Tải (Load Testing):** Đo lường giới hạn chịu tải của API Predict bằng Locust. Xem chi tiết tại [docs/testing/integration-load-testing.md](docs/testing/integration-load-testing.md).
   ```bash
@@ -209,18 +218,23 @@ Hệ thống được đảm bảo tính ổn định qua các kịch bản ki�
 
 ```text
 ml-vietnam-plant-disease-detection/
-├── backend/                # Source code Backend FastAPI
-│   ├── app/                # Logic cốt lõi (Routers, Services, DB)
-│   └── alembic/            # Các file Migration cơ sở dữ liệu
-├── frontend/               # Mã nguồn Web App Next.js (TypeScript/Tailwind)
-├── crawl/                  # Mã nguồn bộ cào dữ liệu, Gemma 4 labeler, SAM
-├── models/                 # Chứa các file ONNX chạy suy luận (đọc thêm models/README.md)
-├── docs/                   # Tài liệu thiết kế hệ thống, kiến trúc, kế hoạch các Phase
-├── deployment/             # Cấu hình Helm chart, K3s setup script, Traefik proxy triển khai lên GCP
-├── notebooks/              # Jupyter Notebooks phục vụ EDA và huấn luyện thử nghiệm
-├── tests/                  # Bộ mã nguồn kiểm thử (Integration, Load, DevOps)
-├── pyproject.toml          # Định nghĩa dependencies Python (sử dụng uv)
-└── docker-compose.yml      # Cấu hình khởi chạy nhanh docker container
+├── backend/                # Source code Backend FastAPI (Routers, Services, DB, Alembic)
+├── frontend/               # Mã nguồn Web App Next.js 14 (TypeScript/Tailwind CSS)
+├── crawl/                  # Pipeline thu thập dữ liệu tự động, Gemma 4 labeler, SAM 3
+├── data/                   # Hướng dẫn tải & lưu trữ dữ liệu thô (raw/) và tiền xử lý (processed/)
+├── models/                 # Chứa các file ONNX lượng tử hóa và nhãn lớp (models/README.md)
+├── src/                    # Thư viện mã nguồn Python dùng chung (src/segmentation, src/utils)
+├── scripts/                # Kịch bản tiện ích (export ONNX/OpenAPI, check masks, Excalidraw)
+├── deployment/             # Cấu hình K3s Kubernetes Helm chart, Traefik proxy, Docker Compose
+├── notebooks/              # Jupyter Notebooks EDA & Thực nghiệm 5 kiến trúc mô hình
+├── raytune/                # Script & cấu hình tinh chỉnh siêu tham số (RayTune/ASHA)
+├── report/                 # Mã nguồn LaTeX của báo cáo đồ án chính thức
+├── slides/                 # Mã nguồn LaTeX slide thuyết trình bảo vệ cuối kỳ
+├── submission/             # Thư mục nộp bài hoàn chỉnh (14-report.pdf, 14-slide.pdf, code/, data/, models/)
+├── tests/                  # Bộ mã nguồn kiểm thử (Integration, Load, DevOps, Unit tests)
+├── pyproject.toml          # Định nghĩa dependencies Python (sử dụng uv package manager)
+├── docker-compose.yml      # Cấu hình khởi chạy nhanh toàn bộ các dịch vụ bằng Docker
+└── alembic.ini             # Cấu hình migration cơ sở dữ liệu Postgres với Alembic
 ```
 
 ---
@@ -241,4 +255,5 @@ Dự án được thực hiện bởi nhóm sinh viên Khoa Công nghệ Thông 
 - **Môn học:** CSC14005 - Nhập môn Học máy (Học kỳ 2, năm học 2025-2026)
 
 ---
+
 *Bản quyền © 2026 thuộc về Nhóm dự án ml-vietnam-plant-disease-detection.*
