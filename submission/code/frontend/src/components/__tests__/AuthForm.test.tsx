@@ -1,0 +1,146 @@
+import "@testing-library/jest-dom/vitest";
+import { render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import AuthForm from "../AuthForm";
+import type { UseAuthReturn } from "../../hooks/useAuth";
+import { ApiError } from "../../lib/api";
+
+function makeAuth(overrides: Partial<UseAuthReturn> = {}) {
+  return {
+    user: null,
+    token: null,
+    isLoading: false,
+    sessionMessage: null,
+    login: vi.fn(),
+    register: vi.fn(),
+    logout: vi.fn(),
+    clearSessionMessage: vi.fn(),
+    ...overrides,
+  } as unknown as UseAuthReturn;
+}
+
+describe("AuthForm", () => {
+  it("associates visible login labels, help text, and autocomplete values", () => {
+    render(<AuthForm auth={makeAuth()} onSuccess={vi.fn()} />);
+
+    const username = screen.getByLabelText("Tên đăng nhập");
+    const password = screen.getByLabelText("Mật khẩu");
+    expect(username).toHaveAttribute("autocomplete", "username");
+    expect(password).toHaveAttribute("autocomplete", "current-password");
+    expect(username).toHaveAttribute("aria-describedby", "auth-username-hint");
+    expect(password).toHaveAttribute("aria-describedby", "auth-password-hint");
+  });
+
+  it("associates registration fields and uses registration autocomplete values", async () => {
+    const user = userEvent.setup();
+    render(<AuthForm auth={makeAuth()} onSuccess={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "Đăng ký" }));
+
+    expect(screen.getByLabelText("Tên đăng nhập")).toHaveAttribute("autocomplete", "username");
+    expect(screen.getByLabelText("Địa chỉ email")).toHaveAttribute("autocomplete", "email");
+    expect(screen.getByLabelText("Mật khẩu")).toHaveAttribute("autocomplete", "new-password");
+  });
+
+  it("shows associated validation errors and focuses the first invalid field", async () => {
+    const user = userEvent.setup();
+    render(<AuthForm auth={makeAuth()} onSuccess={vi.fn()} />);
+
+    await user.click(within(screen.getByRole("form", { name: "Biểu mẫu đăng nhập" })).getByRole("button", { name: "Đăng nhập" }));
+
+    const username = screen.getByLabelText("Tên đăng nhập");
+    expect(username).toHaveFocus();
+    expect(username).toHaveAttribute("aria-invalid", "true");
+    expect(username).toHaveAttribute("aria-describedby", "auth-username-hint auth-username-error");
+    expect(screen.getByText("Tên đăng nhập phải chứa ít nhất 3 ký tự.")).toHaveAttribute("id", "auth-username-error");
+  });
+
+  it("prevents duplicate submits and announces the loading action", async () => {
+    const user = userEvent.setup();
+    let resolveLogin: (() => void) | undefined;
+    const login = vi.fn(() => new Promise<void>((resolve) => { resolveLogin = resolve; }));
+    render(<AuthForm auth={makeAuth({ login })} onSuccess={vi.fn()} />);
+
+    await user.type(screen.getByLabelText("Tên đăng nhập"), "farmer");
+    await user.type(screen.getByLabelText("Mật khẩu"), "secret1");
+    const submit = within(screen.getByRole("form", { name: "Biểu mẫu đăng nhập" })).getByRole("button", { name: "Đăng nhập" });
+    await user.click(submit);
+
+    expect(submit).toBeDisabled();
+    expect(screen.getByText("Đang xử lý thông tin xác thực…")).toBeVisible();
+    await user.click(submit);
+    expect(login).toHaveBeenCalledTimes(1);
+
+    resolveLogin?.();
+    await waitFor(() => expect(submit).toBeEnabled());
+  });
+
+  it("closes only after successful login and localizes invalid credentials", async () => {
+    const user = userEvent.setup();
+    const onSuccess = vi.fn();
+    const login = vi.fn().mockRejectedValue(new ApiError({
+      status: 401,
+      code: "INVALID_CREDENTIALS",
+      message: "Tên đăng nhập hoặc mật khẩu không chính xác.",
+    }));
+    render(<AuthForm auth={makeAuth({ login })} onSuccess={onSuccess} />);
+
+    await user.type(screen.getByLabelText("Tên đăng nhập"), "farmer");
+    await user.type(screen.getByLabelText("Mật khẩu"), "secret1");
+    await user.click(within(screen.getByRole("form", { name: "Biểu mẫu đăng nhập" })).getByRole("button", { name: "Đăng nhập" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Tên đăng nhập hoặc mật khẩu không chính xác.");
+    expect(onSuccess).not.toHaveBeenCalled();
+  });
+
+  it("closes the modal only after login resolves successfully", async () => {
+    const user = userEvent.setup();
+    const onSuccess = vi.fn();
+    const login = vi.fn().mockResolvedValue(undefined);
+    render(<AuthForm auth={makeAuth({ login })} onSuccess={onSuccess} />);
+
+    await user.type(screen.getByLabelText("Tên đăng nhập"), "farmer");
+    await user.type(screen.getByLabelText("Mật khẩu"), "secret1");
+    await user.click(within(screen.getByRole("form", { name: "Biểu mẫu đăng nhập" })).getByRole("button", { name: "Đăng nhập" }));
+
+    await waitFor(() => expect(login).toHaveBeenCalledWith("farmer", "secret1"));
+    expect(onSuccess).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps automatic login after registration and exposes duplicate email safely", async () => {
+    const user = userEvent.setup();
+    const onSuccess = vi.fn();
+    const register = vi.fn().mockResolvedValue(undefined);
+    render(<AuthForm auth={makeAuth({ register })} onSuccess={onSuccess} />);
+
+    await user.click(screen.getByRole("button", { name: "Đăng ký" }));
+    await user.type(screen.getByLabelText("Tên đăng nhập"), "farmer");
+    await user.type(screen.getByLabelText("Địa chỉ email"), "farmer@example.com");
+    await user.type(screen.getByLabelText("Mật khẩu"), "secret1");
+    await user.click(within(screen.getByRole("form", { name: "Biểu mẫu đăng ký" })).getByRole("button", { name: "Tạo tài khoản & Đăng nhập" }));
+
+    await waitFor(() => expect(register).toHaveBeenCalledWith("farmer", "farmer@example.com", "secret1"));
+    expect(onSuccess).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not render raw backend exception text", async () => {
+    const user = userEvent.setup();
+    const register = vi.fn().mockRejectedValue(new ApiError({
+      status: 409,
+      code: "ACCOUNT_EXISTS",
+      message: "Tên đăng nhập hoặc địa chỉ email đã được sử dụng.",
+      fieldErrors: { email: "Địa chỉ email này đã được sử dụng." },
+    }));
+    render(<AuthForm auth={makeAuth({ register })} onSuccess={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "Đăng ký" }));
+    await user.type(screen.getByLabelText("Tên đăng nhập"), "farmer");
+    await user.type(screen.getByLabelText("Địa chỉ email"), "farmer@example.com");
+    await user.type(screen.getByLabelText("Mật khẩu"), "secret1");
+    await user.click(within(screen.getByRole("form", { name: "Biểu mẫu đăng ký" })).getByRole("button", { name: "Tạo tài khoản & Đăng nhập" }));
+
+    expect(await screen.findByText("Địa chỉ email này đã được sử dụng.")).toBeVisible();
+    expect(screen.queryByText(/database password leaked/i)).not.toBeInTheDocument();
+  });
+});
