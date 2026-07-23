@@ -43,7 +43,7 @@ Bảng~\ref{tab:results_rice} và Bảng~\ref{tab:results_coffee} tóm tắt cá
   }
 \end{table}
 
-Nhìn chung, Mask R-CNN và Mask2Former cho độ chính xác rất cao trên tập Cà phê nhưng lại có dấu hiệu kém ổn định hơn trên tập Lúa (đặc biệt là Mask R-CNN ở chỉ số mAP). YOLO26-seg thể hiện sự cân bằng tốt khi đứng đầu về mAP trên tập Lúa và đứng thứ ba với khoảng cách rất nhỏ trên tập Cà phê, trong khi sở hữu tốc độ suy luận cực nhanh và kích thước gọn nhẹ (với 6,23 MB ở định dạng trọng số PyTorch \texttt{.pt} gốc và khoảng 24,9 MB khi xuất đóng gói sang định dạng ONNX INT8 phục vụ suy luận CPU).
+Nhìn chung, Mask R-CNN và Mask2Former cho độ chính xác rất cao trên tập Cà phê nhưng lại có dấu hiệu kém ổn định hơn trên tập Lúa (đặc biệt là Mask R-CNN ở chỉ số mAP). YOLO26-seg thể hiện sự cân bằng tốt khi đứng đầu về mAP trên tập Lúa và đứng thứ ba với khoảng cách rất nhỏ trên tập Cà phê, trong khi sở hữu tốc độ suy luận cực nhanh và kích thước gọn nhẹ (với 6,23 MB ở định dạng trọng số PyTorch \texttt{.pt} gốc).
 
 Để thấy rõ hơn quá trình hội tụ, Hình~\ref{fig:learning_curves} thể hiện đường cong học tập (learning curves) của mô hình YOLO26-seg trên hai tập dữ liệu.
 
@@ -96,6 +96,30 @@ YOLO26-seg nổi bật như một ứng cử viên xuất sắc nhất khi đạ
 \end{table}
 
 Việc tinh chỉnh siêu tham số đã giúp tăng mAP@50 thêm hơn 2\% cho cả hai tập dữ liệu, khẳng định tính hiệu quả của phương pháp tìm kiếm tự động kết hợp loại bỏ sớm (early stopping) của thuật toán ASHA.
+
+\subsubsection{Lượng tử hóa Mô hình ONNX (ONNX 8-bit Quantization)}
+Để phục vụ triển khai thực tế trên môi trường CPU của máy chủ web với tài nguyên giới hạn, mô hình YOLO26-seg sau khi tinh chỉnh được xuất sang định dạng ONNX FP32 và áp dụng kỹ thuật lượng tử hóa động 8 bit (INT8 Dynamic Quantization). Kết quả so sánh hiệu năng và dung lượng trước và sau khi lượng tử hóa được tổng hợp tại Bảng~\ref{tab:results_yolo_quantized}.
+
+\begin{table}[H]
+  \centering
+  \caption{Kết quả của mô hình YOLO26-seg trước và sau khi lượng tử hóa 8 bit}
+  \label{tab:results_yolo_quantized}
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{llcccccc}
+    \toprule
+    \textbf{Tập dữ liệu} & \textbf{Trạng thái} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU} & \textbf{Dice} & \textbf{Inference (ms)} & \textbf{Size (MB)} \\
+    \midrule
+    \multirow{2}{*}{Lúa (Rice)} & Tuned (ONNX FP32) & \textbf{0.8481} & \textbf{0.8034} & \textbf{0.8697} & \textbf{0.8856} & 65.41 & 94.8 \\
+    & 8 bit (ONNX INT8) & 0.8411 & 0.7831 & 0.8599 & 0.8812 & \textbf{65.34} & \textbf{23.77} \\
+    \midrule
+    \multirow{2}{*}{Cà phê (Coffee)} & Tuned (ONNX FP32) & \textbf{0.9234} & \textbf{0.8845} & \textbf{0.9053} & \textbf{0.9192} & 19.85 & 94.8 \\
+    & 8 bit (ONNX INT8) & 0.9221 & 0.8744 & 0.9030 & 0.9112 & \textbf{17.85} & \textbf{23.77} \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table}
+
+Kỹ thuật lượng tử hóa 8 bit giúp giảm dung lượng mô hình ONNX gần 4 lần (từ 94,8 MB xuống 23,77 MB) trong khi duy trì mAP@50 gần như không đổi trên cả hai tập dữ liệu (chỉ giảm nhẹ dưới 0,7\%), đồng thời giúp giảm nhẹ thời gian suy luận trên CPU.
 
 \subsubsection{Phân tích Ma trận nhầm lẫn (Confusion Matrix)}
 Ma trận nhầm lẫn chuẩn hóa của mô hình YOLO26-seg được trình bày tại Hình~\ref{fig:confusion_matrix}.

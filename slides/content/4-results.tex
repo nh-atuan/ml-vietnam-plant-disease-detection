@@ -76,16 +76,20 @@
         \toprule
         \textbf{Tập dữ liệu}    & \textbf{Trạng thái} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU}   & \textbf{Dice}   & \textbf{Inference (ms)} & \textbf{Size (MB)} \\
         \midrule
-        \multirow{2}{*}{Lúa}    & Baseline            & 0.8247          & 0.7891             & 0.8543          & 0.8712          & \textbf{65.72}          & 54.5              \\
-                                & Tuned               & \textbf{0.8481} & \textbf{0.8034}    & \textbf{0.8697} & \textbf{0.8856} & 67.41                   & 54.5              \\
+        \multirow{2}{*}{Lúa}    & Baseline            & 0.8247          & 0.7891             & 0.8543          & 0.8712          & \textbf{65.72}          & 6.23              \\
+                                & Tuned               & \textbf{0.8481} & \textbf{0.8034}    & \textbf{0.8697} & \textbf{0.8856} & \textbf{65.41}          & 6.23              \\
         \midrule
-        \multirow{2}{*}{Cà phê} & Baseline            & 0.9012          & 0.8637             & 0.8921          & 0.9087          & 20.21                   & 54.5              \\
-                                & Tuned               & \textbf{0.9234} & \textbf{0.8845}    & \textbf{0.9053} & \textbf{0.9192} & \textbf{19.85}          & 54.5              \\
+        \multirow{2}{*}{Cà phê} & Baseline            & 0.9012          & 0.8637             & 0.8921          & 0.9087          & 20.21                   & 6.23              \\
+                                & Tuned               & \textbf{0.9234} & \textbf{0.8845}    & \textbf{0.9053} & \textbf{0.9192} & \textbf{19.85}          & 6.23              \\
         \bottomrule
       \end{tabular}
     }
   \end{table}
 
+  \vspace{-0.1cm}
+  {\scriptsize \textit{*Ghi chú: Kích thước 6,23 MB đo ở định dạng trọng số PyTorch (.pt) gốc.}}
+
+  \vspace{0.15cm}
   \begin{itemize}
     \item[-] Phương pháp tìm kiếm kết hợp thuật toán loại bỏ sớm ASHA giúp tăng hơn 2\% mAP@50 trên cả hai miền dữ liệu.
   \end{itemize}
@@ -157,11 +161,11 @@
         \toprule
         \textbf{Tập dữ liệu}    & \textbf{Trạng thái} & \textbf{mAP@50} & \textbf{mAP@50:95} & \textbf{mIoU}   & \textbf{Dice}   & \textbf{Inference (ms)} & \textbf{Size (MB)} \\
         \midrule
-        \multirow{2}{*}{Lúa}    & Tuned (FP32)        & \textbf{0.8481} & \textbf{0.8034}    & \textbf{0.8697} & \textbf{0.8856} & 67.41                   & 54.5              \\
-                                & 8 bit               & 0.8411          & 0.7831             & 0.8599          & 0.8812          & \textbf{65.34}          & \textbf{23.77}      \\
+        \multirow{2}{*}{Lúa}    & Tuned (ONNX FP32)   & \textbf{0.8481} & \textbf{0.8034}    & \textbf{0.8697} & \textbf{0.8856} & 65.41                   & 94.8              \\
+                                & 8 bit (ONNX INT8)   & 0.8411          & 0.7831             & 0.8599          & 0.8812          & \textbf{65.34}          & \textbf{23.77}      \\
         \midrule
-        \multirow{2}{*}{Cà phê} & Tuned (FP32)        & \textbf{0.9234} & \textbf{0.8845}    & \textbf{0.9053} & \textbf{0.9192} & 19.85                   & 54.5              \\
-                                & 8 bit               & 0.9221          & 0.8744             & 0.9030          & 0.9112          & \textbf{17.85}          & \textbf{23.77}      \\
+        \multirow{2}{*}{Cà phê} & Tuned (ONNX FP32)   & \textbf{0.9234} & \textbf{0.8845}    & \textbf{0.9053} & \textbf{0.9192} & 19.85                   & 94.8              \\
+                                & 8 bit (ONNX INT8)   & 0.9221          & 0.8744             & 0.9030          & 0.9112          & \textbf{17.85}          & \textbf{23.77}      \\
         \bottomrule
       \end{tabular}
     }

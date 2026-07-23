@@ -46,7 +46,7 @@ Chi tiết phân bố số lượng ảnh theo từng tập con và lớp bệnh
         \textbf{Mô hình}     & \textbf{Họ kiến trúc} & \textbf{Đặc điểm nổi bật và lý do lựa chọn}                                                                                                                                                                                        \\
         \midrule
         Mask R-CNN~\cite{he2017mask}  & CNN          & Kiến trúc hai giai đoạn kinh điển, mang lại độ chính xác cao trong phân vùng thực thể. Được chọn làm baseline để đánh giá và đối chiếu hiệu suất.                                                                                  \\
-        YOLO26-seg~\cite{jocher2023ultralytics, jocher2024yolo} & CNN          & Kiến trúc một giai đoạn với tốc độ suy luận thời gian thực xuất sắc. Phiên bản cỡ medium được chọn nhằm tối ưu hóa điểm cân bằng giữa độ chính xác và tốc độ trong thực tế.                                                        \\
+        YOLO26-seg~\cite{jocher2023ultralytics, jocher2024yolo} & CNN          & Kiến trúc một giai đoạn với tốc độ suy luận thời gian thực xuất sắc. Phiên bản cỡ nano được chọn nhằm tối ưu hóa điểm cân bằng giữa độ chính xác và tốc độ trong thực tế.                                                        \\
         RF-DETR~\cite{roboflow2024rfdetr, lv2023detrs}     & ViT          & Thiết kế end-to-end loại bỏ hoàn toàn bước hậu xử lý NMS, sử dụng DINOv2 feature extractor để tận dụng khả năng zero-shot và hiệu suất học ngữ cảnh mạnh mẽ. Được chọn làm đại diện cho dòng mô hình Transformer-based tốc độ cao. \\
         MobileSAM~\cite{zhang2023mobilesam, zhang2023faster}   & ViT          & Phiên bản thu gọn siêu nhẹ của Segment Anything Model (SAM). Được chọn nhờ khả năng zero-shot linh hoạt với prompt và tối ưu hóa chuyên sâu để triển khai trên edge devices.                                                       \\
         Mask2Former~\cite{cheng2022masked} & ViT          & Kiến trúc phân vùng hợp nhất dựa trên mask classification. Được chọn nhờ đạt hiệu năng đa tác vụ vượt trội (panoptic, instance, semantic).                                                                                         \\
@@ -124,9 +124,9 @@ Trong đó:
         Tỷ lệ chia dữ liệu   & $70:15:15$        \\
         Thuật toán tối ưu    & AdamW             \\
         Effective batch size & 8                 \\
-        Số Epoch tối đa      & 30                \\
+        Số Epoch tối đa      & 50                \\
         Dừng sớm             & 5                 \\
-        Seed                 & 3407              \\
+        Seed                 & 42                \\
         \bottomrule
     \end{tabular}
 \end{table}
